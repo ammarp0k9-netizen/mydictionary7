@@ -242,34 +242,57 @@
         }
     }
 
-   function playSound(word, event) {
+  function playSound(word, event) {
     if (event) event.stopPropagation();
     const cleanWord = word.trim().toLowerCase();
-    
-    // 1. الأولوية لملفك اللي على GitHub
-    const audio = new Audio(`sounds/${cleanWord}.mp3`);
 
-    audio.play().then(() => {
-        console.log("تم تشغيل ملفك الأصلي");
-    }).catch(() => {
-        console.log("ملفك مش موجود، جاري استخدام محرك النطق عالي الجودة...");
-        
-        // 2. بديل جوجل: محرك النطق المدمج بالمتصفح (احترافي ومجاني)
-        const utterance = new SpeechSynthesisUtterance(word);
-        
-        // بنختار "أفضل" صوت إنجليزي متاح في جهازك
-        const voices = window.speechSynthesis.getVoices();
-        const englishVoice = voices.find(v => v.lang.startsWith('en') && v.name.includes('Google')) || voices[0];
-        
-        if (englishVoice) utterance.voice = englishVoice;
-        
-        utterance.lang = 'en-US';
-        utterance.rate = 0.9; // سرعة هادية وواضحة
-        utterance.pitch = 1;  // طبقة صوت طبيعية
-        
-        window.speechSynthesis.speak(utterance);
-    });
+    // 1. جرب تشغل ويبستر (الملف المرفوع)
+    const audio = new Audio(`sounds/${cleanWord}.mp3`);
+    
+    // محاولة التشغيل
+    const playPromise = audio.play();
+
+    if (playPromise !== undefined) {
+        playPromise.then(() => {
+            // اشتغل ويبستر بنجاح
+            console.log("Webster played");
+        }).catch(() => {
+            // 2. إذا فشل ويبستر (الكلمة مش عندك)، شغل محرك التلفون فوراً
+            console.log("Using Device TTS...");
+            
+            // إلغاء أي صوت معلق (ضروري جداً للأندرويد)
+            window.speechSynthesis.cancel();
+
+            const utterance = new SpeechSynthesisUtterance(word);
+            utterance.lang = 'en-US';
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+
+            // سر النجاح في الأندرويد: لازم نطلب قائمة الأصوات ونحرك المحرك
+            const voices = window.speechSynthesis.getVoices();
+            if (voices.length > 0) {
+                // بنحاول نلاقي صوت Google English
+                const englishVoice = voices.find(v => v.lang.includes('en') && v.name.includes('Google')) || voices[0];
+                utterance.voice = englishVoice;
+            }
+
+            window.speechSynthesis.speak(utterance);
+        });
+    }
 }
+
+// الكود السحري اللي "بيصحي" محرك الصوت في التلفون أول ما يفتح التطبيق
+window.onload = function() {
+    if ('speechSynthesis' in window) {
+        // نداء وهمي بس عشان يجهز المحرك في الخلفية
+        window.speechSynthesis.getVoices();
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+        }
+    }
+    // شغل دالة العرض تبعتك هون كمان
+    if (typeof displayWords === "function") displayWords();
+};
 
     function handleLiClick(index, el) {
         if (isReorderMode) {
@@ -389,4 +412,5 @@
 </script>
 </body>
 </html>
+
 
