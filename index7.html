@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>القاموس</title>
+    <style>
+        :root { 
+            --primary: #3498db; 
+            --star-color: #f1c40f; 
+            --bg: #f4f7f6; 
+            --card-bg: #ffffff;
+            --text-main: #2c3e50;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, sans-serif; 
+            background: var(--bg); 
+            padding: 15px; 
+            color: var(--text-main); 
+        }
+
+        .container { 
+            max-width: 480px; 
+            margin: auto; 
+            background: var(--card-bg); 
+            padding: 25px; 
+            border-radius: 20px; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1); 
+        }
+
+        h2 { 
+            text-align: center; 
+            color: #2c3e50; 
+            font-size: 2.2rem; 
+            margin-top: 0; 
+            margin-bottom: 20px;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-around;
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            font-weight: bold;
+            color: #7f8c8d;
+            border: 1px solid #eee;
+        }
+
+        .input-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+        input, select, textarea { 
+            padding: 12px; border: 2px solid #eee; border-radius: 12px; outline: none; 
+            text-align: center; font-size: 15px; font-family: inherit;
+        }
+        input:focus, textarea:focus { border-color: var(--primary); }
+        
+        .btn-main { 
+            background: var(--primary); color: white; border: none; padding: 14px; 
+            border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.2s;
+        }
+
+        .toolbar { display: flex; gap: 8px; margin-bottom: 15px; }
+        .btn-tool { flex: 1; padding: 10px; border-radius: 20px; border: 1px solid #ddd; background: #fff; cursor: pointer; font-weight: 600; }
+        .active-tool { background: var(--primary); color: white; border-color: var(--primary); }
+
+        #searchInput { width: 100%; box-sizing: border-box; background: #fff9db; border: 2px solid #f1c40f; margin-bottom: 15px; }
+
+        ul { list-style: none; padding: 0; }
+        li { 
+            background: #fff; margin-bottom: 10px; padding: 16px; border-radius: 15px; 
+            border-right: 6px solid var(--primary); box-shadow: 0 3px 10px rgba(0,0,0,0.05); 
+            display: flex; flex-direction: column; gap: 8px; cursor: pointer; transition: 0.3s;
+            position: relative;
+        }
+        li:hover { transform: scale(1.02); background: #fdfdfd; }
+
+        .reorder-mode-li { 
+            border: 1px dashed #ccc !important; 
+            border-right: 6px solid var(--primary) !important;
+            cursor: move;
+        }
+        
+        .selected-for-move {
+            background-color: #e3f2fd !important;
+            border-color: var(--primary) !important;
+        }
+
+        .top-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        
+        .star-btn { 
+            font-size: 24px; cursor: pointer; color: #ddd; background: none; border: none; padding: 0; transition: 0.2s;
+        }
+        .star-btn.active { color: var(--star-color); }
+
+        .word-box { flex-grow: 1; text-align: right; }
+        .word-text { font-weight: bold; font-size: 1.2em; color: #2c3e50; }
+        .meaning-text { color: #7f8c8d; font-size: 1em; }
+
+        .actions { display: flex; gap: 8px; }
+        .icon-circle {
+            width: 38px; height: 38px; border-radius: 50%; border: none;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: 0.2s; font-size: 18px;
+        }
+        .sound-btn { background: #ebf5fb; color: #3498db; }
+        .edit-btn { background: #eafaf1; color: #27ae60; }
+        .del-btn { background: #fdedec; color: #e74c3c; }
+
+        .cat-tag { 
+            font-size: 11px; padding: 3px 10px; border-radius: 8px; 
+            font-weight: bold; margin-right: 8px; color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+        }
+        .tag-فعل { background: #e67e22; opacity: 0.85; }
+        .tag-اسم { background: #8e44ad; opacity: 0.85; }
+        .tag-صفة { background: #27ae60; opacity: 0.85; }
+        .tag-أداة { background: #c0392b; opacity: 0.85; }
+        .tag-جمل { background: #16a085; opacity: 0.85; }
+        .tag-عام { background: #7f8c8d; opacity: 0.85; }
+
+        .example-box { 
+            font-size: 0.95em; color: #95a5a6; font-style: italic; border-top: 1px solid #f0f0f0; 
+            margin-top: 8px; padding-top: 8px; display: none; text-align: left; direction: ltr; 
+        }
+        .show-example .example-box { display: block; }
+
+        .backup-zone { margin-top: 25px; border-top: 2px dashed #eee; padding-top: 15px; display: flex; gap: 10px; }
+        .btn-backup { flex: 1; padding: 10px; font-size: 12px; background: #95a5a6; color: white; border-radius: 10px; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2 id="mainTitle">القاموس</h2>
+
+    <div class="stats-bar">
+        <span id="totalCount">إجمالي الكلمات: 0</span>
+        <span id="starredCount">⭐ المفضلة: 0</span>
+    </div>
+    
+    <div class="input-group">
+        <input type="text" id="wordInput" placeholder="الكلمة بالإنجليزي">
+        <input type="text" id="meaningInput" placeholder="المعنى بالعربي">
+        <textarea id="exampleInput" placeholder="جملة مثال (اختياري)" rows="2"></textarea>
+        <select id="categoryInput">
+            <option value="عام">عام</option>
+            <option value="فعل">فعل</option>
+            <option value="اسم">اسم</option>
+            <option value="صفة">صفة</option>
+            <option value="أداة">أداة</option>
+            <option value="جمل">جمل شائعة</option>
+        </select>
+        <button class="btn-main" id="addBtn" onclick="addWord()">إضافة للقاموس</button>
+    </div>
+
+    <div class="toolbar">
+        <button id="toolAll" class="btn-tool active-tool" onclick="setFilter('all')">الكل</button>
+        <button id="toolStarred" class="btn-tool" onclick="setFilter('starred')">⭐ الصعبة</button>
+        <button id="reorderBtn" class="btn-tool" onclick="toggleReorderMode()">🔄 ترتيب يدوي</button>
+    </div>
+
+    <input type="text" id="searchInput" placeholder="🔎 ابحث عن كلمة، معنى أو جملة..." onkeyup="render()">
+
+    <ul id="list"></ul>
+
+    <div class="backup-zone">
+        <button class="btn-backup" onclick="exportData()">📥 تصدير</button>
+        <button class="btn-backup" onclick="document.getElementById('importFile').click()">📤 استيراد</button>
+        <input type="file" id="importFile" style="display:none" onchange="importData(event)">
+    </div>
+</div>
+
+<script>
+    let words = JSON.parse(localStorage.getItem('myContextDict')) || [];
+    let currentFilter = 'all';
+    let editId = null;
+    let isReorderMode = false;
+    let selectedIndices = [];
+
+    function addWord() {
+        let w = document.getElementById('wordInput').value.trim();
+        let m = document.getElementById('meaningInput').value.trim();
+        let ex = document.getElementById('exampleInput').value.trim();
+        let c = document.getElementById('categoryInput').value;
+        if(!w || !m) return;
+
+        if (editId) {
+            words = words.map(item => item.id === editId ? {...item, word: w, meaning: m, example: ex, category: c} : item);
+            editId = null;
+            document.getElementById('addBtn').innerText = "إضافة للقاموس";
+            document.getElementById('addBtn').style.background = "#3498db";
+        } else {
+            words.unshift({ id: Date.now() + Math.random(), word: w, meaning: m, example: ex, category: c, starred: false });
+        }
+        
+        clearInputs();
+        saveAndRender();
+    }
+
+    function clearInputs() {
+        document.getElementById('wordInput').value = '';
+        document.getElementById('meaningInput').value = '';
+        document.getElementById('exampleInput').value = '';
+        document.getElementById('categoryInput').value = 'عام';
+    }
+
+    function toggleStar(id, event) {
+        event.stopPropagation();
+        words = words.map(w => w.id === id ? {...w, starred: !w.starred} : w);
+        saveAndRender();
+    }
+
+    function startEdit(id, event) {
+        event.stopPropagation();
+        let item = words.find(w => w.id === id);
+        if(!item) return;
+        document.getElementById('wordInput').value = item.word;
+        document.getElementById('meaningInput').value = item.meaning;
+        document.getElementById('exampleInput').value = item.example || '';
+        document.getElementById('categoryInput').value = item.category;
+        editId = id;
+        document.getElementById('addBtn').innerText = "تحديث الكلمة";
+        document.getElementById('addBtn').style.background = "#27ae60";
+        window.scrollTo(0,0);
+    }
+
+    function deleteWord(id, event) {
+        event.stopPropagation();
+        if(confirm("حذف؟")) {
+            words = words.filter(w => w.id !== id);
+            saveAndRender();
+        }
+    }
+
+    function playSound(word, event) {
+        event.stopPropagation();
+        new Audio('sounds/' + word.toLowerCase() + '.mp3').play().catch(() => {
+            const msg = new SpeechSynthesisUtterance(word);
+            msg.lang = 'en-US';
+            window.speechSynthesis.speak(msg);
+        });
+    }
+
+    function handleLiClick(index, el) {
+        if (isReorderMode) {
+            if (selectedIndices.includes(index)) {
+                selectedIndices = selectedIndices.filter(i => i !== index);
+                el.classList.remove('selected-for-move');
+            } else {
+                selectedIndices.push(index);
+                el.classList.add('selected-for-move');
+            }
+        } else {
+            el.classList.toggle('show-example');
+        }
+    }
+
+    function toggleReorderMode() {
+        isReorderMode = !isReorderMode;
+        selectedIndices = [];
+        const btn = document.getElementById('reorderBtn');
+        btn.classList.toggle('active-tool', isReorderMode);
+        btn.innerText = isReorderMode ? "✅ حفظ الترتيب" : "🔄 ترتيب يدوي";
+        if (!isReorderMode) {
+            localStorage.setItem('myContextDict', JSON.stringify(words));
+        }
+        render();
+    }
+
+    function allowDrop(ev) { ev.preventDefault(); }
+    
+    function drag(ev, index) { 
+        if (!selectedIndices.includes(index)) {
+            selectedIndices = [index];
+        }
+        ev.dataTransfer.setData("draggedIndices", JSON.stringify(selectedIndices));
+    }
+
+    function drop(ev, dropIndex) {
+        ev.preventDefault();
+        let draggedIndices = JSON.parse(ev.dataTransfer.getData("draggedIndices")).sort((a,b) => b-a);
+        
+        let itemsToMove = [];
+        draggedIndices.forEach(idx => {
+            itemsToMove.push(words.splice(idx, 1)[0]);
+        });
+        itemsToMove.reverse();
+
+        let actualDropIndex = dropIndex;
+        draggedIndices.forEach(idx => { if (idx < dropIndex) actualDropIndex--; });
+        if (actualDropIndex < 0) actualDropIndex = 0;
+
+        words.splice(actualDropIndex, 0, ...itemsToMove);
+        
+        selectedIndices = []; 
+        render();
+    }
+
+    function saveAndRender() {
+        localStorage.setItem('myContextDict', JSON.stringify(words));
+        render();
+    }
+
+    function render() {
+        updateStats();
+        let query = document.getElementById('searchInput').value.toLowerCase();
+        let html = '';
+        let filtered = words.filter(w => (w.word.toLowerCase().includes(query) || w.meaning.includes(query) || (w.example && w.example.toLowerCase().includes(query))) && (currentFilter === 'all' || w.starred));
+
+        filtered.forEach((w, index) => {
+            const dragAttrs = isReorderMode ? `draggable="true" ondragstart="drag(event, ${index})" ondragover="allowDrop(event)" ondrop="drop(event, ${index})"` : '';
+            const reorderClass = isReorderMode ? 'reorder-mode-li' : '';
+            const selectedClass = selectedIndices.includes(index) ? 'selected-for-move' : '';
+
+            html += `
+                <li ${dragAttrs} class="${reorderClass} ${selectedClass}" onclick="handleLiClick(${index}, this)">
+                    <div class="top-row">
+                        <button class="star-btn ${w.starred ? 'active' : ''}" onclick="toggleStar(${w.id}, event)">★</button>
+                        <div class="word-box">
+                            <div class="word-text">${w.word} <span class="cat-tag tag-${w.category}">${w.category}</span></div>
+                            <div class="meaning-text">${w.meaning}</div>
+                        </div>
+                        ${isReorderMode ? '<span style="font-size:20px; color:#ccc;">☰</span>' : `
+                        <div class="actions">
+                            <button class="icon-circle sound-btn" onclick="playSound('${w.word}', event)">🔊</button>
+                            <button class="icon-circle edit-btn" onclick="startEdit(${w.id}, event)">📝</button>
+                            <button class="icon-circle del-btn" onclick="deleteWord(${w.id}, event)">×</button>
+                        </div>`}
+                    </div>
+                    ${w.example ? `<div class="example-box"><b>Ex:</b> ${w.example}</div>` : ''}
+                </li>`;
+        });
+        document.getElementById('list').innerHTML = html;
+    }
+
+    function updateStats() {
+        document.getElementById('totalCount').innerText = `إجمالي الكلمات: ${words.length}`;
+        document.getElementById('starredCount').innerText = `⭐ الصعبة: ${words.filter(w => w.starred).length}`;
+    }
+
+    function exportData() {
+        const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(JSON.stringify(words));
+        const link = document.createElement('a');
+        link.setAttribute('href', dataUri);
+        link.setAttribute('download', 'my_dict.json');
+        link.click();
+    }
+
+    function importData(event) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            words = JSON.parse(e.target.result).map(i => ({...i, id: i.id || Math.random()}));
+            saveAndRender();
+        };
+        reader.readAsText(event.target.files[0]);
+    }
+
+    render();
+</script>
+</body>
+</html>
