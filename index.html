@@ -138,7 +138,7 @@
 
     <div class="stats-bar">
         <span id="totalCount">إجمالي الكلمات: 0</span>
-        <span id="starredCount">⭐ المفضلة: 0</span>
+        <span id="starredCount">⭐ الصعبة: 0</span>
     </div>
     
     <div class="input-group">
@@ -213,6 +213,13 @@
         saveAndRender();
     }
 
+    function setFilter(f) {
+        currentFilter = f;
+        document.getElementById('toolAll').classList.toggle('active-tool', f === 'all');
+        document.getElementById('toolStarred').classList.toggle('active-tool', f === 'starred');
+        render();
+    }
+
     function startEdit(id, event) {
         event.stopPropagation();
         let item = words.find(w => w.id === id);
@@ -235,47 +242,22 @@
         }
     }
 
-// دالة تشغيل الصوت (المطورة اللي بتحترم ملفاتك)
-function playSound(word, event) {
-    if (event) event.stopPropagation();
-    
-    const cleanWord = word.trim().toLowerCase();
-    const audioPath = `sounds/${cleanWord}.mp3`;
-    const localAudio = new Audio(audioPath);
+    function playSound(word, event) {
+        if (event) event.stopPropagation();
+        const cleanWord = word.trim().toLowerCase();
+        const audio = new Audio(`sounds/${cleanWord}.mp3`);
 
-    localAudio.play().then(() => {
-        console.log("شغال من ملفاتك");
-    }).catch(() => {
-        // إذا مش موجود بجيب من برا
-        const remoteAudio = new Audio(`https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(cleanWord)}&tl=en-us&client=tw-ob`);
-        remoteAudio.play().catch(() => {
-            const msg = new SpeechSynthesisUtterance(word);
-            window.speechSynthesis.speak(msg);
+        audio.play().catch(() => {
+            const remoteAudio = new Audio(`https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(cleanWord)}&tl=en-us&client=tw-ob`);
+            remoteAudio.play().catch(() => {
+                const msg = new SpeechSynthesisUtterance(word);
+                msg.lang = 'en-US';
+                window.speechSynthesis.speak(msg);
+            });
         });
-    });
-}
+    }
 
-// دالة عرض الكلمات (تأكد إنها موجودة عشان ما تختفي الكلمات)
-function displayWords() {
-    const list = document.getElementById('wordsList'); // تأكد إن الـ ID صح
-    if (!list) return;
-    
-    const words = JSON.parse(localStorage.getItem('myWords')) || [];
-    list.innerHTML = ''; 
-    
-    words.forEach((item, index) => {
-        const li = document.createElement('li');
-        li.innerHTML = `
-            <span onclick="playSound('${item.word}')" style="cursor:pointer">🔊</span>
-            <strong>${item.word}</strong>: ${item.translation}
-        `;
-        list.appendChild(li);
-    });
-}
-
-// استدعاء الدالة عند تشغيل الصفحة
-window.onload = displayWords;
-}    function handleLiClick(index, el) {
+    function handleLiClick(index, el) {
         if (isReorderMode) {
             if (selectedIndices.includes(index)) {
                 selectedIndices = selectedIndices.filter(i => i !== index);
@@ -392,11 +374,4 @@ window.onload = displayWords;
     render();
 </script>
 </body>
-
 </html>
-
-
-
-
-
-
