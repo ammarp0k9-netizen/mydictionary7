@@ -235,29 +235,35 @@
         }
     }
 
-   function playSound(word, event) {
+  function playSound(word, event) {
     if (event) event.stopPropagation();
     
-    // مسار الملف على GitHub
-    const audioPath = 'sounds/' + word.toLowerCase() + '.mp3';
+    // تنظيف الكلمة وتحويلها لحروف صغيرة
+    const cleanWord = word.trim().toLowerCase();
+    
+    // إضافة رقم عشوائي في نهاية الرابط لكسر الكاش (Cache Buster)
+    // هاد بيجبر المتصفح يجيب أجدد نسخة من GitHub
+    const audioPath = `sounds/${cleanWord}.mp3?v=${Date.now()}`;
     const audio = new Audio(audioPath);
 
-    // محاولة تشغيل الملف
-    audio.play().catch(() => {
-        // إذا فشل التشغيل فوراً، بنستنى شوي ونحاول مرة ثانية
-        // هاد بيعطي وقت للإنترنت إذا كان السيرفر بطيء
-        setTimeout(() => {
-            audio.play().catch(() => {
-                // إذا لساته مش شغال، هون بنشغل اللفظ الآلي كآخر حل
-                console.log("استخدام اللفظ الآلي كخيار أخير");
-                const msg = new SpeechSynthesisUtterance(word);
-                msg.lang = 'en-US';
-                window.speechSynthesis.speak(msg);
-            });
-        }, 300); // تأخير بسيط 300 ملي ثانية لحل مشكلة البطء
-    });
-       
+    // محاولة التشغيل
+    const playPromise = audio.play();
+
+    if (playPromise !== undefined) {
+        playPromise.catch(() => {
+            // إذا فشل، بنستنى شوي وبنحاول مرة ثانية
+            setTimeout(() => {
+                audio.play().catch(() => {
+                    // إذا لساته مش شغال، بنشغل اللفظ الآلي
+                    console.error(`تعذر تشغيل الملف: sounds/${cleanWord}.mp3`);
+                    const msg = new SpeechSynthesisUtterance(word);
+                    msg.lang = 'en-US';
+                    window.speechSynthesis.speak(msg);
+                });
+            }, 500); // زدنا الوقت لـ 500 ملي ثانية (نص ثانية) للتأكد
+        });            
     }
+  }
 
     function handleLiClick(index, el) {
         if (isReorderMode) {
@@ -378,4 +384,5 @@
 </body>
 
 </html>
+
 
