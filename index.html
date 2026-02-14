@@ -235,36 +235,28 @@
         }
     }
 
-  function playSound(word, event) {
+function playSound(word, event) {
     if (event) event.stopPropagation();
     
-    // تنظيف الكلمة وتحويلها لحروف صغيرة
     const cleanWord = word.trim().toLowerCase();
     
-    // إضافة رقم عشوائي في نهاية الرابط لكسر الكاش (Cache Buster)
-    // هاد بيجبر المتصفح يجيب أجدد نسخة من GitHub
-    const audioPath = `sounds/${cleanWord}.mp3?v=${Date.now()}`;
+    // استبدل USERNAME باسم حسابك و REPO_NAME باسم المستودع
+    // هاد الرابط بيجيب الملف "خام" مباشرة من سيرفرات GitHub بدون وسيط
+    const audioPath = `https://raw.githubusercontent.com/USERNAME/REPO_NAME/main/sounds/${cleanWord}.mp3`;
+    
     const audio = new Audio(audioPath);
 
-    // محاولة التشغيل
-    const playPromise = audio.play();
-
-    if (playPromise !== undefined) {
-        playPromise.catch(() => {
-            // إذا فشل، بنستنى شوي وبنحاول مرة ثانية
-            setTimeout(() => {
-                audio.play().catch(() => {
-                    // إذا لساته مش شغال، بنشغل اللفظ الآلي
-                    console.error(`تعذر تشغيل الملف: sounds/${cleanWord}.mp3`);
-                    const msg = new SpeechSynthesisUtterance(word);
-                    msg.lang = 'en-US';
-                    window.speechSynthesis.speak(msg);
-                });
-            }, 500); // زدنا الوقت لـ 500 ملي ثانية (نص ثانية) للتأكد
-        });            
-    }
-  }
-
+    audio.play().catch(() => {
+        // محاولة ثانية مع كسر الكاش
+        const retryAudio = new Audio(audioPath + '?v=' + Date.now());
+        retryAudio.play().catch(() => {
+            console.error("فشل المسار المباشر، تحويل للآلي");
+            const msg = new SpeechSynthesisUtterance(word);
+            msg.lang = 'en-US';
+            window.speechSynthesis.speak(msg);
+        });
+    });
+}
     function handleLiClick(index, el) {
         if (isReorderMode) {
             if (selectedIndices.includes(index)) {
@@ -384,5 +376,6 @@
 </body>
 
 </html>
+
 
 
