@@ -237,26 +237,24 @@
 
 function playSound(word, event) {
     if (event) event.stopPropagation();
-    
     const cleanWord = word.trim().toLowerCase();
-    // نستخدم الرابط النسبي المباشر
-    const audioPath = `sounds/${cleanWord}.mp3`;
-    const audio = new Audio(audioPath);
-
-    // محاولة تشغيل الملف
-    const playPromise = audio.play();
-
-    if (playPromise !== undefined) {
-        playPromise.then(() => {
-            // إذا اشتغل تمام، ما بنعمل إشي
-            console.log("تم تشغيل الملف بنجاح: " + cleanWord);
-        }).catch(error => {
-            // إذا فشل (مثلاً خطأ 404)، هون بنشغل اللفظ الآلي
-            console.error("لم يتم العثور على الملف، تحويل للآلي: " + cleanWord);
+    
+    // 1. جرب ملفاتك اللي رفعتها (sounds)
+    const localAudio = new Audio(`sounds/${cleanWord}.mp3`);
+    
+    localAudio.play().catch(() => {
+        // 2. إذا مش موجود، استخدم محرك جوجل الاحترافي (صوت بشري عالي الجودة)
+        // tl=en-us للكنة أمريكية، أو tl=en-gb للكنة بريطانية
+        const remoteAudio = new Audio(`https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(cleanWord)}&tl=en-us&client=tw-ob`);
+        
+        remoteAudio.play().catch(() => {
+            // 3. الحل الأخير (صوت الجهاز) لو النت مقطوع
             const msg = new SpeechSynthesisUtterance(word);
             msg.lang = 'en-US';
             window.speechSynthesis.speak(msg);
         });
+    });
+
     }
 }    function handleLiClick(index, el) {
         if (isReorderMode) {
@@ -377,6 +375,7 @@ function playSound(word, event) {
 </body>
 
 </html>
+
 
 
 
