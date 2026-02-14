@@ -239,25 +239,26 @@ function playSound(word, event) {
     if (event) event.stopPropagation();
     
     const cleanWord = word.trim().toLowerCase();
-    
-    // استبدل USERNAME باسم حسابك و REPO_NAME باسم المستودع
-    // هاد الرابط بيجيب الملف "خام" مباشرة من سيرفرات GitHub بدون وسيط
-    const audioPath = `https://raw.githubusercontent.com/USERNAME/REPO_NAME/main/sounds/${cleanWord}.mp3`;
-    
+    // نستخدم الرابط النسبي المباشر
+    const audioPath = `sounds/${cleanWord}.mp3`;
     const audio = new Audio(audioPath);
 
-    audio.play().catch(() => {
-        // محاولة ثانية مع كسر الكاش
-        const retryAudio = new Audio(audioPath + '?v=' + Date.now());
-        retryAudio.play().catch(() => {
-            console.error("فشل المسار المباشر، تحويل للآلي");
+    // محاولة تشغيل الملف
+    const playPromise = audio.play();
+
+    if (playPromise !== undefined) {
+        playPromise.then(() => {
+            // إذا اشتغل تمام، ما بنعمل إشي
+            console.log("تم تشغيل الملف بنجاح: " + cleanWord);
+        }).catch(error => {
+            // إذا فشل (مثلاً خطأ 404)، هون بنشغل اللفظ الآلي
+            console.error("لم يتم العثور على الملف، تحويل للآلي: " + cleanWord);
             const msg = new SpeechSynthesisUtterance(word);
             msg.lang = 'en-US';
             window.speechSynthesis.speak(msg);
         });
-    });
-}
-    function handleLiClick(index, el) {
+    }
+}    function handleLiClick(index, el) {
         if (isReorderMode) {
             if (selectedIndices.includes(index)) {
                 selectedIndices = selectedIndices.filter(i => i !== index);
@@ -376,6 +377,7 @@ function playSound(word, event) {
 </body>
 
 </html>
+
 
 
 
