@@ -235,13 +235,28 @@
         }
     }
 
-    function playSound(word, event) {
-        event.stopPropagation();
-        new Audio('sounds/' + word.toLowerCase() + '.mp3').play().catch(() => {
-            const msg = new SpeechSynthesisUtterance(word);
-            msg.lang = 'en-US';
-            window.speechSynthesis.speak(msg);
-        });
+   function playSound(word, event) {
+    if (event) event.stopPropagation();
+    
+    // مسار الملف على GitHub
+    const audioPath = 'sounds/' + word.toLowerCase() + '.mp3';
+    const audio = new Audio(audioPath);
+
+    // محاولة تشغيل الملف
+    audio.play().catch(() => {
+        // إذا فشل التشغيل فوراً، بنستنى شوي ونحاول مرة ثانية
+        // هاد بيعطي وقت للإنترنت إذا كان السيرفر بطيء
+        setTimeout(() => {
+            audio.play().catch(() => {
+                // إذا لساته مش شغال، هون بنشغل اللفظ الآلي كآخر حل
+                console.log("استخدام اللفظ الآلي كخيار أخير");
+                const msg = new SpeechSynthesisUtterance(word);
+                msg.lang = 'en-US';
+                window.speechSynthesis.speak(msg);
+            });
+        }, 300); // تأخير بسيط 300 ملي ثانية لحل مشكلة البطء
+    });
+       
     }
 
     function handleLiClick(index, el) {
@@ -363,3 +378,4 @@
 </body>
 
 </html>
+
