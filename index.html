@@ -120,6 +120,7 @@
         .tag-أداة { background: #c0392b; opacity: 0.85; }
         .tag-جمل { background: #16a085; opacity: 0.85; }
         .tag-عام { background: #7f8c8d; opacity: 0.85; }
+        .tag-ظرف { background: #007bff; opacity: 0.85; }
 
         .example-box { 
             font-size: 0.95em; color: #95a5a6; font-style: italic; border-top: 1px solid #f0f0f0; 
@@ -138,7 +139,7 @@
 
     <div class="stats-bar">
         <span id="totalCount">إجمالي الكلمات: 0</span>
-        <span id="starredCount">⭐ المفضلة: 0</span>
+        <span id="starredCount">⭐ الصعبة: 0</span>
     </div>
     
     <div class="input-group">
@@ -151,6 +152,7 @@
             <option value="اسم">اسم</option>
             <option value="صفة">صفة</option>
             <option value="أداة">أداة</option>
+            <option value="ظرف">ظروف</option>
             <option value="جمل">جمل شائعة</option>
             <option value="ظرف">ظروف</option>
         </select>
@@ -214,6 +216,13 @@
         saveAndRender();
     }
 
+    function setFilter(f) {
+        currentFilter = f;
+        document.getElementById('toolAll').classList.toggle('active-tool', f === 'all');
+        document.getElementById('toolStarred').classList.toggle('active-tool', f === 'starred');
+        render();
+    }
+
     function startEdit(id, event) {
         event.stopPropagation();
         let item = words.find(w => w.id === id);
@@ -236,47 +245,59 @@
         }
     }
 
-// دالة تشغيل الصوت (المطورة اللي بتحترم ملفاتك)
-function playSound(word, event) {
+  function playSound(word, event) {
     if (event) event.stopPropagation();
-    
     const cleanWord = word.trim().toLowerCase();
-    const audioPath = `sounds/${cleanWord}.mp3`;
-    const localAudio = new Audio(audioPath);
 
-    localAudio.play().then(() => {
-        console.log("شغال من ملفاتك");
-    }).catch(() => {
-        // إذا مش موجود بجيب من برا
-        const remoteAudio = new Audio(`https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(cleanWord)}&tl=en-us&client=tw-ob`);
-        remoteAudio.play().catch(() => {
-            const msg = new SpeechSynthesisUtterance(word);
-            window.speechSynthesis.speak(msg);
+    // 1. جرب تشغل ويبستر (الملف المرفوع)
+    const audio = new Audio(`sounds/${cleanWord}.mp3`);
+    
+    // محاولة التشغيل
+    const playPromise = audio.play();
+
+    if (playPromise !== undefined) {
+        playPromise.then(() => {
+            // اشتغل ويبستر بنجاح
+            console.log("Webster played");
+        }).catch(() => {
+            // 2. إذا فشل ويبستر (الكلمة مش عندك)، شغل محرك التلفون فوراً
+            console.log("Using Device TTS...");
+            
+            // إلغاء أي صوت معلق (ضروري جداً للأندرويد)
+            window.speechSynthesis.cancel();
+
+            const utterance = new SpeechSynthesisUtterance(word);
+            utterance.lang = 'en-US';
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+
+            // سر النجاح في الأندرويد: لازم نطلب قائمة الأصوات ونحرك المحرك
+            const voices = window.speechSynthesis.getVoices();
+            if (voices.length > 0) {
+                // بنحاول نلاقي صوت Google English
+                const englishVoice = voices.find(v => v.lang.includes('en') && v.name.includes('Google')) || voices[0];
+                utterance.voice = englishVoice;
+            }
+
+            window.speechSynthesis.speak(utterance);
         });
-    });
+    }
 }
 
-// دالة عرض الكلمات (تأكد إنها موجودة عشان ما تختفي الكلمات)
-function displayWords() {
-    const list = document.getElementById('wordsList'); // تأكد إن الـ ID صح
-    if (!list) return;
-    
-    const words = JSON.parse(localStorage.getItem('myWords')) || [];
-    list.innerHTML = ''; 
-    
-    words.forEach((item, index) => {
-        const li = document.createElement('li');
-        li.innerHTML = `
-            <span onclick="playSound('${item.word}')" style="cursor:pointer">🔊</span>
-            <strong>${item.word}</strong>: ${item.translation}
-        `;
-        list.appendChild(li);
-    });
-}
+// الكود السحري اللي "بيصحي" محرك الصوت في التلفون أول ما يفتح التطبيق
+window.onload = function() {
+    if ('speechSynthesis' in window) {
+        // نداء وهمي بس عشان يجهز المحرك في الخلفية
+        window.speechSynthesis.getVoices();
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+        }
+    }
+    // شغل دالة العرض تبعتك هون كمان
+    if (typeof displayWords === "function") displayWords();
+};
 
-// استدعاء الدالة عند تشغيل الصفحة
-window.onload = displayWords;
-}    function handleLiClick(index, el) {
+    function handleLiClick(index, el) {
         if (isReorderMode) {
             if (selectedIndices.includes(index)) {
                 selectedIndices = selectedIndices.filter(i => i !== index);
@@ -393,11 +414,7 @@ window.onload = displayWords;
     render();
 </script>
 </body>
-
 </html>
-
-
-
 
 
 
