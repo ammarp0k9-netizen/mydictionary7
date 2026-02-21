@@ -161,8 +161,8 @@
 
     <div class="toolbar">
         <button id="toolAll" class="btn-tool active-tool" onclick="setFilter('all')">الكل</button>
-        <button id="toolStarred" class="btn-tool" onclick="setFilter('starred')">⭐</button>
-        <button id="reorderBtn" class="btn-tool" onclick="toggleReorderMode()">🔄</button>
+       <button id="toolStarred" class="btn-tool" onclick="setFilter('starred')" title="الكلمات الصعبة">⭐</button>
+        <button id="reorderBtn" class="btn-tool" onclick="toggleReorderMode()" title="ترتيب يدوي">🔄</button>
     </div>
 
     <input type="text" id="searchInput" placeholder="🔎 ابحث عن كلمة، معنى أو جملة..." onkeyup="render()">
@@ -371,7 +371,7 @@ window.onload = function() {
             html += `
                 <li ${dragAttrs} class="${reorderClass} ${selectedClass}" onclick="handleLiClick(${index}, this)">
                     <div class="top-row">
-                        <button class="star-btn ${w.starred ? 'active' : ''}" onclick="toggleStar(${w.id}, event)">★</button>
+                        <button class="star-btn ${w.starred ? 'active' : ''}" onclick="toggleStar(${w.id}, event)" title="إضافة للصعبة">★</button>
                         <div class="word-box">
                             <div class="word-text">${w.word} <span class="cat-tag tag-${w.category}">${w.category}</span></div>
                             <div class="meaning-text">${w.meaning}</div>
@@ -415,6 +415,7 @@ window.onload = function() {
 </script>
 </body>
 </html>
+
 
 
 
