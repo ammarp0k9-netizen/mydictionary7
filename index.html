@@ -316,7 +316,7 @@ window.onload = function() {
         selectedIndices = [];
         const btn = document.getElementById('reorderBtn');
         btn.classList.toggle('active-tool', isReorderMode);
-        btn.innerText = isReorderMode ? "✅ حفظ الترتيب" : "🔄 ترتيب يدوي";
+        btn.innerText = isReorderMode ? "✅ " : "🔄 ترتيب يدوي";
         if (!isReorderMode) {
             localStorage.setItem('myContextDict', JSON.stringify(words));
         }
@@ -415,6 +415,7 @@ window.onload = function() {
 </script>
 </body>
 </html>
+
 
 
 
