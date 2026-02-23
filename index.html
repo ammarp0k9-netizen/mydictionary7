@@ -132,45 +132,63 @@
         .backup-zone { margin-top: 25px; border-top: 2px dashed #eee; padding-top: 15px; display: flex; gap: 10px; }
         .btn-backup { flex: 1; padding: 10px; font-size: 12px; background: #95a5a6; color: white; border-radius: 10px; border: none; cursor: pointer; }
         
-        /* -------- ستايلات الكويز الجديدة -------- */
-        .quiz-overlay { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.9); display: none; flex-direction: column; 
-            align-items: center; justify-content: center; z-index: 1000; 
-        }
-        .card-container { width: 320px; height: 420px; perspective: 1000px; }
-        .card { 
-            width: 100%; height: 100%; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); 
-            transform-style: preserve-3d; cursor: pointer; position: relative; 
-        }
-        .card.is-flipped { transform: rotateY(180deg); }
-        .card-face { 
-            position: absolute; width: 100%; height: 100%; backface-visibility: hidden; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            border-radius: 20px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); 
-            background: white; text-align: center; 
-        }
-        .card-back { transform: rotateY(180deg); background: #fdfdfd; }
-        
-        .quiz-word { font-size: 32px; font-weight: bold; color: #2c3e50; margin-bottom: 20px; }
-        .quiz-meaning { font-size: 28px; font-weight: bold; color: #27ae60; }
-        .quiz-example { font-size: 18px; color: #7f8c8d; font-style: italic; margin-top: 20px; direction: ltr; }
-        
-        .hint-btn { 
-            background: #f1c40f; color: #2c3e50; border: none; padding: 8px 15px; 
-            border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 20px; z-index: 10;
-        }
-        .hint-text { 
-            opacity: 0; transition: opacity 0.3s; margin-top: 15px; font-size: 16px; 
-            color: #95a5a6; direction: ltr; font-style: italic;
-        }
-        .hint-text.show { opacity: 1; }
-        
-        .quiz-controls { display: flex; gap: 10px; margin-top: 20px; }
-        .quiz-btn { padding: 12px 25px; border-radius: 12px; border: none; font-weight: bold; font-size: 16px; cursor: pointer; }
-        .btn-next { background: #27ae60; color: white; }
-        .btn-close { background: transparent; color: white; text-decoration: underline; margin-top: 10px; }
-        /* -------------------------------------- */
+      /* -------- ستايلات الكويز الجديدة -------- */
+.quiz-overlay { 
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+    background: rgba(30, 40, 50, 0.85); /* لون ألطف للعين */
+    backdrop-filter: blur(5px); /* تأثير غباش حلو للخلفية */
+    display: none; flex-direction: column; 
+    align-items: center; justify-content: center; z-index: 1000; 
+    opacity: 0; transition: opacity 0.3s ease-in-out; /* ظهور ناعم */
+}
+.quiz-overlay.show { opacity: 1; } /* كلاس عشان حركة الظهور */
+
+.card-container { width: 320px; height: 420px; perspective: 1000px; }
+.card { 
+    width: 100%; height: 100%; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); 
+    transform-style: preserve-3d; cursor: pointer; position: relative; 
+}
+.card.is-flipped { transform: rotateY(180deg); }
+.card-face { 
+    position: absolute; width: 100%; height: 100%; backface-visibility: hidden; 
+    display: flex; flex-direction: column; align-items: center; justify-content: center; 
+    border-radius: 20px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); 
+    background: white; text-align: center; 
+}
+.card-back { transform: rotateY(180deg); background: #fdfdfd; }
+
+.quiz-word { font-size: 32px; font-weight: bold; color: #2c3e50; margin-bottom: 20px; }
+.quiz-meaning { font-size: 28px; font-weight: bold; color: #27ae60; }
+.quiz-example { font-size: 18px; color: #7f8c8d; font-style: italic; margin-top: 20px; direction: ltr; }
+
+.hint-btn { 
+    background: #f1c40f; color: #2c3e50; border: none; padding: 8px 15px; 
+    border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 20px; z-index: 10;
+}
+.hint-text { 
+    opacity: 0; transition: opacity 0.3s; margin-top: 15px; font-size: 16px; 
+    color: #95a5a6; direction: ltr; font-style: italic;
+}
+.hint-text.show { opacity: 1; }
+
+.quiz-controls { 
+    display: flex; gap: 15px; margin-top: 25px; 
+    width: 320px; justify-content: space-between; 
+}
+.quiz-btn { 
+    flex: 1; padding: 12px; border-radius: 12px; border: none; 
+    font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.2s; 
+}
+.btn-remember { background: #27ae60; color: white; }
+.btn-forget { background: #e74c3c; color: white; }
+.btn-remember:hover { background: #219150; }
+.btn-forget:hover { background: #c0392b; }
+
+.btn-close { 
+    background: transparent; color: white; text-decoration: underline; 
+    margin-top: 15px; cursor: pointer; border: none; font-size: 15px; 
+}
+/* -------------------------------------- */
     </style>
 </head>
 <body>
@@ -220,6 +238,10 @@
     <div class="card-container">
         <div class="card" id="mainCard" onclick="flipCard()">
             <div class="card-face card-front">
+                <div class="quiz-controls">
+        <button class="quiz-btn btn-forget" onclick="markForgot()">نسيتها ❌</button>
+        <button class="quiz-btn btn-remember" onclick="markRemember()">تذكرتها ✅</button>
+                    
                 <div class="quiz-word" id="cardFrontText">الكلمة</div>
                 <button class="hint-btn" onclick="showHint(event)">اعرض المثال 💡</button>
                 <div class="hint-text" id="quizHintText">المثال هنا</div>
@@ -244,11 +266,7 @@
     let selectedIndices = [];
 
     // -------- كود الاختبار (Flashcards) --------
-    let currentQuizWords = [];
-    let quizIndex = 0;
-
-    function startQuiz() {
-        // إذا كان الفلتر على "الصعبة"، اختبر الكلمات الصعبة فقط، وإلا اختبر الكل
+   function startQuiz() {
         let wordsToTest = currentFilter === 'starred' ? words.filter(w => w.starred) : words;
         
         if(wordsToTest.length === 0) {
@@ -256,10 +274,46 @@
             return;
         }
 
-        currentQuizWords = [...wordsToTest].sort(() => Math.random() - 0.5); // خلط الكلمات عشوائياً
+        currentQuizWords = [...wordsToTest].sort(() => Math.random() - 0.5); 
         quizIndex = 0;
-        document.getElementById('quizOverlay').style.display = 'flex';
+        
+        const overlay = document.getElementById('quizOverlay');
+        overlay.style.display = 'flex';
+        // حركة الظهور الناعم (Fade-in)
+        setTimeout(() => overlay.classList.add('show'), 10); 
+        
         updateCard();
+    }
+
+    // دالة إذا تذكرت الكلمة (بينتقل للي بعدها طبيعي)
+    function markRemember() {
+        if (quizIndex < currentQuizWords.length - 1) {
+            quizIndex++;
+            updateCard();
+        } else {
+            alert("أبدعت! أنهيت كل الكلمات 👏");
+            closeQuiz();
+        }
+    }
+
+    // دالة إذا نسيت الكلمة (بيأجلها لتطلعلك كمان شوي)
+    function markForgot() {
+        const currentWord = currentQuizWords[quizIndex];
+        
+        // بندفع الكلمة بعد 3 بطاقات (عشان ترجع تمتحن فيها)
+        // وإذا ضايل أقل من 3 بطاقات، بتنحط بآخر الكويز
+        const insertIndex = Math.min(quizIndex + 4, currentQuizWords.length);
+        currentQuizWords.splice(insertIndex, 0, currentWord);
+        
+        quizIndex++;
+        updateCard();
+    }
+
+    function closeQuiz() {
+        const overlay = document.getElementById('quizOverlay');
+        overlay.classList.remove('show');
+        // بنستنى حركة الاختفاء تخلص (0.3 ثانية) بعدين بنخفيه تماماً
+        setTimeout(() => overlay.style.display = 'none', 300); 
     }
 
     function updateCard() {
@@ -534,3 +588,4 @@
 </script>
 </body>
 </html>
+
