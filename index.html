@@ -8,123 +8,117 @@
         :root { --primary: #3498db; --star-color: #f1c40f; --bg: #f4f7f6; --card-bg: #ffffff; --text-main: #2c3e50; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); padding: 15px; color: var(--text-main); }
         .container { max-width: 480px; margin: auto; background: var(--card-bg); padding: 25px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: #2c3e50; font-size: 2.2rem; margin-top: 0; margin-bottom: 20px; }
-        .stats-bar { display: flex; justify-content: space-around; background: #f9f9f9; padding: 10px; border-radius: 12px; margin-bottom: 15px; font-size: 13px; font-weight: bold; color: #7f8c8d; border: 1px solid #eee; }
+        h2 { text-align: center; color: #2c3e50; font-size: 2.2rem; margin-bottom: 20px; }
+        .stats-bar { display: flex; justify-content: space-around; background: #f9f9f9; padding: 10px; border-radius: 12px; margin-bottom: 15px; font-weight: bold; color: #7f8c8d; border: 1px solid #eee; }
         .input-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
-        input, select, textarea { padding: 12px; border: 2px solid #eee; border-radius: 12px; outline: none; text-align: center; font-size: 15px; font-family: inherit; }
-        input:focus, textarea:focus { border-color: var(--primary); }
-        .btn-main { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 12px; font-weight: bold; cursor: pointer; }
+        input, select, textarea { padding: 12px; border: 2px solid #eee; border-radius: 12px; text-align: center; }
+        .btn-main { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 12px; cursor: pointer; }
         .toolbar { display: flex; gap: 8px; margin-bottom: 15px; }
-        .btn-tool { flex: 1; padding: 10px; border-radius: 20px; border: 1px solid #ddd; background: #fff; cursor: pointer; font-weight: 600; }
-        .active-tool { background: var(--primary); color: white; border-color: var(--primary); }
-        #searchInput { width: 100%; box-sizing: border-box; background: #fff9db; border: 2px solid #f1c40f; margin-bottom: 15px; }
+        .btn-tool { flex: 1; padding: 10px; border-radius: 20px; border: 1px solid #ddd; background: #fff; cursor: pointer; }
+        .active-tool { background: var(--primary); color: white; }
+        #searchInput { width: 100%; background: #fff9db; border: 2px solid #f1c40f; margin-bottom: 15px; }
         ul { list-style: none; padding: 0; }
-        li { background: #fff; margin-bottom: 10px; padding: 16px; border-radius: 15px; border-right: 6px solid var(--primary); box-shadow: 0 3px 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 8px; cursor: pointer; transition: 0.3s; position: relative; }
-        .cat-tag { font-size: 11px; padding: 3px 10px; border-radius: 8px; font-weight: bold; margin-right: 8px; color: white; }
-        .tag-فعل { background: #e67e22; } .tag-اسم { background: #8e44ad; } .tag-صفة { background: #27ae60; } .tag-أداة { background: #c0392b; } .tag-ظرف { background: #007bff; }
-        .example-box { font-size: 0.95em; color: #95a5a6; font-style: italic; border-top: 1px solid #f0f0f0; margin-top: 8px; padding-top: 8px; display: none; text-align: left; direction: ltr; }
+        li { background: #fff; margin-bottom: 10px; padding: 16px; border-radius: 15px; border-right: 6px solid var(--primary); box-shadow: 0 3px 10px rgba(0,0,0,0.05); cursor: pointer; }
+        .cat-tag { font-size: 11px; padding: 3px 10px; border-radius: 8px; color: white; }
+        .example-box { font-size: 0.95em; color: #95a5a6; font-style: italic; border-top: 1px solid #f0f0f0; margin-top: 8px; padding-top: 8px; display: none; }
         .show-example .example-box { display: block; }
-        /* Flashcard Styles */
-        .quiz-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
+        
+        /* Flashcards CSS */
+        .quiz-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); display:none; flex-direction:column; align-items:center; justify-content:center; z-index:9999; }
         .card-container { width: 300px; height: 400px; perspective: 1000px; }
         .card { width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; cursor: pointer; position: relative; }
         .card.is-flipped { transform: rotateY(180deg); }
-        .card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 15px; padding: 20px; background: white; font-size: 22px; text-align: center; }
-        .card-back { transform: rotateY(180deg); background: #f8f9fa; }
+        .card-face { position: absolute; width:100%; height:100%; backface-visibility:hidden; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:15px; background:white; padding:20px; text-align:center; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+        .card-back { transform: rotateY(180deg); background: #fdfdfd; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2 id="mainTitle">القاموس</h2>
-    <div class="stats-bar">
-        <span id="totalCount">إجمالي الكلمات: 0</span>
-        <span id="starredCount">⭐ الصعبة: 0</span>
-    </div>
+    <h2>القاموس</h2>
+    <div class="stats-bar"><span id="totalCount"></span><span id="starredCount"></span></div>
     <div class="input-group">
-        <input type="text" id="wordInput" placeholder="الكلمة بالإنجليزي">
-        <input type="text" id="meaningInput" placeholder="المعنى بالعربي">
-        <textarea id="exampleInput" placeholder="جملة مثال" rows="2"></textarea>
+        <input type="text" id="wordInput" placeholder="الكلمة">
+        <input type="text" id="meaningInput" placeholder="المعنى">
+        <textarea id="exampleInput" placeholder="مثال"></textarea>
         <select id="categoryInput">
             <option value="عام">عام</option><option value="فعل">فعل</option><option value="اسم">اسم</option>
-            <option value="صفة">صفة</option><option value="أداة">أداة</option><option value="ظرف">ظرف</option>
+            <option value="ظرف">ظرف</option>
         </select>
-        <button class="btn-main" id="addBtn" onclick="addWord()">إضافة للقاموس</button>
+        <button class="btn-main" id="addBtn" onclick="addWord()">إضافة</button>
     </div>
     <div class="toolbar">
-        <button id="toolAll" class="btn-tool active-tool" onclick="setFilter('all')">الكل</button>
-        <button id="toolStarred" class="btn-tool" onclick="setFilter('starred')">⭐</button>
-        <button id="reorderBtn" class="btn-tool" onclick="toggleReorderMode()">🔄</button>
+        <button class="btn-tool" onclick="setFilter('all')">الكل</button>
+        <button class="btn-tool" onclick="setFilter('starred')">⭐</button>
         <button class="btn-tool" onclick="startQuiz()">🎓 اختبار</button>
     </div>
-    <input type="text" id="searchInput" placeholder="🔎 ابحث عن كلمة..." onkeyup="render()">
+    <input type="text" id="searchInput" placeholder="بحث..." onkeyup="render()">
     <ul id="list"></ul>
 </div>
 
 <div id="quizOverlay" class="quiz-overlay">
     <div class="card-container">
         <div class="card" id="mainCard" onclick="this.classList.toggle('is-flipped')">
-            <div class="card-face card-front" id="cardFront">الكلمة</div>
-            <div class="card-face card-back" id="cardBack">المعنى</div>
+            <div class="card-face" id="cardFront"></div>
+            <div class="card-face card-back" id="cardBack"></div>
         </div>
     </div>
-    <button onclick="nextCard()" style="margin-top:20px; padding:10px 20px;">التالي ✅</button>
-    <button onclick="closeQuiz()" style="margin-top:10px; color:white; background:none; border:none;">إغلاق</button>
+    <button onclick="nextCard()" style="margin-top:20px; padding:10px 30px;">التالي ✅</button>
+    <button onclick="closeQuiz()" style="margin-top:10px; background:none; border:none; color:white;">إغلاق</button>
 </div>
 
 <script>
     let words = JSON.parse(localStorage.getItem('myContextDict')) || [];
     let currentFilter = 'all';
-    let editId = null;
-    let isReorderMode = false;
-    let selectedIndices = [];
 
-    // --- كود الـ Quiz ---
+    // Flashcard Logic
     let currentQuizWords = [];
     let quizIndex = 0;
     function startQuiz() {
         currentQuizWords = [...words].sort(() => Math.random() - 0.5);
+        if(currentQuizWords.length === 0) return alert("لا توجد كلمات!");
         quizIndex = 0;
         document.getElementById('quizOverlay').style.display = 'flex';
         updateCard();
     }
     function updateCard() {
-        const wordObj = currentQuizWords[quizIndex];
-        document.getElementById('cardFront').innerText = wordObj.word;
-        document.getElementById('cardBack').innerText = wordObj.meaning + "\n\n" + (wordObj.example || "لا يوجد مثال");
+        const w = currentQuizWords[quizIndex];
+        document.getElementById('cardFront').innerText = w.word;
+        document.getElementById('cardBack').innerText = w.meaning + "\n\n" + (w.example || "");
         document.getElementById('mainCard').classList.remove('is-flipped');
     }
     function nextCard() {
         if (quizIndex < currentQuizWords.length - 1) { quizIndex++; updateCard(); }
-        else { alert("انتهى الاختبار!"); closeQuiz(); }
+        else { alert("انتهى!"); closeQuiz(); }
     }
     function closeQuiz() { document.getElementById('quizOverlay').style.display = 'none'; }
 
-    // --- كود القاموس الأصلي ---
-    function addWord() { /* نفس كودك الأصلي */ }
-    function render() { /* نفس كودك الأصلي مع تحديث الـ list */ 
-        updateStats();
+    // Original Dictionary Logic
+    function addWord() {
+        let w = document.getElementById('wordInput').value.trim();
+        let m = document.getElementById('meaningInput').value.trim();
+        if(!w || !m) return;
+        words.unshift({ id: Date.now(), word: w, meaning: m, example: document.getElementById('exampleInput').value, category: document.getElementById('categoryInput').value, starred: false });
+        saveAndRender();
+    }
+    function render() {
         let query = document.getElementById('searchInput').value.toLowerCase();
         let html = '';
-        let filtered = words.filter(w => (w.word.toLowerCase().includes(query) || w.meaning.includes(query)) && (currentFilter === 'all' || w.starred));
-        filtered.forEach((w, index) => {
+        words.filter(w => (w.word.toLowerCase().includes(query)) && (currentFilter === 'all' || w.starred)).forEach((w, i) => {
             html += `<li onclick="this.classList.toggle('show-example')">
-                <div style="display:flex; justify-content:space-between;">
-                    <b>${w.word}</b> <button onclick="toggleStar(${w.id}, event)">★</button>
-                </div>
+                <div style="display:flex; justify-content:space-between;"><b>${w.word}</b> <button onclick="toggleStar(${w.id}, event)">★</button></div>
                 <div>${w.meaning}</div>
-                ${w.example ? `<div class="example-box">Ex: ${w.example}</div>` : ''}
+                <div class="example-box">Ex: ${w.example}</div>
             </li>`;
         });
         document.getElementById('list').innerHTML = html;
+        document.getElementById('totalCount').innerText = "الكل: " + words.length;
     }
-    function updateStats() { /* نفس كودك */ }
     function toggleStar(id, event) { event.stopPropagation(); words = words.map(w => w.id === id ? {...w, starred: !w.starred} : w); saveAndRender(); }
-    function saveAndRender() { localStorage.setItem('myContextDict', JSON.stringify(words)); render(); }
     function setFilter(f) { currentFilter = f; render(); }
-    function toggleReorderMode() { isReorderMode = !isReorderMode; render(); }
+    function saveAndRender() { localStorage.setItem('myContextDict', JSON.stringify(words)); render(); }
     
-    window.onload = render;
+    render();
 </script>
 </body>
 </html>
