@@ -156,7 +156,16 @@
     </style>
 </head>
 <body>
-
+    <div id="quizOverlay" class="quiz-overlay">
+    <div class="card-container">
+        <div class="card" id="mainCard" onclick="this.classList.toggle('is-flipped')">
+            <div class="card-face card-front" id="cardFront">الكلمة هنا</div>
+            <div class="card-face card-back" id="cardBack">المعنى هنا</div>
+        </div>
+    </div>
+    <button onclick="nextCard()" style="margin-top:20px; padding:10px 20px;">التالي ✅</button>
+    <button onclick="closeQuiz()" style="margin-top:10px;">إغلاق الاختبار</button>
+</div>
 <div class="container">
     <h2 id="mainTitle">القاموس</h2>
 
@@ -433,18 +442,7 @@ window.onload = function() {
         };
         reader.readAsText(event.target.files[0]);
     }
-
-    render();
-    <div id="quizOverlay" class="quiz-overlay">
-    <div class="card-container">
-        <div class="card" id="mainCard" onclick="this.classList.toggle('is-flipped')">
-            <div class="card-face card-front" id="cardFront">الكلمة هنا</div>
-            <div class="card-face card-back" id="cardBack">المعنى هنا</div>
-        </div>
-    </div>
-    <button onclick="nextCard()" style="margin-top:20px; padding:10px 20px;">التالي ✅</button>
-    <button onclick="closeQuiz()" style="margin-top:10px;">إغلاق الاختبار</button>
-        let currentQuizWords = [];
+let currentQuizWords = [];
 let quizIndex = 0;
 
 function startQuiz() {
@@ -475,10 +473,13 @@ function nextCard() {
 function closeQuiz() {
     document.getElementById('quizOverlay').style.display = 'none';
 }
+    render();
+    
 </div>
 </script>
 </body>
 </html>
+
 
 
 
