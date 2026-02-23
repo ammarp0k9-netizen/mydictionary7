@@ -131,6 +131,28 @@
 
         .backup-zone { margin-top: 25px; border-top: 2px dashed #eee; padding-top: 15px; display: flex; gap: 10px; }
         .btn-backup { flex: 1; padding: 10px; font-size: 12px; background: #95a5a6; color: white; border-radius: 10px; border: none; cursor: pointer; }
+        /* تصميم النافذة التي تغطي الشاشة */
+.quiz-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.9); display: none; flex-direction: column;
+    align-items: center; justify-content: center; z-index: 1000;
+}
+
+/* تصميم البطاقة ثلاثية الأبعاد */
+.card-container { width: 300px; height: 400px; perspective: 1000px; }
+.card {
+    width: 100%; height: 100%; transition: transform 0.6s;
+    transform-style: preserve-3d; cursor: pointer; position: relative;
+}
+.card.is-flipped { transform: rotateY(180deg); }
+
+.card-face {
+    position: absolute; width: 100%; height: 100%; backface-visibility: hidden;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    border-radius: 15px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    background: white; font-size: 24px; text-align: center;
+}
+.card-back { transform: rotateY(180deg); background: #f8f9fa; }
     </style>
 </head>
 <body>
@@ -413,9 +435,51 @@ window.onload = function() {
     }
 
     render();
+    <div id="quizOverlay" class="quiz-overlay">
+    <div class="card-container">
+        <div class="card" id="mainCard" onclick="this.classList.toggle('is-flipped')">
+            <div class="card-face card-front" id="cardFront">الكلمة هنا</div>
+            <div class="card-face card-back" id="cardBack">المعنى هنا</div>
+        </div>
+    </div>
+    <button onclick="nextCard()" style="margin-top:20px; padding:10px 20px;">التالي ✅</button>
+    <button onclick="closeQuiz()" style="margin-top:10px;">إغلاق الاختبار</button>
+        let currentQuizWords = [];
+let quizIndex = 0;
+
+function startQuiz() {
+    // نأخذ نسخة من الكلمات ونخلطها
+    currentQuizWords = [...words].sort(() => Math.random() - 0.5);
+    quizIndex = 0;
+    document.getElementById('quizOverlay').style.display = 'flex';
+    updateCard();
+}
+
+function updateCard() {
+    const wordObj = currentQuizWords[quizIndex];
+    document.getElementById('cardFront').innerText = wordObj.word;
+    document.getElementById('cardBack').innerText = wordObj.meaning + "\n\n" + wordObj.example;
+    document.getElementById('mainCard').classList.remove('is-flipped');
+}
+
+function nextCard() {
+    if (quizIndex < currentQuizWords.length - 1) {
+        quizIndex++;
+        updateCard();
+    } else {
+        alert("انتهى الاختبار!");
+        closeQuiz();
+    }
+}
+
+function closeQuiz() {
+    document.getElementById('quizOverlay').style.display = 'none';
+}
+</div>
 </script>
 </body>
 </html>
+
 
 
 
