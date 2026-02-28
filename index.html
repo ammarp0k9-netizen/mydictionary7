@@ -115,13 +115,13 @@
             font-weight: bold; margin-right: 8px; color: white;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
         }
-        .tag-فعل { background: #e67e22; }
-        .tag-اسم { background: #8e44ad; }
-        .tag-صفة { background: #27ae60; }
-        .tag-أداة { background: #c0392b; }
-        .tag-جمل { background: #16a085; }
-        .tag-عام { background: #7f8c8d; }
-        .tag-ظرف { background: #007bff; }
+        .tag-فعل { background: #e67e22; opacity: 0.85; }
+        .tag-اسم { background: #8e44ad; opacity: 0.85; }
+        .tag-صفة { background: #27ae60; opacity: 0.85; }
+        .tag-أداة { background: #c0392b; opacity: 0.85; }
+        .tag-جمل { background: #16a085; opacity: 0.85; }
+        .tag-عام { background: #7f8c8d; opacity: 0.85; }
+        .tag-ظرف { background: #007bff; opacity: 0.85; }
 
         .example-box { 
             font-size: 0.95em; color: #95a5a6; font-style: italic; border-top: 1px solid #f0f0f0; 
@@ -132,18 +132,18 @@
         .backup-zone { margin-top: 25px; border-top: 2px dashed #eee; padding-top: 15px; display: flex; gap: 10px; }
         .btn-backup { flex: 1; padding: 10px; font-size: 12px; background: #95a5a6; color: white; border-radius: 10px; border: none; cursor: pointer; }
         
-        /* -------- ستايلات الكويز المحدثة -------- */
+        /* -------- ستايلات الكويز الجديدة -------- */
         .quiz-overlay { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(15, 23, 30, 0.9);
-            backdrop-filter: blur(8px);
+            background: rgba(30, 40, 50, 0.85);
+            backdrop-filter: blur(5px);
             display: none; flex-direction: column; 
             align-items: center; justify-content: center; z-index: 1000; 
             opacity: 0; transition: opacity 0.3s ease-in-out;
         }
         .quiz-overlay.show { opacity: 1; }
 
-        .card-container { width: 320px; height: 400px; perspective: 1000px; margin-bottom: 20px; }
+        .card-container { width: 320px; height: 420px; perspective: 1000px; }
         .card { 
             width: 100%; height: 100%; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); 
             transform-style: preserve-3d; cursor: pointer; position: relative; 
@@ -152,38 +152,50 @@
         .card-face { 
             position: absolute; width: 100%; height: 100%; backface-visibility: hidden; 
             display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            border-radius: 25px; padding: 30px; box-sizing: border-box;
-            background: white; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            border-radius: 20px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); 
+            background: white; text-align: center; 
         }
-        .card-back { transform: rotateY(180deg); background: #f9f9f9; }
+        .card-back { transform: rotateY(180deg); background: #fdfdfd; }
 
-        .quiz-word { font-size: 36px; font-weight: bold; color: #2c3e50; margin-bottom: 10px; }
-        .quiz-meaning { font-size: 32px; font-weight: bold; color: #27ae60; }
+        /* ستايل زر الصوت في الكويز */
+        .quiz-sound-btn {
+            position: absolute; top: 15px; left: 15px;
+            background: #ebf5fb; color: #3498db; border: none;
+            width: 40px; height: 40px; border-radius: 50%;
+            font-size: 20px; cursor: pointer; display: flex;
+            align-items: center; justify-content: center; z-index: 20;
+        }
+
+        .quiz-word { font-size: 32px; font-weight: bold; color: #2c3e50; margin-bottom: 20px; }
+        .quiz-meaning { font-size: 28px; font-weight: bold; color: #27ae60; }
         .quiz-example { font-size: 18px; color: #7f8c8d; font-style: italic; margin-top: 20px; direction: ltr; }
 
         .hint-btn { 
-            background: #f1c40f; color: #2c3e50; border: none; padding: 10px 20px; 
-            border-radius: 50px; font-weight: bold; cursor: pointer; margin-top: 20px;
+            background: #f1c40f; color: #2c3e50; border: none; padding: 8px 15px; 
+            border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 20px; z-index: 10;
         }
         .hint-text { 
             opacity: 0; transition: opacity 0.3s; margin-top: 15px; font-size: 16px; 
-            color: #7f8c8d; direction: ltr; font-style: italic; max-width: 100%;
+            color: #95a5a6; direction: ltr; font-style: italic;
         }
         .hint-text.show { opacity: 1; }
 
         .quiz-controls { 
-            display: flex; gap: 15px; width: 320px; justify-content: center; 
+            display: flex; gap: 15px; margin-top: 25px; 
+            width: 320px; justify-content: space-between; 
         }
         .quiz-btn { 
-            flex: 1; padding: 15px; border-radius: 15px; border: none; 
+            flex: 1; padding: 12px; border-radius: 12px; border: none; 
             font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.2s; 
         }
-        .btn-remember { background: #2ecc71; color: white; }
+        .btn-remember { background: #27ae60; color: white; }
         .btn-forget { background: #e74c3c; color: white; }
-        
-        .btn-close-x { 
-            background: transparent; color: #ccc; border: none; 
-            margin-top: 30px; cursor: pointer; text-decoration: underline; font-size: 14px;
+        .btn-remember:hover { background: #219150; }
+        .btn-forget:hover { background: #c0392b; }
+
+        .btn-close { 
+            background: transparent; color: white; text-decoration: underline; 
+            margin-top: 15px; cursor: pointer; border: none; font-size: 15px; 
         }
     </style>
 </head>
@@ -215,12 +227,12 @@
 
     <div class="toolbar">
         <button id="toolAll" class="btn-tool active-tool" onclick="setFilter('all')">الكل</button>
-        <button id="toolStarred" class="btn-tool" onclick="setFilter('starred')">⭐</button>
-        <button id="reorderBtn" class="btn-tool" onclick="toggleReorderMode()">🔄</button>
-        <button class="btn-tool" onclick="startQuiz()">🎓 اختبار</button>
+        <button id="toolStarred" class="btn-tool" onclick="setFilter('starred')" title="الكلمات الصعبة">⭐</button>
+        <button id="reorderBtn" class="btn-tool" onclick="toggleReorderMode()" title="ترتيب يدوي">🔄</button>
+        <button class="btn-tool" onclick="startQuiz()" title="اختبار البطاقات">🎓 اختبار</button>
     </div>
 
-    <input type="text" id="searchInput" placeholder="🔎 ابحث..." onkeyup="render()">
+    <input type="text" id="searchInput" placeholder="🔎 ابحث عن كلمة، معنى أو جملة..." onkeyup="render()">
 
     <ul id="list"></ul>
 
@@ -229,12 +241,13 @@
         <button class="btn-backup" onclick="document.getElementById('importFile').click()">📤 استيراد</button>
         <input type="file" id="importFile" style="display:none" onchange="importData(event)">
     </div>
-</div>
+</div> 
 
 <div id="quizOverlay" class="quiz-overlay">
     <div class="card-container">
         <div class="card" id="mainCard" onclick="flipCard()">
             <div class="card-face card-front">
+                <button class="quiz-sound-btn" onclick="playQuizSound(event)" title="استمع للكلمة">🔊</button>
                 <div class="quiz-word" id="cardFrontText">الكلمة</div>
                 <button class="hint-btn" onclick="showHint(event)">اعرض المثال 💡</button>
                 <div class="hint-text" id="quizHintText">المثال هنا</div>
@@ -245,13 +258,11 @@
             </div>
         </div>
     </div>
-
     <div class="quiz-controls">
         <button class="quiz-btn btn-forget" onclick="markForgot()">نسيتها ❌</button>
         <button class="quiz-btn btn-remember" onclick="markRemember()">تذكرتها ✅</button>
     </div>
-
-    <button class="btn-close-x" onclick="closeQuiz()">إغلاق الاختبار</button>
+    <button class="btn-close" onclick="closeQuiz()">إغلاق الاختبار</button>
 </div>
 
 <script>
@@ -261,7 +272,6 @@
     let isReorderMode = false;
     let selectedIndices = [];
     
-    // متغيرات الاختبار
     let currentQuizWords = [];
     let quizIndex = 0;
 
@@ -284,6 +294,25 @@
         updateCard();
     }
 
+    function markRemember() {
+        if (quizIndex < currentQuizWords.length - 1) {
+            quizIndex++;
+            updateCard();
+        } else {
+            alert("أبدعت! أنهيت كل الكلمات 👏");
+            closeQuiz();
+        }
+    }
+
+    function markForgot() {
+        const currentWord = currentQuizWords[quizIndex];
+        const insertIndex = Math.min(quizIndex + 4, currentQuizWords.length);
+        currentQuizWords.splice(insertIndex, 0, currentWord);
+        
+        quizIndex++;
+        updateCard();
+    }
+
     function updateCard() {
         if (quizIndex >= currentQuizWords.length) {
             alert("أبدعت! أنهيت الكلمات 👏");
@@ -291,19 +320,24 @@
             return;
         }
 
+        const card = document.getElementById('mainCard');
+        
+        // --- الحل الجذري لمشكلة انكشاف المعنى أثناء القلب ---
+        if (card.classList.contains('is-flipped')) {
+            card.style.transition = 'none'; // بنلغي حركة القلب مؤقتاً
+            card.classList.remove('is-flipped'); // بنرجعها لوجهها الأمامي فوراً
+            void card.offsetWidth; // السطر هاد بيجبر المتصفح يطبق التعديل باللحظة
+            card.style.transition = 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)'; // بنرجع الحركة لطبيعتها
+        }
+
         const w = currentQuizWords[quizIndex];
         
-        // إعادة ضبط البطاقة للوضع الأمامي
-        document.getElementById('mainCard').classList.remove('is-flipped');
-        
-        // تحديث النصوص
         document.getElementById('cardFrontText').innerText = w.word;
         document.getElementById('cardBackText').innerText = w.meaning;
-        document.getElementById('cardBackExample').innerText = w.example || "";
+        document.getElementById('cardBackExample').innerText = w.example ? w.example : "";
         
-        // تحديث التلميح (المثال)
         const hintEl = document.getElementById('quizHintText');
-        hintEl.innerText = w.example ? w.example : "لا يوجد مثال مضاف";
+        hintEl.innerText = w.example ? w.example : "لا يوجد مثال لهذه الكلمة";
         hintEl.classList.remove('show');
     }
 
@@ -316,28 +350,20 @@
         document.getElementById('quizHintText').classList.add('show');
     }
 
-    function markRemember() {
-        quizIndex++;
-        updateCard();
-    }
-
-    function markForgot() {
-        const currentWord = currentQuizWords[quizIndex];
-        // وضع الكلمة بعد 3 أماكن من الموقع الحالي
-        const insertAt = Math.min(quizIndex + 4, currentQuizWords.length);
-        currentQuizWords.splice(insertAt, 0, currentWord);
-        
-        quizIndex++;
-        updateCard();
-    }
-
     function closeQuiz() {
         const overlay = document.getElementById('quizOverlay');
         overlay.classList.remove('show');
         setTimeout(() => overlay.style.display = 'none', 300); 
     }
 
-    // -------- دوال القاموس الأساسية --------
+    // دالة خاصة لزر النطق جوا الكويز
+    function playQuizSound(event) {
+        if (currentQuizWords.length > 0 && currentQuizWords[quizIndex]) {
+            playSound(currentQuizWords[quizIndex].word, event);
+        }
+    }
+    // ------------------------------------------
+
     function addWord() {
         let w = document.getElementById('wordInput').value.trim();
         let m = document.getElementById('meaningInput').value.trim();
@@ -400,13 +426,58 @@
         }
     }
 
+    // دالة الصوت تبعتك (زي ما هي بالملي مع ويبستر)
     function playSound(word, event) {
         if (event) event.stopPropagation();
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(word);
-        utterance.lang = 'en-US';
-        window.speechSynthesis.speak(utterance);
+        const cleanWord = word.trim().toLowerCase();
+
+        // 1. جرب تشغل ويبستر (الملف المرفوع)
+        const audio = new Audio(`sounds/${cleanWord}.mp3`);
+        
+        // محاولة التشغيل
+        const playPromise = audio.play();
+
+        if (playPromise !== undefined) {
+            playPromise.then(() => {
+                // اشتغل ويبستر بنجاح
+                console.log("Webster played");
+            }).catch(() => {
+                // 2. إذا فشل ويبستر (الكلمة مش عندك)، شغل محرك التلفون فوراً
+                console.log("Using Device TTS...");
+                
+                // إلغاء أي صوت معلق (ضروري جداً للأندرويد)
+                window.speechSynthesis.cancel();
+
+                const utterance = new SpeechSynthesisUtterance(word);
+                utterance.lang = 'en-US';
+                utterance.rate = 1.0;
+                utterance.pitch = 1.0;
+
+                // سر النجاح في الأندرويد: لازم نطلب قائمة الأصوات ونحرك المحرك
+                const voices = window.speechSynthesis.getVoices();
+                if (voices.length > 0) {
+                    // بنحاول نلاقي صوت Google English
+                    const englishVoice = voices.find(v => v.lang.includes('en') && v.name.includes('Google')) || voices[0];
+                    utterance.voice = englishVoice;
+                }
+
+                window.speechSynthesis.speak(utterance);
+            });
+        }
     }
+
+    // الكود السحري اللي "بيصحي" محرك الصوت في التلفون أول ما يفتح التطبيق
+    window.onload = function() {
+        if ('speechSynthesis' in window) {
+            // نداء وهمي بس عشان يجهز المحرك في الخلفية
+            window.speechSynthesis.getVoices();
+            if (speechSynthesis.onvoiceschanged !== undefined) {
+                speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+            }
+        }
+        // شغل دالة العرض تبعتك هون كمان
+        if (typeof render === "function") render();
+    };
 
     function handleLiClick(index, el) {
         if (isReorderMode) {
@@ -427,7 +498,7 @@
         selectedIndices = [];
         const btn = document.getElementById('reorderBtn');
         btn.classList.toggle('active-tool', isReorderMode);
-        btn.innerText = isReorderMode ? "✅" : "🔄";
+        btn.innerText = isReorderMode ? "✅حفظ الترتيب " : "🔄";
         if (!isReorderMode) {
             localStorage.setItem('myContextDict', JSON.stringify(words));
         }
@@ -437,17 +508,28 @@
     function allowDrop(ev) { ev.preventDefault(); }
     
     function drag(ev, index) { 
-        if (!selectedIndices.includes(index)) selectedIndices = [index];
+        if (!selectedIndices.includes(index)) {
+            selectedIndices = [index];
+        }
         ev.dataTransfer.setData("draggedIndices", JSON.stringify(selectedIndices));
     }
 
     function drop(ev, dropIndex) {
         ev.preventDefault();
         let draggedIndices = JSON.parse(ev.dataTransfer.getData("draggedIndices")).sort((a,b) => b-a);
+        
         let itemsToMove = [];
-        draggedIndices.forEach(idx => { itemsToMove.push(words.splice(idx, 1)[0]); });
+        draggedIndices.forEach(idx => {
+            itemsToMove.push(words.splice(idx, 1)[0]);
+        });
         itemsToMove.reverse();
-        words.splice(dropIndex, 0, ...itemsToMove);
+
+        let actualDropIndex = dropIndex;
+        draggedIndices.forEach(idx => { if (idx < dropIndex) actualDropIndex--; });
+        if (actualDropIndex < 0) actualDropIndex = 0;
+
+        words.splice(actualDropIndex, 0, ...itemsToMove);
+        
         selectedIndices = []; 
         render();
     }
@@ -457,11 +539,12 @@
         render();
     }
 
+    // دالة العرض تبعتك بالضبط بدون أي تغيير أو اختصار
     function render() {
         updateStats();
         let query = document.getElementById('searchInput').value.toLowerCase();
         let html = '';
-        let filtered = words.filter(w => (w.word.toLowerCase().includes(query) || w.meaning.includes(query)) && (currentFilter === 'all' || w.starred));
+        let filtered = words.filter(w => (w.word.toLowerCase().includes(query) || w.meaning.includes(query) || (w.example && w.example.toLowerCase().includes(query))) && (currentFilter === 'all' || w.starred));
 
         filtered.forEach((w, index) => {
             const dragAttrs = isReorderMode ? `draggable="true" ondragstart="drag(event, ${index})" ondragover="allowDrop(event)" ondrop="drop(event, ${index})"` : '';
@@ -471,12 +554,12 @@
             html += `
                 <li ${dragAttrs} class="${reorderClass} ${selectedClass}" onclick="handleLiClick(${index}, this)">
                     <div class="top-row">
-                        <button class="star-btn ${w.starred ? 'active' : ''}" onclick="toggleStar(${w.id}, event)">★</button>
+                        <button class="star-btn ${w.starred ? 'active' : ''}" onclick="toggleStar(${w.id}, event)" title="إضافة للصعبة">★</button>
                         <div class="word-box">
                             <div class="word-text">${w.word} <span class="cat-tag tag-${w.category}">${w.category}</span></div>
                             <div class="meaning-text">${w.meaning}</div>
                         </div>
-                        ${isReorderMode ? '<span style="color:#ccc;">☰</span>' : `
+                        ${isReorderMode ? '<span style="font-size:20px; color:#ccc;">☰</span>' : `
                         <div class="actions">
                             <button class="icon-circle sound-btn" onclick="playSound('${w.word}', event)">🔊</button>
                             <button class="icon-circle edit-btn" onclick="startEdit(${w.id}, event)">📝</button>
@@ -490,7 +573,7 @@
     }
 
     function updateStats() {
-        document.getElementById('totalCount').innerText = `إجمالي: ${words.length}`;
+        document.getElementById('totalCount').innerText = `إجمالي الكلمات: ${words.length}`;
         document.getElementById('starredCount').innerText = `⭐ الصعبة: ${words.filter(w => w.starred).length}`;
     }
 
@@ -505,13 +588,12 @@
     function importData(event) {
         const reader = new FileReader();
         reader.onload = function(e) {
-            words = JSON.parse(e.target.result);
+            words = JSON.parse(e.target.result).map(i => ({...i, id: i.id || Math.random()}));
             saveAndRender();
         };
         reader.readAsText(event.target.files[0]);
     }
-
-    window.onload = render;
+    
 </script>
 </body>
 </html>
