@@ -287,7 +287,9 @@
             return;
         }
 
-        currentQuizWords = [...wordsToTest].sort(() => Math.random() - 0.5); 
+       currentQuizWords = [...wordsToTest].sort((a, b) => {
+    return (b.forgetCount || 0) - (a.forgetCount || 0);
+});
         quizIndex = 0;
         
         const overlay = document.getElementById('quizOverlay');
@@ -297,24 +299,44 @@
         updateCard();
     }
 
-    function markRemember() {
-        if (quizIndex < currentQuizWords.length - 1) {
-            quizIndex++;
-            updateCard();
-        } else {
-            alert("أبدعت! أنهيت كل الكلمات 👏");
-            closeQuiz();
-        }
-    }
+   function markRemember() {
+    const currentWord = currentQuizWords[quizIndex];
 
-    function markForgot() {
-        const currentWord = currentQuizWords[quizIndex];
-        const insertIndex = Math.min(quizIndex + 4, currentQuizWords.length);
-        currentQuizWords.splice(insertIndex, 0, currentWord);
-        
+    words = words.map(w =>
+        w.id === currentWord.id
+            ? { ...w, forgetCount: Math.max((w.forgetCount || 0) - 1, 0) }
+            : w
+    );
+
+    saveAndRender();
+
+    if (quizIndex < currentQuizWords.length - 1) {
         quizIndex++;
         updateCard();
+    } else {
+        alert("أبدعت! 👏");
+        closeQuiz();
     }
+}
+
+  function markForgot() {
+    const currentWord = currentQuizWords[quizIndex];
+
+    // زيادة عدد النسيان
+    words = words.map(w =>
+        w.id === currentWord.id
+            ? { ...w, forgetCount: (w.forgetCount || 0) + 1 }
+            : w
+    );
+
+    saveAndRender();
+
+    const insertIndex = Math.min(quizIndex + 3, currentQuizWords.length);
+    currentQuizWords.splice(insertIndex, 0, currentWord);
+
+    quizIndex++;
+    updateCard();
+}
 
     function updateCard() {
         if (quizIndex >= currentQuizWords.length) {
@@ -384,8 +406,15 @@
             document.getElementById('addBtn').innerText = "إضافة للقاموس";
             document.getElementById('addBtn').style.background = "#3498db";
         } else {
-            words.unshift({ id: Date.now() + Math.random(), word: w, meaning: m, example: ex, category: c, starred: false });
-        }
+            words.unshift({
+    id: Date.now() + Math.random(),
+    word: w,
+    meaning: m,
+    example: ex,
+    category: c,
+    starred: false,
+    forgetCount: 0   // ⭐ جديد
+});
         
         clearInputs();
         saveAndRender();
@@ -592,4 +621,5 @@
 </script>
 </body>
 </html>
+
 
