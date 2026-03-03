@@ -391,10 +391,7 @@
         let w = document.getElementById('wordInput').value.trim();
         // منع تكرار الكلمة
 
-    if (words.some(item => item.word.toLowerCase() === w.toLowerCase())) {
-    alert("⚠️ هذه الكلمة موجودة مسبقًا!");
-    return;
-}
+   if (words.some(item => item.word && item.word.toLowerCase() === w.toLowerCase())) 
         let m = document.getElementById('meaningInput').value.trim();
         let ex = document.getElementById('exampleInput').value.trim();
         let c = document.getElementById('categoryInput').value;
@@ -621,5 +618,6 @@
 </script>
 </body>
 </html>
+
 
 
