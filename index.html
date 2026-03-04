@@ -201,6 +201,11 @@
             background: transparent; color: white; text-decoration: underline; 
             margin-top: 25px; cursor: pointer; border: none; font-size: 15px; 
         }
+        .highlight {
+            background: #fff3a3;
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
@@ -579,6 +584,13 @@
         render();
     }
 
+    function highlightText(text, query) {
+    if (!query) return text;
+
+    const regex = new RegExp(`(${query})`, "gi");
+    return text.replace(regex, '<span class="highlight">$1</span>');
+    }
+    
     function render() {
         updateStats();
         let query = document.getElementById('searchInput').value.toLowerCase().trim();
@@ -620,8 +632,14 @@
                     <div class="top-row">
                         <button class="star-btn ${w.starred ? 'active' : ''}" onclick="toggleStar(${w.id}, event)" title="إضافة للصعبة">★</button>
                         <div class="word-box">
-                            <div class="word-text">${w.word} <span class="cat-tag tag-${w.category}">${w.category}</span></div>
-                            <div class="meaning-text">${w.meaning}</div>
+                            <div class="word-text">
+                                ${highlightText(w.word, query)} 
+                                 <span class="cat-tag tag-${w.category}">${w.category}</span>
+                            </div>
+
+                            <div class="meaning-text">
+                                ${highlightText(w.meaning, query)}
+                            </div>
                         </div>
                         ${isReorderMode ? '<span style="font-size:20px; color:#ccc;">☰</span>' : `
                         <div class="actions">
@@ -630,7 +648,7 @@
                             <button class="icon-circle del-btn" onclick="deleteWord(${w.id}, event)">×</button>
                         </div>`}
                     </div>
-                    ${w.example ? `<div class="example-box"><b>Ex:</b> ${w.example}</div>` : ''}
+                   ${w.example ? `<div class="example-box"><b>Ex:</b> ${highlightText(w.example, query)}</div>` : ''}
                 </li>`;
         });
         document.getElementById('list').innerHTML = html;
@@ -661,4 +679,5 @@
 </script>
 </body>
 </html>
+
 
