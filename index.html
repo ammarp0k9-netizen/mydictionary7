@@ -236,8 +236,15 @@
         <button class="btn-tool" onclick="startQuiz()" title="اختبار البطاقات">🎓 اختبار</button>
     </div>
 
-    <input type="text" id="searchInput" placeholder="🔎 ابحث عن كلمة، معنى أو جملة..." onkeyup="render()">
+    <input type="text" id="searchInput" placeholder="🔎 ابحث..." oninput="render()">
 
+<select id="searchFilter" onchange="render()" style="margin-bottom:15px; width:100%;">
+    <option value="all">بحث في الكل</option>
+    <option value="word">الكلمة فقط</option>
+    <option value="meaning">المعنى فقط</option>
+    <option value="example">الجملة فقط</option>
+</select>
+    
     <ul id="list"></ul>
 
     <div class="backup-zone">
@@ -574,10 +581,35 @@
 
     function render() {
         updateStats();
-        let query = document.getElementById('searchInput').value.toLowerCase();
+        let query = document.getElementById('searchInput').value.toLowerCase().trim();
+        let searchType = document.getElementById('searchFilter').value;
         let html = '';
-        let filtered = words.filter(w => (w.word.toLowerCase().includes(query) || w.meaning.includes(query) || (w.example && w.example.toLowerCase().includes(query))) && (currentFilter === 'all' || w.starred));
+        let filtered = words.filter(w => {
 
+            if (!w.word) return false;
+
+            let wordMatch = w.word.toLowerCase().includes(query);
+            let meaningMatch = w.meaning.toLowerCase().includes(query);
+            let exampleMatch = w.example && w.example.toLowerCase().includes(query);
+
+            let matchesSearch = false;
+
+            if (searchType === "word") {
+            matchesSearch = wordMatch;
+        } 
+        else if (searchType === "meaning") {
+            matchesSearch = meaningMatch;
+        } 
+        else if (searchType === "example") {
+            matchesSearch = exampleMatch;
+        } 
+        else {
+            matchesSearch = wordMatch || meaningMatch || exampleMatch;
+        }
+
+        return matchesSearch && (currentFilter === 'all' || w.starred);
+    });
+        
         filtered.forEach((w, index) => {
             const dragAttrs = isReorderMode ? `draggable="true" ondragstart="drag(event, ${index})" ondragover="allowDrop(event)" ondrop="drop(event, ${index})"` : '';
             const reorderClass = isReorderMode ? 'reorder-mode-li' : '';
@@ -629,3 +661,4 @@
 </script>
 </body>
 </html>
+
