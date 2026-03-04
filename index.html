@@ -596,8 +596,15 @@
         let query = document.getElementById('searchInput').value.toLowerCase().trim();
         let searchType = document.getElementById('searchFilter').value;
         let html = '';
-        let filtered = words.filter(w => {
+        filtered.sort((a, b) => {
+            const aStarts = a.word.toLowerCase().startsWith(query);
+            const bStarts = b.word.toLowerCase().startsWith(query);
 
+            if (aStarts && !bStarts) return -1;
+            if (!aStarts && bStarts) return 1;
+
+            return a.word.localeCompare(b.word);
+        });
             if (!w.word) return false;
 
             let wordMatch = w.word.toLowerCase().includes(query);
@@ -679,5 +686,6 @@
 </script>
 </body>
 </html>
+
 
 
