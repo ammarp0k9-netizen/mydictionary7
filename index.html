@@ -683,7 +683,9 @@
     }
 
 </li>`;
-    document.getElementById('list').innerHTML = html;
+    }); // 👈 هون كان الغلط! القوس تبع الـ forEach ما كان متسكر 
+
+    document.getElementById('list').innerHTML = html; // طلعناها برا اللفة عشان يشتغل صح
 }
 
     function updateStats() {
@@ -711,9 +713,3 @@
 </script>
 </body>
 </html>
-
-
-
-
-
-
