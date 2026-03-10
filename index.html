@@ -143,7 +143,6 @@
         }
         .quiz-overlay.show { opacity: 1; }
 
-        /* تعديل الأبعاد لتكون متجاوبة (Responsive) */
         .card-container { 
             width: 90%; max-width: 340px; 
             height: 50vh; min-height: 350px; max-height: 420px; 
@@ -206,10 +205,33 @@
             padding: 2px 4px;
             border-radius: 4px;
         }
+
+        /* --- إضافات الكويز الذكي والرسائل التحفيزية --- */
+        .toast-msg {
+            position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
+            background: #f1c40f; color: #2c3e50; padding: 12px 25px; border-radius: 20px;
+            font-weight: bold; font-size: 16px; transition: 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 2000; box-shadow: 0 5px 15px rgba(0,0,0,0.2); pointer-events: none;
+        }
+        .toast-msg.show { top: 30px; }
+
+        .setup-btn {
+            width: 100%; margin-bottom: 10px; padding: 12px; border-radius: 12px;
+            border: none; font-weight: bold; cursor: pointer; transition: 0.2s; color: white; font-size: 15px;
+        }
+        .setup-btn:hover { opacity: 0.9; transform: scale(0.98); }
+        .btn-new { background: #3498db; }
+        .btn-forgot { background: #e74c3c; }
+        .btn-old { background: #8e44ad; }
+        .btn-starred { background: #f39c12; }
+        .btn-all { background: #2c3e50; }
+
     </style>
 </head>
 <body>
     
+<div id="toastMessage" class="toast-msg">رسالة تحفيزية</div>
+
 <div class="container">
     <h2 id="mainTitle">القاموس</h2>
 
@@ -238,7 +260,7 @@
         <button id="toolAll" class="btn-tool active-tool" onclick="setFilter('all')">الكل</button>
         <button id="toolStarred" class="btn-tool" onclick="setFilter('starred')" title="الكلمات الصعبة">⭐</button>
         <button id="reorderBtn" class="btn-tool" onclick="toggleReorderMode()" title="ترتيب يدوي">🔄</button>
-        <button class="btn-tool" onclick="startQuiz()" title="اختبار البطاقات">🎓 اختبار</button>
+        <button class="btn-tool" onclick="openQuizSetup()" title="اختبار البطاقات">🎓 اختبار</button>
     </div>
 
     <input type="text" id="searchInput" placeholder="🔎 ابحث..." oninput="render()">
@@ -258,6 +280,21 @@
         <input type="file" id="importFile" style="display:none" onchange="importData(event)">
     </div>
 </div> 
+
+<div id="quizSetupOverlay" class="quiz-overlay">
+    <div class="card-container" style="height: auto; min-height: auto; padding: 25px; background: white; border-radius: 20px; text-align: center;">
+        <h3 style="color: var(--text-main); margin-top:0; margin-bottom: 5px;">إعدادات الاختبار 🧠</h3>
+        <p style="font-size: 14px; color: #7f8c8d; margin-bottom: 20px;">حدد الكلمات اللي حاب تختبرها:</p>
+        
+        <button class="setup-btn btn-new" onclick="startActualQuiz('recent')">🆕 كلمات جديدة (آخر 10)</button>
+        <button class="setup-btn btn-forgot" onclick="startActualQuiz('forgotten')">❌ تحدي النسيان (الأكثر خطأ)</button>
+        <button class="setup-btn btn-old" onclick="startActualQuiz('old')">🕰️ مراجعة الذكريات (أقدم 10)</button>
+        <button class="setup-btn btn-starred" onclick="startActualQuiz('starred')">⭐ الكلمات الصعبة (المفضلة)</button>
+        <button class="setup-btn btn-all" onclick="startActualQuiz('all')">🌍 كل الكلمات (عشوائي)</button>
+        
+        <button class="btn-close" onclick="closeQuizSetup()" style="color: #e74c3c; display:block; width:100%;">إلغاء</button>
+    </div>
+</div>
 
 <div id="quizOverlay" class="quiz-overlay">
     <div class="card-container">
@@ -290,25 +327,85 @@
     
     let currentQuizWords = [];
     let quizIndex = 0;
+    let currentStreak = 0; // عداد الحماس
 
-    function startQuiz() {
-        let wordsToTest = currentFilter === 'starred' ? words.filter(w => w.starred) : words;
-        
-        if(wordsToTest.length === 0) {
-            alert("لا توجد كلمات كافية للاختبار!");
+    // 1. فتح شاشة الإعدادات
+    function openQuizSetup() {
+        if(words.length === 0) {
+            alert("القاموس فاضي! ضيف كلمات أول عشان نختبرك.");
             return;
         }
+        const overlay = document.getElementById('quizSetupOverlay');
+        overlay.style.display = 'flex';
+        setTimeout(() => overlay.classList.add('show'), 10);
+    }
 
-        currentQuizWords = [...wordsToTest].sort((a, b) => {
-            return (b.forgetCount || 0) - (a.forgetCount || 0);
-        });
+    function closeQuizSetup() {
+        const overlay = document.getElementById('quizSetupOverlay');
+        overlay.classList.remove('show');
+        setTimeout(() => overlay.style.display = 'none', 300);
+    }
+
+    // 2. بدء الاختبار الفعلي بناءً على اختيارك
+    function startActualQuiz(mode) {
+        closeQuizSetup();
+        let wordsToTest = [...words];
+
+        if (mode === 'recent') {
+            // ترتيب من الأحدث للأقدم
+            wordsToTest.sort((a,b) => b.id - a.id);
+            wordsToTest = wordsToTest.slice(0, 10);
+        } else if (mode === 'old') {
+            // ترتيب من الأقدم للأحدث
+            wordsToTest.sort((a,b) => a.id - b.id);
+            wordsToTest = wordsToTest.slice(0, 10);
+        } else if (mode === 'forgotten') {
+            // الكلمات اللي غلطت فيها أكثر من صفر
+            wordsToTest = wordsToTest.filter(w => w.forgetCount > 0);
+            wordsToTest.sort((a,b) => b.forgetCount - a.forgetCount);
+            if(wordsToTest.length === 0) {
+                alert("ما شاء الله! ما عندك كلمات بتغلط فيها. رح نختبرك بعشر كلمات عشوائية.");
+                wordsToTest = [...words].sort(() => Math.random() - 0.5).slice(0, 10);
+            } else {
+                wordsToTest = wordsToTest.slice(0, 10);
+            }
+        } else if (mode === 'starred') {
+            wordsToTest = wordsToTest.filter(w => w.starred);
+            if(wordsToTest.length === 0) {
+                alert("ما عندك كلمات صعبة/مفضلة (⭐). رح نختبرك بالكل.");
+                wordsToTest = [...words];
+            }
+        } else if (mode === 'all') {
+            // خلط كل الكلمات عشوائياً
+            wordsToTest.sort(() => Math.random() - 0.5);
+        }
+
+        currentQuizWords = wordsToTest;
         quizIndex = 0;
+        currentStreak = 0; 
         
         const overlay = document.getElementById('quizOverlay');
         overlay.style.display = 'flex';
         setTimeout(() => overlay.classList.add('show'), 10); 
         
         updateCard();
+    }
+
+    // عرض الرسائل التحفيزية
+    function showStreakMessage(streak) {
+        const msgs = {
+            3: "وحش! 3 إجابات صح ورا بعض 🔥",
+            5: "أسطورة! 5 صح.. ذاكرتك حديد 💪",
+            7: "مستحيل! 7 صح.. أنت قفلّت اللعبة 🚀",
+            10: "يا عيني عليك! 10 ورا بعض 👑"
+        };
+        
+        if(msgs[streak]) {
+            const toast = document.getElementById('toastMessage');
+            toast.innerText = msgs[streak];
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 2500);
+        }
     }
 
     function markRemember() {
@@ -322,19 +419,25 @@
 
         saveAndRender();
 
+        currentStreak++; // زيادة العداد
+        showStreakMessage(currentStreak);
+
         if (quizIndex < currentQuizWords.length - 1) {
             quizIndex++;
             updateCard();
         } else {
-            alert("أبدعت! 👏");
-            closeQuiz();
+            setTimeout(() => {
+                alert("أبدعت! 👏 خلصت الكلمات المختارة.");
+                closeQuiz();
+            }, 300);
         }
     }
 
     function markForgot() {
+        currentStreak = 0; // تصفير العداد لأنك أخطأت
+
         const currentWord = currentQuizWords[quizIndex];
 
-        // زيادة عدد النسيان
         words = words.map(w =>
             w.id === currentWord.id
                 ? { ...w, forgetCount: (w.forgetCount || 0) + 1 }
@@ -404,10 +507,8 @@
         let ex = document.getElementById('exampleInput').value.trim();
         let c = document.getElementById('categoryInput').value;
         
-        // نقلنا هذا السطر لفوق عشان ما يفحص التكرار إذا كانت الخانات فاضية
         if(!w || !m) return;
 
-        // منع تكرار الكلمة (استثنينا الكلمة اللي بنعدل عليها عشان يرضى يحفظ التعديل)
         let isDuplicate = words.some(item => 
             item.word && 
             item.word.toLowerCase() === w.toLowerCase() && 
@@ -432,7 +533,7 @@
                 example: ex,
                 category: c,
                 starred: false,
-                forgetCount: 0   // ⭐ جديد
+                forgetCount: 0   
             });
         }
         
@@ -619,7 +720,6 @@
         return matchesSearch && (currentFilter === 'all' || w.starred);
     });
 
-    // ⭐ الترتيب الذكي
     if (query) {
         filtered.sort((a, b) => {
             const aStarts = a.word.toLowerCase().startsWith(query);
@@ -683,9 +783,9 @@
     }
 
 </li>`;
-    }); // 👈 هون كان الغلط! القوس تبع الـ forEach ما كان متسكر 
+    }); 
 
-    document.getElementById('list').innerHTML = html; // طلعناها برا اللفة عشان يشتغل صح
+    document.getElementById('list').innerHTML = html; 
 }
 
     function updateStats() {
