@@ -235,6 +235,10 @@
 <div class="container">
     <h2 id="mainTitle">القاموس</h2>
 
+    <button id="loginBtn" onclick="login()" style="width: 100%; margin-bottom: 15px; background-color: #E3F2FD; color: #2c3e50; border: 2px solid #3498db; padding: 12px; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.3s;">
+        تسجيل دخول بجوجل 🚀
+    </button>
+
     <div class="stats-bar">
         <span id="totalCount">إجمالي الكلمات: 0</span>
         <span id="starredCount">⭐ الصعبة: 0</span>
@@ -317,6 +321,58 @@
     </div>
     <button class="btn-close" onclick="closeQuiz()">إغلاق الاختبار</button>
 </div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+  import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
+  import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDQB5N4wxJw69-tb8suI2T2SfEfCpwFA2c",
+    authDomain: "quizapp-ede17.firebaseapp.com",
+    projectId: "quizapp-ede17",
+    storageBucket: "quizapp-ede17.firebasestorage.app",
+    messagingSenderId: "473471031803",
+    appId: "1:473471031803:web:1b803237aeb0444040535e",
+    measurementId: "G-C06S6C7JYT"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  // دالة تسجيل الدخول مربوطة بالزر
+  window.login = function() {
+    const provider = new GoogleAuthProvider();
+    signInWithPopup(auth, provider)
+      .then((result) => {
+        const btn = document.getElementById('loginBtn');
+        btn.innerText = "أهلاً بك يا " + result.user.displayName + " ✅";
+        btn.style.background = "#eafaf1";
+        btn.style.borderColor = "#27ae60";
+        btn.style.color = "#27ae60";
+      })
+      .catch((error) => {
+        alert("حدث خطأ في تسجيل الدخول: " + error.message);
+      });
+  };
+
+  // مجهزة للاستخدام لاحقاً لحفظ الكلمات
+  window.saveWordToCloud = async function(wordText, wordCategory) {
+    const user = auth.currentUser;
+    if (user) {
+      try {
+        await addDoc(collection(db, "users", user.uid, "words"), {
+          text: wordText,
+          category: wordCategory,
+          createdAt: new Date()
+        });
+      } catch (e) {
+        console.error("خطأ في الحفظ: ", e);
+      }
+    }
+  };
+</script>
 
 <script>
     let words = JSON.parse(localStorage.getItem('myContextDict')) || [];
