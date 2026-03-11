@@ -324,7 +324,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
-  import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
+  import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
   import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -340,6 +340,14 @@
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
+    onAuthStateChanged(auth, async (user) => {
+      if(user){
+        const btn = document.getElementById('loginBtn');
+        btn.innerText = "أهلاً بك يا " + user.displayName + " ✅";
+
+        loadWordsFromCloud();
+      }
+    });
 
   // دالة تسجيل الدخول مربوطة بالزر
   window.login = function() {
@@ -372,8 +380,42 @@
       }
     }
   };
-</script>
 
+    window.loadWordsFromCloud = async function() {
+
+      const user = auth.currentUser;
+      if(!user) return;
+
+      const q = query(
+        collection(db, "users", user.uid, "words"),
+        orderBy("createdAt")
+      );
+
+          const snapshot = await getDocs(q);
+
+      let cloudWords = [];
+
+      snapshot.forEach((doc) => {
+        cloudWords.push({
+          id: Date.now() + Math.random(),
+          word: doc.data().text,
+          meaning: "",
+          example: "",
+          category: doc.data().category,
+          starred: false,
+          forgetCount: 0
+        });
+      });
+
+      if(cloudWords.length > 0){
+        words = cloudWords;
+        saveAndRender();
+      }
+
+    };
+    
+</script>
+   
 <script>
     let words = JSON.parse(localStorage.getItem('myContextDict')) || [];
     let currentFilter = 'all';
@@ -591,6 +633,8 @@
                 starred: false,
                 forgetCount: 0   
             });
+            
+            saveWordToCloud(w, c);
         }
         
         clearInputs();
@@ -869,3 +913,4 @@
 </script>
 </body>
 </html>
+
