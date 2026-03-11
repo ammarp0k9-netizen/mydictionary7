@@ -420,7 +420,7 @@
     
 </script>
    
-<script>
+<script type="module">
     let words = JSON.parse(localStorage.getItem('myContextDict')) || [];
     let currentFilter = 'all';
     let editId = null;
@@ -913,9 +913,17 @@
         };
         reader.readAsText(event.target.files[0]);
     }
+    // ضيف هدول في آخر السكريبت قبل وسم < /script>
+window.addWord = addWord;
+window.openQuizSetup = openQuizSetup;
+window.startActualQuiz = startActualQuiz;
+window.setFilter = setFilter;
+window.toggleReorderMode = toggleReorderMode;
+// وأي دالة تانية بتستخدمها في زر (onclick) في الـ HTML
     
 </script>
 </body>
 </html>
+
 
 
