@@ -366,13 +366,15 @@
   };
 
   // مجهزة للاستخدام لاحقاً لحفظ الكلمات
-  window.saveWordToCloud = async function(wordText, wordCategory) {
+ window.saveWordToCloud = async function(wordText, wordCategory, meaning, example) {
     const user = auth.currentUser;
     if (user) {
       try {
         await addDoc(collection(db, "users", user.uid, "words"), {
           text: wordText,
           category: wordCategory,
+          meaning: meaning,
+          example: example,
           createdAt: new Date()
         });
       } catch (e) {
@@ -396,23 +398,25 @@
       let cloudWords = [];
 
       snapshot.forEach((doc) => {
-        cloudWords.push({
+       cloudWords.push({
           id: Date.now() + Math.random(),
           word: doc.data().text,
-          meaning: "",
-          example: "",
+          meaning: doc.data().meaning || "",
+          example: doc.data().example || "",
           category: doc.data().category,
           starred: false,
           forgetCount: 0
         });
       });
 
-      if(cloudWords.length > 0){
-        words = cloudWords;
-        saveAndRender();
-      }
+     if(cloudWords.length > 0){
+      words = cloudWords;
 
-    };
+      localStorage.setItem('myContextDict', JSON.stringify(words));
+
+      render();
+    }
+     };
     
 </script>
    
@@ -634,7 +638,7 @@
                 forgetCount: 0   
             });
             
-            saveWordToCloud(w, c);
+            saveWordToCloud(w, c, m, ex);
         }
         
         clearInputs();
@@ -913,4 +917,5 @@
 </script>
 </body>
 </html>
+
 
