@@ -225,6 +225,11 @@
         .btn-old { background: #8e44ad; }
         .btn-starred { background: #f39c12; }
         .btn-all { background: #2c3e50; }
+         body.dark{background:#121212;color:#eee;}
+         body.dark .container{background:#1e1e1e;}
+         body.dark input,
+         body.dark select{background:#2a2a2a;color:#eee;border-color:#555;}
+         body.dark .word-card{background:#2a2a2a;border-color:#444;}
 
     </style>
 </head>
@@ -237,6 +242,11 @@
 
     <button id="loginBtn" onclick="login()" style="width: 100%; margin-bottom: 15px; background-color: #E3F2FD; color: #2c3e50; border: 2px solid #3498db; padding: 12px; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.3s;">
         تسجيل دخول بجوجل 🚀
+    </button>
+
+    <button onclick="toggleDark()" 
+    style="width:100%; margin-bottom:15px; padding:12px; border-radius:12px; border:2px solid #444; font-weight:bold;">
+    🌙 / ☀️ الوضع الليلي
     </button>
 
     <div class="stats-bar">
@@ -913,6 +923,50 @@
         };
         reader.readAsText(event.target.files[0]);
     }
+
+    // ===== Dark Mode System =====
+
+// تشغيل الوضع الليلي
+function enableDark(){
+    document.body.classList.add("dark");
+    localStorage.setItem("darkMode","on");
+}
+
+// إيقاف الوضع الليلي
+function disableDark(){
+    document.body.classList.remove("dark");
+    localStorage.setItem("darkMode","off");
+}
+
+// زر التبديل
+function toggleDark(){
+    if(document.body.classList.contains("dark")){
+        disableDark();
+    }else{
+        enableDark();
+    }
+}
+
+// تحميل الوضع عند فتح الموقع
+(function(){
+
+    const savedMode = localStorage.getItem("darkMode");
+
+    // إذا المستخدم اختار وضع سابقًا
+    if(savedMode === "on"){
+        enableDark();
+    }
+    else if(savedMode === "off"){
+        disableDark();
+    }
+    else{
+        // إذا لم يختر شيء → نتبع وضع الجهاز
+        if(window.matchMedia('(prefers-color-scheme: dark)').matches){
+            enableDark();
+        }
+    }
+
+})();
     
 </script>
 </body>
