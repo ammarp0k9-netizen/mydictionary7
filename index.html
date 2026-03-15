@@ -733,34 +733,39 @@
         if (event) event.stopPropagation();
         const cleanWord = word.trim().toLowerCase();
 
+        // 1. محاولة تشغيل الملف الصوتي لو موجود
         const audio = new Audio(`sounds/${cleanWord}.mp3`);
         
         const playPromise = audio.play();
 
         if (playPromise !== undefined) {
             playPromise.then(() => {
-                console.log("Webster played");
+                console.log("Audio file played");
             }).catch(() => {
                 console.log("Using Device TTS...");
                 
+                // 2. تنظيف طابور الصوت عشان الموبايل ما يعلق
                 window.speechSynthesis.cancel();
 
                 const utterance = new SpeechSynthesisUtterance(word);
                 utterance.lang = 'en-US';
-                utterance.rate = 1.0;
+                utterance.rate = 0.9; // أبطأ شوي لتكون اللفظة أوضح
                 utterance.pitch = 1.0;
 
+                // 3. سحب الأصوات المتاحة في نظام التلفون
                 const voices = window.speechSynthesis.getVoices();
                 if (voices.length > 0) {
-                    const englishVoice = voices.find(v => v.lang.includes('en') && v.name.includes('Google')) || voices[0];
+                    // هون السر: بندور على أي صوت إنجليزي بغض النظر عن اسم الشركة
+                    const englishVoice = voices.find(v => v.lang.startsWith('en')) || voices[0];
                     utterance.voice = englishVoice;
                 }
 
+                // 4. تشغيل الصوت
                 window.speechSynthesis.speak(utterance);
             });
         }
     }
-
+    
     window.onload = function() {
         if ('speechSynthesis' in window) {
             window.speechSynthesis.getVoices();
