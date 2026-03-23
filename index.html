@@ -771,30 +771,41 @@ window.deleteWordFromCloud = async function(wordText) {
         }
     }
 
-   function playSound(word, event) {
-        if (!'speechSynthesis' in window) return; // تأكد إن المتصفح بدعم الميزة
+    function playSound(word, event) {
+        if (event) event.stopPropagation();
+        const cleanWord = word.trim().toLowerCase();
 
-        let utterance = new SpeechSynthesisUtterance(text);
+        // 1. محاولة تشغيل الملف الصوتي لو موجود
+        const audio = new Audio(`sounds/${cleanWord}.mp3`);
         
-        // جلب كل الأصوات المتاحة بالمتصفح
-        let voices = window.speechSynthesis.getVoices();
-        
-        // البحث عن صوت جوجل الأمريكي أو البريطاني
-        let googleVoice = voices.find(v => v.name.includes('Google US English') || v.name.includes('Google UK English Female') || v.name.includes('Google UK English Male'));
-        
-        // إذا لقى صوت جوجل بختاره، إذا لأ بياخذ أول صوت إنجليزي بشوفه
-        if (googleVoice) {
-            utterance.voice = googleVoice;
-        } else {
-            let englishVoice = voices.find(v => v.lang.startsWith('en'));
-            if (englishVoice) utterance.voice = englishVoice;
+        const playPromise = audio.play();
+
+        if (playPromise !== undefined) {
+            playPromise.then(() => {
+                console.log("Audio file played");
+            }).catch(() => {
+                console.log("Using Device TTS...");
+                
+                // 2. تنظيف طابور الصوت عشان الموبايل ما يعلق
+                window.speechSynthesis.cancel();
+
+                const utterance = new SpeechSynthesisUtterance(word);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.9; // أبطأ شوي لتكون اللفظة أوضح
+                utterance.pitch = 1.0;
+
+                // 3. سحب الأصوات المتاحة في نظام التلفون
+                const voices = window.speechSynthesis.getVoices();
+                if (voices.length > 0) {
+                    // هون السر: بندور على أي صوت إنجليزي بغض النظر عن اسم الشركة
+                    const englishVoice = voices.find(v => v.lang.startsWith('en')) || voices[0];
+                    utterance.voice = englishVoice;
+                }
+
+                // 4. تشغيل الصوت
+                window.speechSynthesis.speak(utterance);
+            });
         }
-
-        // تضبيط سرعة ونغمة الصوت عشان ما يبين آلي
-        utterance.rate = 0.9;  // أبطأ نُتفة عشان يكون أوضح
-        utterance.pitch = 1.0; // نغمة طبيعية
-        
-        window.speechSynthesis.speak(utterance);
     }
     
     window.onload = function() {
