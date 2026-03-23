@@ -407,10 +407,12 @@
       });
   };
 
-  // مجهزة للاستخدام لاحقاً لحفظ الكلمات
- window.saveWordToCloud = async function(wordText, wordCategory, meaning, example) {
+ // مجهزة للاستخدام لاحقاً لحفظ الكلمات
+  window.saveWordToCloud = async function(wordText, wordCategory, meaning, example) {
     const user = auth.currentUser;
+    
     if (user) {
+      console.log("✅ المستخدم موجود، جاري الإرسال..."); 
       try {
         await addDoc(collection(db, "users", user.uid, "words"), {
           text: wordText,
@@ -419,12 +421,15 @@
           example: example,
           createdAt: new Date()
         });
+        console.log("🚀 تم الحفظ في فايربيس بنجاح!");
       } catch (e) {
-        console.error("خطأ في الحفظ: ", e);
+        console.error("❌ خطأ من فايربيس نفسه: ", e);
       }
+    } else {
+      console.warn("⚠️ مش رح يخزن بالفايربيس لأنك مش مسجل دخول بجوجل!");
+      alert("سجل دخول أول عشان الكلمات تروح على الفايربيس");
     }
   };
-
     window.loadWordsFromCloud = async function() {
 
       const user = auth.currentUser;
@@ -653,6 +658,7 @@
         
         if(!w || !m) return;
 
+        // فحص التكرار
         let isDuplicate = words.some(item => 
             item.word && 
             item.word.toLowerCase() === w.toLowerCase() && 
@@ -668,8 +674,8 @@
             words = words.map(item => item.id === editId ? {...item, word: w, meaning: m, example: ex, category: c} : item);
             editId = null;
             document.getElementById('addBtn').innerText = "إضافة للقاموس";
-            document.getElementById('addBtn').style.background = "#3498db";
         } else {
+            // إضافة محلياً
             words.unshift({
                 id: Date.now() + Math.random(),
                 word: w,
@@ -680,11 +686,22 @@
                 forgetCount: 0   
             });
             
-            saveWordToCloud(w, c, m, ex);
+            // نداء الدالة اللي بتبعث لفايربيس
+            if (typeof window.saveWordToCloud === "function") {
+                window.saveWordToCloud(w, c, m, ex);
+            } else {
+                console.error("خطأ: دالة saveWordToCloud مش معروفة للسكريبت!");
+            }
         }
         
         clearInputs();
-        saveAndRender();
+        saveAndRender(); // تأكد إن هاي الدالة موجودة عندك (كتبتها لك تحت)
+    }
+
+    function saveAndRender() {
+        localStorage.setItem('myContextDict', JSON.stringify(words));
+        render();
+        updateStats(); // إذا عندك دالة بتحدث الأرقام فوق
     }
 
     function clearInputs() {
