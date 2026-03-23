@@ -367,7 +367,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
   import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
-  import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+  import { getFirestore, collection, addDoc, getDocs, query, orderBy, where, deleteDoc } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDQB5N4wxJw69-tb8suI2T2SfEfCpwFA2c",
@@ -439,6 +439,24 @@
         collection(db, "users", user.uid, "words"),
         orderBy("createdAt")
       );
+
+        // دالة لحذف الكلمة من السحابة
+window.deleteWordFromCloud = async function(wordText) {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    try {
+        // بنفتش على الوثيقة اللي فيها نفس النص وبنحذفها
+        const q = query(collection(db, "users", user.uid, "words"), where("text", "==", wordText));
+        const snapshot = await getDocs(q);
+        snapshot.forEach(async (doc) => {
+            await deleteDoc(doc.ref);
+            console.log("تم الحذف من السحابة بنجاح ✅");
+        });
+    } catch (e) {
+        console.error("فشل الحذف من السحابة: ", e);
+    }
+};
 
           const snapshot = await getDocs(q);
 
@@ -650,7 +668,7 @@
         }
     }
 
-    function addWord() {
+   function addWord() {
         let w = document.getElementById('wordInput').value.trim();
         let m = document.getElementById('meaningInput').value.trim();
         let ex = document.getElementById('exampleInput').value.trim();
@@ -697,7 +715,6 @@
         clearInputs();
         saveAndRender(); // تأكد إن هاي الدالة موجودة عندك (كتبتها لك تحت)
     }
-
     function saveAndRender() {
         localStorage.setItem('myContextDict', JSON.stringify(words));
         render();
@@ -738,11 +755,19 @@
         window.scrollTo(0,0);
     }
 
-    function deleteWord(id, event) {
+   function deleteWord(id, event) {
         event.stopPropagation();
-        if(confirm("حذف؟")) {
+        let itemToDelete = words.find(w => w.id === id);
+        
+        if(confirm("أكيد بدك تحذف الكلمة؟")) {
+            // 1. حذف من الذاكرة المحلية
             words = words.filter(w => w.id !== id);
             saveAndRender();
+
+            // 2. حذف من السحابة (عشان ما ترجع بالريفريش)
+            if (itemToDelete && typeof window.deleteWordFromCloud === "function") {
+                window.deleteWordFromCloud(itemToDelete.word);
+            }
         }
     }
 
