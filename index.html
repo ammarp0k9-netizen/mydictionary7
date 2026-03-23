@@ -771,7 +771,7 @@ window.deleteWordFromCloud = async function(wordText) {
         }
     }
 
-   function speakText(text) {
+   function playSound(word, event) {
         if (!'speechSynthesis' in window) return; // تأكد إن المتصفح بدعم الميزة
 
         let utterance = new SpeechSynthesisUtterance(text);
