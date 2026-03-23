@@ -995,14 +995,48 @@ window.deleteWordFromCloud = async function(wordText) {
     }
 
     function importData(event) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            words = JSON.parse(e.target.result).map(i => ({...i, id: i.id || Math.random()}));
-            saveAndRender();
-        };
-        reader.readAsText(event.target.files[0]);
-    }
+        const file = event.target.files[0];
+        if (!file) return;
 
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+            try {
+                const importedWords = JSON.parse(e.target.result);
+                if (Array.isArray(importedWords)) {
+                    // 1. تحديث المصفوفة المحلية
+                    words = [...importedWords, ...words];
+                    
+                    // تنظيف التكرار (اختياري بس بنصح فيه عشان ما يمتلئ الفايربيس كلمات مكررة)
+                    const uniqueWords = [];
+                    const map = new Map();
+                    for (const item of words) {
+                        if(!map.has(item.word.toLowerCase())){
+                            map.set(item.word.toLowerCase(), true);
+                            uniqueWords.push(item);
+                        }
+                    }
+                    words = uniqueWords;
+
+                    saveAndRender();
+
+                    // 2. المحرك السحابي: رفع كل الكلمات المستوردة للفايربيس
+                    if (typeof window.saveWordToCloud === "function") {
+                        console.log("جاري رفع الكلمات المستوردة للسحابة...");
+                        
+                        // بنرفعهم كلمة كلمة
+                        for (let item of importedWords) {
+                            await window.saveWordToCloud(item.word, item.category, item.meaning, item.example);
+                        }
+                        
+                        alert("تم استيراد الكلمات ورفعها للفايربيس بنجاح ✅");
+                    }
+                }
+            } catch (err) {
+                alert("خطأ في قراءة الملف، تأكد إنه بصيغة JSON صحيحة.");
+            }
+        };
+        reader.readAsText(file);
+    }
     // ===== Dark Mode System =====
 
 // تشغيل الوضع الليلي
