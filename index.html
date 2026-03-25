@@ -676,16 +676,13 @@ window.deleteWordFromCloud = async function(wordText) {
         
         if(!w || !m) return;
 
-        // فحص التكرار
-        let isDuplicate = words.some(item => 
-            item.word && 
-            item.word.toLowerCase() === w.toLowerCase() && 
-            item.id !== editId
-        );
+        // 1. فحص التكرار "الذكي"
+        let existingIndex = words.findIndex(item => item.word.toLowerCase() === w.toLowerCase());
 
-        if (isDuplicate) {
-            alert("⚠️ هذه الكلمة موجودة مسبقًا!");
-            return;
+        if (existingIndex !== -1 && !editId) {
+            // إذا موجودة "شبح"، بنمسح القديمة وبنكمل إضافة الجديدة
+            console.log("الكلمة موجودة كشبح، جاري إعادة المزامنة...");
+            words.splice(existingIndex, 1);
         }
 
         if (editId) {
@@ -693,8 +690,8 @@ window.deleteWordFromCloud = async function(wordText) {
             editId = null;
             document.getElementById('addBtn').innerText = "إضافة للقاموس";
         } else {
-            // إضافة محلياً
-            words.unshift({
+            // إضافة محلية
+            const newWord = {
                 id: Date.now() + Math.random(),
                 word: w,
                 meaning: m,
@@ -702,18 +699,21 @@ window.deleteWordFromCloud = async function(wordText) {
                 category: c,
                 starred: false,
                 forgetCount: 0   
-            });
+            };
+            words.unshift(newWord);
             
-            // نداء الدالة اللي بتبعث لفايربيس
-            if (typeof window.saveWordToCloud === "function") {
-                window.saveWordToCloud(w, c, m, ex);
-            } else {
-                console.error("خطأ: دالة saveWordToCloud مش معروفة للسكريبت!");
+            // 2. المحاولة الجادة للإرسال للفايربيس
+            if (window.saveWordToCloud) {
+                window.saveWordToCloud(w, c, m, ex).then(() => {
+                    console.log("تم التأكد من وصول الكلمة للفايربيس ☁️");
+                }).catch(err => {
+                    alert("الكلمة انضافت بس ما وصلت الفايربيس، تأكد من النت!");
+                });
             }
         }
         
         clearInputs();
-        saveAndRender(); // تأكد إن هاي الدالة موجودة عندك (كتبتها لك تحت)
+        saveAndRender(); 
     }
     function saveAndRender() {
         localStorage.setItem('myContextDict', JSON.stringify(words));
