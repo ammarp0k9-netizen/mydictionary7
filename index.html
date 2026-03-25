@@ -364,7 +364,7 @@
     <button class="btn-close" onclick="closeQuiz()">إغلاق الاختبار</button>
 </div>
 
-<script type="module">
+<<script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
   import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
   import { getFirestore, collection, addDoc, getDocs, query, orderBy, where, deleteDoc } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
@@ -382,109 +382,104 @@
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
-    onAuthStateChanged(auth, async (user) => {
-      if(user){
-        const btn = document.getElementById('loginBtn');
-        btn.innerText = "أهلاً بك يا " + user.displayName + " ✅";
 
-        loadWordsFromCloud();
-      }
-    });
+  // مراقب حالة تسجيل الدخول
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      const btn = document.getElementById('loginBtn');
+      if(btn) btn.innerText = "أهلاً بك يا " + user.displayName + " ✅";
+      console.log("تم تسجيل الدخول، جاري جلب البيانات...");
+      window.loadWordsFromCloud(); 
+    }
+  });
 
-  // دالة تسجيل الدخول مربوطة بالزر
+  // دالة تسجيل الدخول
   window.login = function() {
     const provider = new GoogleAuthProvider();
     signInWithPopup(auth, provider)
       .then((result) => {
-        const btn = document.getElementById('loginBtn');
-        btn.innerText = "أهلاً بك يا " + result.user.displayName + " ✅";
-        btn.style.background = "#eafaf1";
-        btn.style.borderColor = "#27ae60";
-        btn.style.color = "#27ae60";
+        console.log("تم تسجيل الدخول بنجاح");
       })
       .catch((error) => {
         alert("حدث خطأ في تسجيل الدخول: " + error.message);
       });
   };
 
- // مجهزة للاستخدام لاحقاً لحفظ الكلمات
-  // جوا الـ script type="module"
-window.saveWordToCloud = async function(wordText, wordCategory, meaning, example) {
-    console.log("☎️ محاولة اتصال بالفايربيس بدأت..."); // هاي لازم تطلع فوراً بس تضغط إضافة
-    
+  // دالة حفظ الكلمة للسحابة
+  window.saveWordToCloud = async function(wordText, wordCategory, meaning, example) {
     const user = auth.currentUser;
     if (user) {
-        console.log("✅ المستخدم مسجل دخول: ", user.uid);
-        try {
-            const docRef = await addDoc(collection(db, "users", user.uid, "words"), {
-                text: wordText,
-                category: wordCategory,
-                meaning: meaning,
-                example: example,
-                createdAt: new Date()
-            });
-            console.log("🚀 تم الحفظ برقم وثيقة: ", docRef.id);
-        } catch (e) {
-            console.error("❌ خطأ أثناء الإرسال: ", e);
-        }
-    } else {
-        console.warn("⚠️ الفايربيس مش شايف مستخدم (user is null)");
-        alert("سجل دخول أولاً يا غالي!");
+      try {
+        await addDoc(collection(db, "users", user.uid, "words"), {
+          text: wordText,
+          category: wordCategory,
+          meaning: meaning,
+          example: example,
+          createdAt: new Date()
+        });
+        console.log("🚀 تم الحفظ في السحابة بنجاح!");
+      } catch (e) {
+        console.error("❌ خطأ أثناء الإرسال: ", e);
+      }
     }
-};
-    window.loadWordsFromCloud = async function() {
+  };
 
-      const user = auth.currentUser;
-      if(!user) return;
-
-      const q = query(
-        collection(db, "users", user.uid, "words"),
-        orderBy("createdAt")
-      );
-
-        // دالة لحذف الكلمة من السحابة
-window.deleteWordFromCloud = async function(wordText) {
+  // دالة جلب الكلمات من السحابة
+  window.loadWordsFromCloud = async function() {
     const user = auth.currentUser;
     if (!user) return;
 
     try {
-        // بنفتش على الوثيقة اللي فيها نفس النص وبنحذفها
-        const q = query(collection(db, "users", user.uid, "words"), where("text", "==", wordText));
-        const snapshot = await getDocs(q);
-        snapshot.forEach(async (doc) => {
-            await deleteDoc(doc.ref);
-            console.log("تم الحذف من السحابة بنجاح ✅");
-        });
-    } catch (e) {
-        console.error("فشل الحذف من السحابة: ", e);
-    }
-};
-
-          const snapshot = await getDocs(q);
-
+      const q = query(collection(db, "users", user.uid, "words"), orderBy("createdAt", "desc"));
+      const snapshot = await getDocs(q);
       let cloudWords = [];
 
       snapshot.forEach((doc) => {
-       cloudWords.push({
-          id: Date.now() + Math.random(),
-          word: doc.data().text,
-          meaning: doc.data().meaning || "",
-          example: doc.data().example || "",
-          category: doc.data().category,
-          starred: false,
-          forgetCount: 0
+        const data = doc.data();
+        cloudWords.push({
+          id: doc.id,
+          word: data.text,
+          meaning: data.meaning || "",
+          example: data.example || "",
+          category: data.category,
+          starred: data.starred || false,
+          forgetCount: data.forgetCount || 0
         });
       });
 
-     if(cloudWords.length > 0){
-      words = cloudWords;
-
-      localStorage.setItem('myContextDict', JSON.stringify(words));
-
-      render();
+      if (cloudWords.length > 0) {
+        // تحديث المصفوفة المحلية
+        window.words = cloudWords;
+        localStorage.setItem('myContextDict', JSON.stringify(window.words));
+        
+        // تحديث الواجهة (تأكد أن دالة render موجودة في السكريبت الآخر)
+        if (typeof window.render === "function") {
+          window.render();
+          if (typeof window.updateStats === "function") window.updateStats();
+        }
+        console.log("✅ تم تحديث القائمة من السحابة");
+      }
+    } catch (e) {
+      console.error("خطأ في جلب الكلمات: ", e);
     }
-     };
-    
+  };
+
+  // دالة حذف الكلمة من السحابة
+  window.deleteWordFromCloud = async function(wordText) {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    try {
+      const q = query(collection(db, "users", user.uid, "words"), where("text", "==", wordText));
+      const snapshot = await getDocs(q);
+      snapshot.forEach(async (doc) => {
+        await deleteDoc(doc.ref);
+        console.log("تم الحذف من السحابة ✅");
+      });
+    } catch (e) {
+      console.error("فشل الحذف من السحابة: ", e);
+    }
+  };
 </script>
    
 <script>
