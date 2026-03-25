@@ -408,28 +408,30 @@
   };
 
  // مجهزة للاستخدام لاحقاً لحفظ الكلمات
-  window.saveWordToCloud = async function(wordText, wordCategory, meaning, example) {
-    const user = auth.currentUser;
+  // جوا الـ script type="module"
+window.saveWordToCloud = async function(wordText, wordCategory, meaning, example) {
+    console.log("☎️ محاولة اتصال بالفايربيس بدأت..."); // هاي لازم تطلع فوراً بس تضغط إضافة
     
+    const user = auth.currentUser;
     if (user) {
-      console.log("✅ المستخدم موجود، جاري الإرسال..."); 
-      try {
-        await addDoc(collection(db, "users", user.uid, "words"), {
-          text: wordText,
-          category: wordCategory,
-          meaning: meaning,
-          example: example,
-          createdAt: new Date()
-        });
-        console.log("🚀 تم الحفظ في فايربيس بنجاح!");
-      } catch (e) {
-        console.error("❌ خطأ من فايربيس نفسه: ", e);
-      }
+        console.log("✅ المستخدم مسجل دخول: ", user.uid);
+        try {
+            const docRef = await addDoc(collection(db, "users", user.uid, "words"), {
+                text: wordText,
+                category: wordCategory,
+                meaning: meaning,
+                example: example,
+                createdAt: new Date()
+            });
+            console.log("🚀 تم الحفظ برقم وثيقة: ", docRef.id);
+        } catch (e) {
+            console.error("❌ خطأ أثناء الإرسال: ", e);
+        }
     } else {
-      console.warn("⚠️ مش رح يخزن بالفايربيس لأنك مش مسجل دخول بجوجل!");
-      alert("سجل دخول أول عشان الكلمات تروح على الفايربيس");
+        console.warn("⚠️ الفايربيس مش شايف مستخدم (user is null)");
+        alert("سجل دخول أولاً يا غالي!");
     }
-  };
+};
     window.loadWordsFromCloud = async function() {
 
       const user = auth.currentUser;
@@ -702,19 +704,20 @@ window.deleteWordFromCloud = async function(wordText) {
             };
             words.unshift(newWord);
             
-            // 2. المحاولة الجادة للإرسال للفايربيس
-            if (window.saveWordToCloud) {
-                window.saveWordToCloud(w, c, m, ex).then(() => {
-                    console.log("تم التأكد من وصول الكلمة للفايربيس ☁️");
-                }).catch(err => {
-                    alert("الكلمة انضافت بس ما وصلت الفايربيس، تأكد من النت!");
-                });
-            }
+           // ... (كود الإضافة المحلي اللي عندك)
+
+        // فحص "الجسر" قبل المناداة
+        if (typeof window.saveWordToCloud === "function") {
+            console.log("🔗 الجسر شغال، جاري مناداة الفايربيس...");
+            window.saveWordToCloud(w, c, m, ex);
+        } else {
+            console.error("❌ الجسر مقطوع! المتصفح مش شايف دالة saveWordToCloud");
+            alert("في مشكلة في تحميل الفايربيس، جرب اعمل ريفريش");
         }
         
         clearInputs();
-        saveAndRender(); 
-    }
+        saveAndRender();
+        }
     function saveAndRender() {
         localStorage.setItem('myContextDict', JSON.stringify(words));
         render();
