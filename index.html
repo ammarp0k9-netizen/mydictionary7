@@ -717,7 +717,8 @@ window.deleteWordFromCloud = async function(wordText) {
         
         clearInputs();
         saveAndRender();
-        }
+            }
+   }
     function saveAndRender() {
         localStorage.setItem('myContextDict', JSON.stringify(words));
         render();
