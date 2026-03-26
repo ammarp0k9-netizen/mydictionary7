@@ -464,41 +464,35 @@
   // 5. دالة الحذف من السحابة (تم تعديل doc لـ wordDoc)
   window.deleteWord = function(id, event) {
     if (event) event.stopPropagation();
-    
-    console.log("🗑️ محاولة حذف الكلمة ذات الـ ID:", id);
 
-    // 1. البحث عن الكلمة في المصفوفة
-    let itemToDelete = window.words.find(w => w.id === id);
+    // 1. تنبيه للتأكيد
+    if (!confirm("أكيد بدك تحذف هاي الكلمة؟")) return;
+
+    console.log("جاري حذف المعرف:", id);
+
+    // 2. تحديث المصفوفة (الحذف من الشاشة فوراً)
+    // بنجيب الكلمة قبل الحذف عشان نعرف اسمها ونحذفها من السحابة
+    let wordToCloudDelete = window.words.find(w => w.id === id);
     
-    if (!itemToDelete) {
-        console.error("❌ لم يتم العثور على الكلمة في المصفوفة! الـ ID المرسل:", id);
-        return;
+    window.words = window.words.filter(w => w.id !== id);
+
+    // 3. حفظ في التخزين المحلي ورسم الجدول من جديد
+    localStorage.setItem('myContextDict', JSON.stringify(window.words));
+    
+    if (typeof window.saveAndRender === "function") {
+        window.saveAndRender();
+    } else {
+        render(); 
     }
 
-    if (confirm(`هل أنت متأكد من حذف كلمة (${itemToDelete.word})؟`)) {
-        // 2. الحذف من المصفوفة المحلية ( window.words )
-        const initialLength = window.words.length;
-        window.words = window.words.filter(w => w.id !== id);
-        
-        console.log("✅ تم الفلترة. عدد الكلمات قبل:", initialLength, "بعد:", window.words.length);
-
-        // 3. تحديث التخزين المحلي والشاشة
-        localStorage.setItem('myContextDict', JSON.stringify(window.words));
-        
-        // نستخدم render أو saveAndRender حسب شو المتاح عندك
-        if (typeof window.saveAndRender === "function") {
-            window.saveAndRender();
-        } else if (typeof window.render === "function") {
-            window.render();
-        }
-
-        // 4. الحذف من السحابة (Firebase) في الخلفية
-        if (typeof window.deleteWordFromCloud === "function") {
-            window.deleteWordFromCloud(itemToDelete.word);
-        }
+    // 4. الحذف من السحابة (Firebase)
+    if (wordToCloudDelete && typeof window.deleteWordFromCloud === "function") {
+        window.deleteWordFromCloud(wordToCloudDelete.word);
     }
+    
+    alert("تم الحذف بنجاح!");
 };
-
+    
   // 6. دوال التعديل والحذف للواجهة عشان المتصفح يشوفهم
   window.startEdit = function(id, event) {
     if (event) event.stopPropagation();
