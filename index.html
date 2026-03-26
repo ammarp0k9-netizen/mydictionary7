@@ -486,18 +486,11 @@
     }
 
     // 4. الحذف من السحابة (Firebase)
-   window.deleteWordFromCloud = async function(docId) {
-    const user = auth.currentUser;
-    if (!user) return;
-
-    try {
-        // بنحدد الوثيقة مباشرة باستخدام الـ ID تبعها
-        const docRef = doc(db, "users", user.uid, "words", docId);
-        await deleteDoc(docRef);
-        console.log("تم الحذف النهائي من السحابة ✅");
-    } catch (e) {
-        console.error("فشل الحذف من السحابة: ", e);
+    if (wordToCloudDelete && typeof window.deleteWordFromCloud === "function") {
+        window.deleteWordFromCloud(wordToCloudDelete.word);
     }
+    
+    alert("تم الحذف بنجاح!");
 };
     
   // 6. دوال التعديل والحذف للواجهة عشان المتصفح يشوفهم
@@ -1144,4 +1137,3 @@ function toggleDark(){
 </script>
 </body>
 </html>
-
