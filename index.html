@@ -415,7 +415,8 @@
           category: wordCategory,
           meaning: meaning,
           example: example,
-          createdAt: new Date()
+          createdAt: new Date(),
+          order: Date.now()   // 🔥 هذا المهم
         });
         console.log("🚀 تم الحفظ في السحابة بنجاح!");
       } catch (e) {
@@ -430,7 +431,7 @@
     if (!user) return;
 
     try {
-      const q = query(collection(db, "users", user.uid, "words"), orderBy("createdAt", "desc"));
+      const q = query(collection(db, "users", user.uid, "words"), orderBy("order", "asc"));
       const snapshot = await getDocs(q);
       let cloudWords = [];
 
@@ -465,11 +466,13 @@
   };
 
   // دالة حذف الكلمة من السحابة
-  window.deleteWordFromCloud = async function(docId) {    
-      const user = auth.currentUser;
-      if (!user) return;
+  import { doc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
-      try {
+window.deleteWordFromCloud = async function(docId) {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    try {
         await deleteDoc(doc(db, "users", user.uid, "words", docId));
         console.log("تم الحذف من السحابة ✅");
     } catch (e) {
