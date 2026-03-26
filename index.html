@@ -462,21 +462,33 @@
   };
 
   // 5. دالة الحذف من السحابة (تم تعديل doc لـ wordDoc)
-  window.deleteWordFromCloud = async function(wordText) {
-    const user = auth.currentUser;
-    if (!user) return;
+  window.deleteWord = function(id, event) {
+    if (event) event.stopPropagation();
+    
+    // البحث عن الكلمة قبل حذفها عشان نحذفها من الفايربيس لاحقاً
+    let itemToDelete = window.words.find(w => w.id === id);
+    
+    if (confirm("أكيد بدك تحذف الكلمة؟")) {
+        // 1. الحذف من المصفوفة المحلية (هاد اللي بخليها تختفي من الشاشة)
+        window.words = window.words.filter(w => w.id !== id);
+        
+        // 2. تحديث الشاشة فوراً
+        if (typeof window.saveAndRender === "function") {
+            window.saveAndRender();
+        } else {
+            // إذا ما عندك دالة saveAndRender، استخدم هدول السطرين:
+            localStorage.setItem('myContextDict', JSON.stringify(window.words));
+            render(); 
+        }
 
-    try {
-      const q = query(collection(db, "users", user.uid, "words"), where("text", "==", wordText));
-      const snapshot = await getDocs(q);
-      snapshot.forEach(async (wordDoc) => {
-        await deleteDoc(wordDoc.ref);
-        console.log("تم الحذف من السحابة ✅");
-      });
-    } catch (e) {
-      console.error("فشل الحذف من السحابة: ", e);
+        // 3. الحذف من الفايربيس (في الخلفية)
+        if (itemToDelete && typeof window.deleteWordFromCloud === "function") {
+            window.deleteWordFromCloud(itemToDelete.word);
+        }
+        
+        console.log("تم الحذف بنجاح ✅");
     }
-  };
+};
 
   // 6. دوال التعديل والحذف للواجهة عشان المتصفح يشوفهم
   window.startEdit = function(id, event) {
@@ -703,57 +715,63 @@
         }
     }
 
-   function addWord() {
-    let w = document.getElementById('wordInput').value.trim();
-    let m = document.getElementById('meaningInput').value.trim();
-    let ex = document.getElementById('exampleInput').value.trim();
-    let c = document.getElementById('categoryInput').value;
-    
-    if(!w || !m) {
-        alert("الرجاء إدخال الكلمة ومعناها.");
+   window.addWord = function() {
+    const w = document.getElementById('wordInput').value.trim();
+    const m = document.getElementById('meaningInput').value.trim();
+    const ex = document.getElementById('exampleInput').value.trim();
+    const c = document.getElementById('categoryInput').value;
+
+    if (!w || !m) {
+        alert("يا غالي عبّي الكلمة ومعناها أول!");
         return;
     }
 
     if (window.editId) {
-        // --- وضع التعديل ---
-        words = words.map(item => {
+        // --- حالة التعديل (Update) ---
+        // بنحدث المصفوفة المحلية
+        window.words = window.words.map(item => {
             if (item.id === window.editId) {
-                return {...item, word: w, meaning: m, example: ex, category: c};
+                return { ...item, word: w, meaning: m, example: ex, category: c };
             }
             return item;
         });
+
+        console.log("تم التعديل محلياً، جاري تحديث السحابة...");
         
-        window.editId = null; // تصفير متغير التعديل لإنهاء الحالة
-        const btn = document.getElementById('addBtn');
-        if(btn) {
-            btn.innerText = "إضافة للقاموس";
-            btn.style.background = ""; // إعادة لون الزر الطبيعي
-        }
+        // (اختياري) هون ممكن تنادي دالة تحديث في الفايربيس إذا حبيت
+        // بس حالياً بنعتمد إنه التعديل صار في المصفوفة
+        
+        window.editId = null; // أهم سطر: تصفير الـ ID عشان نطلع من وضع التعديل
+        document.getElementById('addBtn').innerText = "إضافة للقاموس";
+        document.getElementById('addBtn').style.background = ""; // رجع اللون الأصلي
         
     } else {
-        // --- وضع إضافة كلمة جديدة ---
+        // --- حالة إضافة كلمة جديدة (Add) ---
         const newWord = {
-            id: Date.now() + Math.random().toString(),
+            id: Date.now().toString(), // ID مؤقت
             word: w,
             meaning: m,
             example: ex,
             category: c,
             starred: false,
-            forgetCount: 0   
+            forgetCount: 0
         };
-        words.unshift(newWord);
-        
-        // المحاولة الفورية للرفع إلى السحابة
+        window.words.unshift(newWord);
+
+        // إرسال للسحابة
         if (typeof window.saveWordToCloud === "function") {
             window.saveWordToCloud(w, c, m, ex);
-        } else {
-            console.error("❌ دالة saveWordToCloud غير متعرف عليها حالياً.");
         }
     }
-    
-    clearInputs();
-    saveAndRender(); 
-}
+
+    // تنظيف الخانات وتحديث الشاشة
+    clearInputs(); 
+    if (typeof window.saveAndRender === "function") {
+        window.saveAndRender();
+    } else {
+        render(); // إذا مش موجودة saveAndRender نادي render مباشرة
+    }
+};
     function saveAndRender() {
         localStorage.setItem('myContextDict', JSON.stringify(words));
         render();
