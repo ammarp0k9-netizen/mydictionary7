@@ -465,28 +465,37 @@
   window.deleteWord = function(id, event) {
     if (event) event.stopPropagation();
     
-    // البحث عن الكلمة قبل حذفها عشان نحذفها من الفايربيس لاحقاً
+    console.log("🗑️ محاولة حذف الكلمة ذات الـ ID:", id);
+
+    // 1. البحث عن الكلمة في المصفوفة
     let itemToDelete = window.words.find(w => w.id === id);
     
-    if (confirm("أكيد بدك تحذف الكلمة؟")) {
-        // 1. الحذف من المصفوفة المحلية (هاد اللي بخليها تختفي من الشاشة)
+    if (!itemToDelete) {
+        console.error("❌ لم يتم العثور على الكلمة في المصفوفة! الـ ID المرسل:", id);
+        return;
+    }
+
+    if (confirm(`هل أنت متأكد من حذف كلمة (${itemToDelete.word})؟`)) {
+        // 2. الحذف من المصفوفة المحلية ( window.words )
+        const initialLength = window.words.length;
         window.words = window.words.filter(w => w.id !== id);
         
-        // 2. تحديث الشاشة فوراً
+        console.log("✅ تم الفلترة. عدد الكلمات قبل:", initialLength, "بعد:", window.words.length);
+
+        // 3. تحديث التخزين المحلي والشاشة
+        localStorage.setItem('myContextDict', JSON.stringify(window.words));
+        
+        // نستخدم render أو saveAndRender حسب شو المتاح عندك
         if (typeof window.saveAndRender === "function") {
             window.saveAndRender();
-        } else {
-            // إذا ما عندك دالة saveAndRender، استخدم هدول السطرين:
-            localStorage.setItem('myContextDict', JSON.stringify(window.words));
-            render(); 
+        } else if (typeof window.render === "function") {
+            window.render();
         }
 
-        // 3. الحذف من الفايربيس (في الخلفية)
-        if (itemToDelete && typeof window.deleteWordFromCloud === "function") {
+        // 4. الحذف من السحابة (Firebase) في الخلفية
+        if (typeof window.deleteWordFromCloud === "function") {
             window.deleteWordFromCloud(itemToDelete.word);
         }
-        
-        console.log("تم الحذف بنجاح ✅");
     }
 };
 
