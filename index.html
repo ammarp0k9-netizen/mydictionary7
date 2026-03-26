@@ -296,7 +296,7 @@
             <option value="اسم">اسم</option>
             <option value="صفة">صفة</option>
             <option value="أداة">أداة</option>
-            <option value="ظرف">ظروف</option>
+            <option value="ظرف">ظرف</option>
             <option value="جمل">جمل شائعة</option>
         </select>
         <button class="btn-main" id="addBtn" onclick="addWord()">إضافة للقاموس</button>
@@ -364,7 +364,7 @@
     <button class="btn-close" onclick="closeQuiz()">إغلاق الاختبار</button>
 </div>
 
-<<script type="module">
+<script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
   import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
   import { getFirestore, collection, addDoc, getDocs, query, orderBy, where, deleteDoc } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
@@ -465,21 +465,17 @@
   };
 
   // دالة حذف الكلمة من السحابة
-  window.deleteWordFromCloud = async function(wordText) {
-    const user = auth.currentUser;
-    if (!user) return;
+  window.deleteWordFromCloud = async function(docId) {    
+      const user = auth.currentUser;
+      if (!user) return;
 
-    try {
-      const q = query(collection(db, "users", user.uid, "words"), where("text", "==", wordText));
-      const snapshot = await getDocs(q);
-      snapshot.forEach(async (doc) => {
-        await deleteDoc(doc.ref);
+      try {
+        await deleteDoc(doc(db, "users", user.uid, "words", docId));
         console.log("تم الحذف من السحابة ✅");
-      });
     } catch (e) {
-      console.error("فشل الحذف من السحابة: ", e);
+        console.error("فشل الحذف:", e);
     }
-  };
+};
 </script>
    
 <script>
@@ -517,7 +513,7 @@
 
         if (mode === 'recent') {
             // ترتيب من الأحدث للأقدم
-            wordsToTest.sort((a,b) => b.id - a.id);
+            wordsToTest.sort((a,b) => (b.id || 0) - (a.id || 0));
             wordsToTest = wordsToTest.slice(0, 10);
         } else if (mode === 'old') {
             // ترتيب من الأقدم للأحدث
@@ -741,22 +737,25 @@
     }
 
     function editWord(id, event) {
-    if (event) event.stopPropagation();
-    
-    let item = words.find(w => w.id === id);
-    if (item) {
+        if (event) event.stopPropagation();
+
+        id = Number(id); // مهم
+
+        let item = words.find(w => Number(w.id) === id);
+
+        if (!item) return;
+
         document.getElementById('wordInput').value = item.word;
         document.getElementById('meaningInput').value = item.meaning;
         document.getElementById('exampleInput').value = item.example;
         document.getElementById('categoryInput').value = item.category;
-        
-        editId = id; // هون بنثبت الـ ID الجديد عشان لما نكبس حفظ يعرف أي وحدة يعدل
+
+        editId = id;
+
         document.getElementById('addBtn').innerText = "تحديث الكلمة";
-        
-        // برفع الصفحة لفوق عشان تشوف الخانات
-        window.scrollTo(0, 0);
+    
+        window.scrollTo({ top: 0, behavior: "smooth" });
     }
-}
     
    function deleteWord(id, event) {
     if (event) event.stopPropagation();
@@ -771,7 +770,7 @@
 
         // 2. حذف من السحابة باستخدام النص (Text)
         if (itemToDelete && typeof window.deleteWordFromCloud === "function") {
-            window.deleteWordFromCloud(itemToDelete.word);
+            window.deleteWordFromCloud(itemToDelete.id);
         }
     }
 }
@@ -878,11 +877,6 @@
         render();
     }
 
-    function saveAndRender() {
-        localStorage.setItem('myContextDict', JSON.stringify(words));
-        render();
-    }
-
     function highlightText(text, query) {
     if (!query) return text;
 
@@ -901,7 +895,7 @@
 
         let wordMatch = w.word.toLowerCase().includes(query);
         let meaningMatch = w.meaning.toLowerCase().includes(query);
-        let exampleMatch = w.example && w.example.toLowerCase().includes(query);
+        let exampleMatch = (w.example || "").toLowerCase().includes(query);
 
         let matchesSearch = false;
 
@@ -932,57 +926,60 @@
 
     let html = '';
 
-    filtered.forEach((w, index) => {
-        const dragAttrs = isReorderMode ? `draggable="true" ondragstart="drag(event, ${index})" ondragover="allowDrop(event)" ondrop="drop(event, ${index})"` : '';
-        const reorderClass = isReorderMode ? 'reorder-mode-li' : '';
-        const selectedClass = selectedIndices.includes(index) ? 'selected-for-move' : '';
+    filtered.forEach((w) => {
+    const realIndex = words.findIndex(item => item.id === w.id);
 
-        html += `
-        <li ${dragAttrs} class="${reorderClass} ${selectedClass}" onclick="handleLiClick(${index}, this)">
-             <div class="top-row">
-        
-        <button class="star-btn ${w.starred ? 'active' : ''}" 
-            onclick="toggleStar(${w.id}, event)" 
-            title="إضافة للصعبة">★</button>
+    const dragAttrs = isReorderMode ? 
+        `draggable="true" ondragstart="drag(event, ${realIndex})" ondragover="allowDrop(event)" ondrop="drop(event, ${realIndex})"` 
+        : '';
 
-        <div class="word-box">
-            <div class="word-text">
-                ${highlightText(w.word, query)} 
-                <span class="cat-tag tag-${w.category}">${w.category}</span>
+    const reorderClass = isReorderMode ? 'reorder-mode-li' : '';
+    const selectedClass = selectedIndices.includes(realIndex) ? 'selected-for-move' : '';
+
+    html += `
+    <li ${dragAttrs} class="${reorderClass} ${selectedClass}" onclick="handleLiClick(${realIndex}, this)">
+        <div class="top-row">
+            
+            <button class="star-btn ${w.starred ? 'active' : ''}" 
+                onclick="toggleStar(${w.id}, event)">★</button>
+
+            <div class="word-box">
+                <div class="word-text">
+                    ${highlightText(w.word, query)} 
+                    <span class="cat-tag tag-${w.category}">${w.category}</span>
+                </div>
+
+                <div class="meaning-text">
+                    ${highlightText(w.meaning, query)}
+                </div>
             </div>
 
-            <div class="meaning-text">
-                ${highlightText(w.meaning, query)}
-            </div>
+            ${isReorderMode ? 
+                '<span style="font-size:20px; color:#ccc;">☰</span>' 
+                :
+                `<div class="actions">
+                    <button class="icon-circle sound-btn" 
+                        onclick="playSound('${w.word}', event)">🔊</button>
+
+                    <button class="icon-circle edit-btn" 
+                        onclick="editWord(${w.id}, event)">📝</button>
+
+                    <button class="icon-circle del-btn" 
+                        onclick="deleteWord(${w.id}, event)">×</button>
+                </div>`
+            }
+
         </div>
 
-        ${isReorderMode ? 
-            '<span style="font-size:20px; color:#ccc;">☰</span>' 
-            :
-            `<div class="actions">
-                <button class="icon-circle sound-btn" 
-                    onclick="playSound('${w.word}', event)">🔊</button>
-
-                <button class="icon-circle edit-btn" 
-                    onclick="startEdit('${w.id}', event)">📝</button>
-
-                <button class="icon-circle del-btn" 
-                    onclick="deleteWord('${w.id}', event)">×</button>
-            </div>`
+        ${w.example ? 
+            `<div class="example-box">
+                <b>Ex:</b> ${highlightText(w.example, query)}
+            </div>` 
+            : ''
         }
 
-    </div>
-
-    ${w.example ? 
-        `<div class="example-box">
-            <b>Ex:</b> ${highlightText(w.example, query)}
-        </div>` 
-        : ''
-    }
-
-</li>`;
-    }); 
-
+    </li>`;
+});
     document.getElementById('list').innerHTML = html; 
 }
 
