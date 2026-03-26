@@ -676,54 +676,56 @@ window.deleteWordFromCloud = async function(docId) {
     }
 
    function addWord() {
-        let w = document.getElementById('wordInput').value.trim();
-        let m = document.getElementById('meaningInput').value.trim();
-        let ex = document.getElementById('exampleInput').value.trim();
-        let c = document.getElementById('categoryInput').value;
+    let w = document.getElementById('wordInput').value.trim();
+    let m = document.getElementById('meaningInput').value.trim();
+    let ex = document.getElementById('exampleInput').value.trim();
+    let c = document.getElementById('categoryInput').value;
+    
+    if(!w || !m) {
+        alert("الرجاء إدخال الكلمة ومعناها.");
+        return;
+    }
+
+    if (window.editId) {
+        // --- وضع التعديل ---
+        words = words.map(item => {
+            if (item.id === window.editId) {
+                return {...item, word: w, meaning: m, example: ex, category: c};
+            }
+            return item;
+        });
         
-        if(!w || !m) return;
-
-        // 1. فحص التكرار "الذكي"
-        let existingIndex = words.findIndex(item => item.word.toLowerCase() === w.toLowerCase());
-
-        if (existingIndex !== -1 && !editId) {
-            // إذا موجودة "شبح"، بنمسح القديمة وبنكمل إضافة الجديدة
-            console.log("الكلمة موجودة كشبح، جاري إعادة المزامنة...");
-            words.splice(existingIndex, 1);
+        window.editId = null; // تصفير متغير التعديل لإنهاء الحالة
+        const btn = document.getElementById('addBtn');
+        if(btn) {
+            btn.innerText = "إضافة للقاموس";
+            btn.style.background = ""; // إعادة لون الزر الطبيعي
         }
-
-        if (editId) {
-            words = words.map(item => item.id === editId ? {...item, word: w, meaning: m, example: ex, category: c} : item);
-            editId = null;
-            document.getElementById('addBtn').innerText = "إضافة للقاموس";
-        } else {
-            // إضافة محلية
-            const newWord = {
-                id: Date.now() + Math.random(),
-                word: w,
-                meaning: m,
-                example: ex,
-                category: c,
-                starred: false,
-                forgetCount: 0   
-            };
-            words.unshift(newWord);
-            
-           // ... (كود الإضافة المحلي اللي عندك)
-
-        // فحص "الجسر" قبل المناداة
+        
+    } else {
+        // --- وضع إضافة كلمة جديدة ---
+        const newWord = {
+            id: Date.now() + Math.random().toString(),
+            word: w,
+            meaning: m,
+            example: ex,
+            category: c,
+            starred: false,
+            forgetCount: 0   
+        };
+        words.unshift(newWord);
+        
+        // المحاولة الفورية للرفع إلى السحابة
         if (typeof window.saveWordToCloud === "function") {
-            console.log("🔗 الجسر شغال، جاري مناداة الفايربيس...");
             window.saveWordToCloud(w, c, m, ex);
         } else {
-            console.error("❌ الجسر مقطوع! المتصفح مش شايف دالة saveWordToCloud");
-            alert("في مشكلة في تحميل الفايربيس، جرب اعمل ريفريش");
+            console.error("❌ دالة saveWordToCloud غير متعرف عليها حالياً.");
         }
-        
-        clearInputs();
-        saveAndRender();
-            }
-   }
+    }
+    
+    clearInputs();
+    saveAndRender(); 
+}
     function saveAndRender() {
         localStorage.setItem('myContextDict', JSON.stringify(words));
         render();
