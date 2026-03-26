@@ -367,7 +367,17 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
   import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
-  import { getFirestore, collection, addDoc, getDocs, query, orderBy, where, deleteDoc } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+  import { 
+  getFirestore, 
+  collection, 
+  addDoc, 
+  getDocs, 
+  query, 
+  orderBy, 
+  where, 
+  deleteDoc,
+  doc
+} from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDQB5N4wxJw69-tb8suI2T2SfEfCpwFA2c",
@@ -397,7 +407,7 @@
   window.login = function() {
     const provider = new GoogleAuthProvider();
     signInWithPopup(auth, provider)
-      .then((result) => {
+      .then(() => {
         console.log("تم تسجيل الدخول بنجاح");
       })
       .catch((error) => {
@@ -439,6 +449,7 @@
         const data = doc.data();
         cloudWords.push({
           id: doc.id,
+          localId: Date.now() + Math.random(), // لو بدك
           word: data.text,
           meaning: data.meaning || "",
           example: data.example || "",
@@ -875,6 +886,10 @@ window.deleteWordFromCloud = async function(docId) {
         if (actualDropIndex < 0) actualDropIndex = 0;
 
         words.splice(actualDropIndex, 0, ...itemsToMove);
+        words.forEach((w, index) => {
+            w.order = index;
+          });
+        localStorage.setItem('myContextDict', JSON.stringify(words));
         
         selectedIndices = []; 
         render();
