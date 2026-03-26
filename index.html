@@ -827,24 +827,6 @@
     
         window.scrollTo({ top: 0, behavior: "smooth" });
     }
-    
-   function deleteWord(id, event) {
-    if (event) event.stopPropagation();
-    
-    // بنلاقي الكلمة اللي بدنا نحذفها عشان ناخد نصها ونحذفه من السحابة
-    let itemToDelete = words.find(w => w.id === id);
-    
-    if(confirm("أكيد بدك تحذف الكلمة؟")) {
-        // 1. حذف محلي من المصفوفة
-        words = words.filter(w => w.id !== id);
-        saveAndRender();
-
-        // 2. حذف من السحابة باستخدام النص (Text)
-        if (itemToDelete && typeof window.deleteWordFromCloud === "function") {
-            window.deleteWordFromCloud(itemToDelete.id);
-        }
-    }
-}
 
     function playSound(word, event) {
         if (event) event.stopPropagation();
