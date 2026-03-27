@@ -372,15 +372,16 @@
   import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
   import { getFirestore, collection, addDoc, getDocs, query, orderBy, where, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyDQB5N4wxJw69-tb8suI2T2SfEfCpwFA2c",
-    authDomain: "quizapp-ede17.firebaseapp.com",
-    projectId: "quizapp-ede17",
-    storageBucket: "quizapp-ede17.firebasestorage.app",
-    messagingSenderId: "473471031803",
-    appId: "1:473471031803:web:1b803237aeb0444040535e",
-    measurementId: "G-C06S6C7JYT"
-  };
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyDQB5N4wxJw69-tb8suI2T2SfEfCpwFA2c",
+  authDomain: "quizapp-ede17.firebaseapp.com",
+  projectId: "quizapp-ede17",
+  storageBucket: "quizapp-ede17.firebasestorage.app",
+  messagingSenderId: "473471031803",
+  appId: "1:473471031803:web:1b803237aeb0444040535e",
+  measurementId: "G-C06S6C7JYT"
+};
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
@@ -499,16 +500,7 @@
         alert("صار خطأ بالحذف 😅");
     }
 };
-    // 3. حفظ في التخزين المحلي ورسم الجدول من جديد
-    localStorage.setItem('myContextDict', JSON.stringify(window.words));
-    
-    if (typeof window.saveAndRender === "function") {
-        window.saveAndRender();
-    } else {
-        render(); 
-    }
-    
-    
+        
   // 6. دوال التعديل والحذف للواجهة عشان المتصفح يشوفهم
   window.startEdit = function(id, event) {
     if (event) event.stopPropagation();
@@ -570,7 +562,7 @@
 
         if (mode === 'recent') {
             // ترتيب من الأحدث للأقدم
-            wordsToTest.sort((a,b) => (b.id || 0) - (a.id || 0));
+            wordsToTest.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
             wordsToTest = wordsToTest.slice(0, 10);
         } else if (mode === 'old') {
             // ترتيب من الأقدم للأحدث
@@ -804,7 +796,7 @@
     function editWord(id, event) {
         if (event) event.stopPropagation();
 
-        let item = words.find(w => Number(w.id) === id);
+        let item = words.find(w => w.id === id);
 
         if (!item) return;
 
