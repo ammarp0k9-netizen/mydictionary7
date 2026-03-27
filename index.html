@@ -370,7 +370,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
   import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
-  import { getFirestore, collection, addDoc, getDocs, query, orderBy, where, deleteDoc } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+  import { getFirestore, collection, addDoc, getDocs, query, orderBy, where, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDQB5N4wxJw69-tb8suI2T2SfEfCpwFA2c",
@@ -465,20 +465,40 @@
   };
 
   // 5. دالة الحذف من السحابة (تم تعديل doc لـ wordDoc)
-  window.deleteWord = function(id, event) {
+ window.deleteWord = async function(id, event) {
     if (event) event.stopPropagation();
 
-    // 1. تنبيه للتأكيد
-    if (!confirm("أكيد بدك تحذف هاي الكلمة؟")) return;
+    if (!confirm("هل أنت متأكد من حذف هذه الكلمة؟")) return;
 
-    console.log("جاري حذف المعرف:", id);
+    const user = auth.currentUser;
 
-    // 2. تحديث المصفوفة (الحذف من الشاشة فوراً)
-    // بنجيب الكلمة قبل الحذف عشان نعرف اسمها ونحذفها من السحابة
-    let wordToCloudDelete = window.words.find(w => w.id === id);
-    
-    window.words = window.words.filter(w => w.id !== id);
+    try {
+        // 1. حذف من Firebase (إذا مسجل دخول)
+        if (user && id) {
+            await deleteDoc(doc(db, "users", user.uid, "words", id));
+            console.log("🔥 تم الحذف من Firebase");
+        }
 
+        // 2. حذف من المصفوفة المحلية
+        window.words = window.words.filter(w => w.id !== id);
+
+        // 3. تحديث التخزين
+        localStorage.setItem('myContextDict', JSON.stringify(window.words));
+
+        // 4. إعادة الرسم
+        if (typeof window.saveAndRender === "function") {
+            window.saveAndRender();
+        } else {
+            render();
+        }
+
+        console.log("✅ تم الحذف نهائياً");
+
+    } catch (e) {
+        console.error("❌ خطأ بالحذف:", e);
+        alert("صار خطأ بالحذف 😅");
+    }
+};
     // 3. حفظ في التخزين المحلي ورسم الجدول من جديد
     localStorage.setItem('myContextDict', JSON.stringify(window.words));
     
@@ -487,14 +507,7 @@
     } else {
         render(); 
     }
-
-    // 4. الحذف من السحابة (Firebase)
-    if (wordToCloudDelete && typeof window.deleteWordFromCloud === "function") {
-        window.deleteWordFromCloud(wordToCloudDelete.word);
-    }
     
-    alert("تم الحذف بنجاح!");
-};
     
   // 6. دوال التعديل والحذف للواجهة عشان المتصفح يشوفهم
   window.startEdit = function(id, event) {
@@ -519,23 +532,7 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  window.deleteWord = function(id, event) {
-    if (event) event.stopPropagation();
-    
-    let itemToDelete = window.words.find(w => w.id === id);
-    
-    if (confirm("هل أنت متأكد من حذف هذه الكلمة؟")) {
-        window.words = window.words.filter(w => w.id !== id);
-        
-        if (typeof window.saveAndRender === "function") {
-            window.saveAndRender();
-        }
 
-        if (itemToDelete && typeof window.deleteWordFromCloud === "function") {
-            window.deleteWordFromCloud(itemToDelete.word);
-        }
-    }
-  };
 </script>
    
 <script>
@@ -806,8 +803,6 @@
 
     function editWord(id, event) {
         if (event) event.stopPropagation();
-
-        id = Number(id); // مهم
 
         let item = words.find(w => Number(w.id) === id);
 
