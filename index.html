@@ -410,24 +410,25 @@ const firebaseConfig = {
   };
 
   // 3. دالة حفظ الكلمة للسحابة
-  window.saveWordToCloud = async function(wordText, wordCategory, meaning, example) {
-    const user = auth.currentUser;
-    if (user) {
-      try {
-        await addDoc(collection(db, "users", user.uid, "words"), {
-          text: wordText,
-          category: wordCategory,
-          meaning: meaning,
-          example: example,
-          createdAt: new Date()
-        });
-        console.log("🚀 تم الحفظ في السحابة بنجاح!");
-      } catch (e) {
-        console.error("❌ خطأ أثناء الإرسال: ", e);
-      }
-    }
-  };
+ window.saveWordToCloud = async function(wordText, wordCategory, meaning, example) {
+  const user = auth.currentUser;
+  if (user) {
+    try {
+      const docRef = await addDoc(collection(db, "users", user.uid, "words"), {
+        text: wordText,
+        category: wordCategory,
+        meaning: meaning,
+        example: example,
+        createdAt: new Date()
+      });
 
+      return docRef.id; // 🔥 رجع ID الحقيقي
+    } catch (e) {
+      console.error("❌ خطأ أثناء الإرسال: ", e);
+    }
+  }
+};
+    
     window.updateWordInCloud = async function(id, data) {
   const user = auth.currentUser;
   if (!user) return;
@@ -713,7 +714,7 @@ const firebaseConfig = {
         }
     }
 
-   window.addWord = function() {
+   window.addWord = async function() {
     const w = document.getElementById('wordInput').value.trim();
     const m = document.getElementById('meaningInput').value.trim();
     const ex = document.getElementById('exampleInput').value.trim();
@@ -762,7 +763,9 @@ const firebaseConfig = {
 
         // إرسال للسحابة
         if (typeof window.saveWordToCloud === "function") {
-            window.saveWordToCloud(w, c, m, ex);
+            const realId = await window.saveWordToCloud(w, c, m, ex);
+
+                newWord.id = realId; // 🔥 استبدل الـ ID المؤقت
         }
     }
 
