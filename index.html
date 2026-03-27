@@ -370,7 +370,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
   import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
-  import { getFirestore, collection, addDoc, getDocs, query, orderBy, where, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+  import { getFirestore, collection, addDoc, getDocs, query, orderBy, where, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
   // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
@@ -428,6 +428,19 @@ const firebaseConfig = {
     }
   };
 
+    window.updateWordInCloud = async function(id, data) {
+  const user = auth.currentUser;
+  if (!user) return;
+
+  try {
+    const ref = doc(db, "users", user.uid, "words", id);
+    await updateDoc(ref, data);
+    console.log("✏️ تم التحديث في Firebase");
+  } catch (e) {
+    console.error("❌ خطأ بالتحديث:", e);
+  }
+};
+    
   // 4. دالة جلب الكلمات من السحابة (تم تعديل doc لـ wordDoc لمنع التعارض)
   window.loadWordsFromCloud = async function() {
     const user = auth.currentUser;
@@ -722,23 +735,28 @@ const firebaseConfig = {
     }
 
     if (window.editId) {
-        // --- حالة التعديل (Update) ---
-        // بنحدث المصفوفة المحلية
-        window.words = window.words.map(item => {
-            if (item.id === window.editId) {
-                return { ...item, word: w, meaning: m, example: ex, category: c };
-            }
-            return item;
-        });
 
-        console.log("تم التعديل محلياً، جاري تحديث السحابة...");
-        
-        // (اختياري) هون ممكن تنادي دالة تحديث في الفايربيس إذا حبيت
-        // بس حالياً بنعتمد إنه التعديل صار في المصفوفة
-        
-        window.editId = null; // أهم سطر: تصفير الـ ID عشان نطلع من وضع التعديل
-        document.getElementById('addBtn').innerText = "إضافة للقاموس";
-        document.getElementById('addBtn').style.background = ""; // رجع اللون الأصلي
+    window.words = window.words.map(item => {
+        if (item.id === window.editId) {
+            return { ...item, word: w, meaning: m, example: ex, category: c };
+        }
+        return item;
+    });
+
+    // 🔥 أهم سطر
+    if (typeof window.updateWordInCloud === "function") {
+        window.updateWordInCloud(window.editId, {
+            text: w,
+            meaning: m,
+            example: ex,
+            category: c
+        });
+    }
+
+    window.editId = null;
+    document.getElementById('addBtn').innerText = "إضافة للقاموس";
+    document.getElementById('addBtn').style.background = "";
+}
         
     } else {
         // --- حالة إضافة كلمة جديدة (Add) ---
