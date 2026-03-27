@@ -482,35 +482,25 @@ const firebaseConfig = {
  window.deleteWord = async function(id, event) {
     if (event) event.stopPropagation();
 
+    id = String(id); // 🔥 مهم جدًا
+
     if (!confirm("هل أنت متأكد من حذف هذه الكلمة؟")) return;
 
     const user = auth.currentUser;
 
     try {
-        // 1. حذف من Firebase (إذا مسجل دخول)
         if (user && id) {
             await deleteDoc(doc(db, "users", user.uid, "words", id));
-            console.log("🔥 تم الحذف من Firebase");
         }
 
-        // 2. حذف من المصفوفة المحلية
-        window.words = window.words.filter(w => w.id !== id);
+        window.words = window.words.filter(w => String(w.id) !== id);
 
-        // 3. تحديث التخزين
         localStorage.setItem('myContextDict', JSON.stringify(window.words));
 
-        // 4. إعادة الرسم
-        if (typeof window.saveAndRender === "function") {
-            window.saveAndRender();
-        } else {
-            render();
-        }
-
-        console.log("✅ تم الحذف نهائياً");
+        render();
 
     } catch (e) {
         console.error("❌ خطأ بالحذف:", e);
-        alert("صار خطأ بالحذف 😅");
     }
 };
         
@@ -999,7 +989,7 @@ const firebaseConfig = {
         <div class="top-row">
             
             <button class="star-btn ${w.starred ? 'active' : ''}" 
-                onclick="toggleStar(${w.id}, event)">★</button>
+                onclick="toggleStar('${w.id}', event)">★</button>
 
             <div class="word-box">
                 <div class="word-text">
