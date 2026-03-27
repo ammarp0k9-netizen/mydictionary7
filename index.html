@@ -444,40 +444,30 @@ window.loadWordsFromCloud = async function() {
 
 // ✅🔥 الحذف المصحح
 window.deleteWord = async function(id, event) {
-    if (event) event.stopPropagation();
+  if (event) event.stopPropagation();
 
-    console.log("ID:", id);
+  if (!confirm("متأكد من الحذف؟")) return;
 
-    if (!id) {
-        alert("في مشكلة بالـ ID");
-        return;
+  const user = auth.currentUser;
+
+  try {
+    // حذف من Firebase
+    if (user) {
+      await deleteDoc(doc(db, "users", user.uid, "words", id));
     }
 
-    if (!confirm("متأكد من الحذف؟")) return;
+    // حذف محلي
+    window.words = window.words.filter(w => w.id !== id);
 
-    try {
-        const user = auth.currentUser;
+    localStorage.setItem('myContextDict', JSON.stringify(window.words));
+    render();
 
-        // حذف من Firebase
-        if (user) {
-            await deleteDoc(doc(db, "users", user.uid, "words", id));
-            console.log("تم الحذف من Firebase");
-        }
-
-        // حذف محلي
-        window.words = window.words.filter(w => w.id !== id);
-
-        localStorage.setItem('myContextDict', JSON.stringify(window.words));
-        render();
-
-        console.log("تم الحذف محلياً");
-
-    } catch (e) {
-        console.error("خطأ:", e);
-        alert("فشل الحذف");
-    }
+  } catch (e) {
+    console.error(e);
+    alert("فشل الحذف");
+  }
 };
-    
+
 // التعديل
 window.startEdit = function(id, event) {
   if (event) event.stopPropagation();
