@@ -768,7 +768,7 @@ window.addWord = async function() {
     // --- نهاية كود التعديل (Update) ---
     if (typeof window.updateWordInCloud === "function") {
         await window.updateWordInCloud(window.editId, { word: w, meaning: m, example: ex, category: c });
-    }
+  
 
     window.editId = null;
     document.getElementById('addBtn').innerText = "إضافة للقاموس";
@@ -791,9 +791,9 @@ window.addWord = async function() {
     if (typeof window.saveWordToCloud === "function") {
         const realId = await window.saveWordToCloud(w, c, m, ex);
         if (realId) newWord.id = realId;
-    }
-} // نهاية الـ else
-    
+        }
+    } // نهاية الـ else
+}   
     function saveAndRender() {
         localStorage.setItem('myContextDict', JSON.stringify(words));
         render();
