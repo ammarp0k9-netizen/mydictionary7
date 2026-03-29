@@ -823,40 +823,53 @@ const firebaseConfig = {
     }
 
 window.playSound = function(id, event) {
-    // 1. منع تداخل النقرات (عشان ما يفتح تفاصيل الكلمة وهو بكبس زر الصوت)
     if (event) event.stopPropagation();
 
-    // 2. البحث عن الكلمة في المصفوفة باستخدام الـ ID
+    // 1. نجيب الكلمة من المصفوفة
     const wordObj = window.words.find(w => w.id === id);
-    
-    // إذا ما لقى الكلمة (احتياطاً) وقف الشغل
-    if (!wordObj || !wordObj.word) return; 
+    if (!wordObj || !wordObj.word) return;
 
-    const textToSpeak = wordObj.word;
+    const word = wordObj.word.trim();
+    console.log("🔊 محاولة تشغيل الصوت للكلمة:", word);
 
-    // 3. التأكد من دعم المتصفح للصوت
+    // تجهيز مسار الملف المحلي (Webster)
+    const localPath = `sounds/${word}.mp3`;
+    // رابط جوجل (الخيار الثاني)
+    const googleSnd = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(word)}&tl=en&client=tw-ob`;
+
+    const audio = new Audio();
+
+    // --- المحاولة الأولى: ملف sounds المحلي ---
+    audio.src = localPath;
+
+    audio.play().catch(() => {
+        console.log("⚠️ لم يتم العثور على ملف محلي، جاري تجربة جوجل...");
+        
+        // --- المحاولة الثانية: لفظ جوجل ---
+        audio.src = googleSnd;
+        audio.play().catch(() => {
+            console.log("⚠️ فشل لفظ جوجل، جاري التحويل للنطق الآلي...");
+            
+            // --- المحاولة الثالثة: النطق الآلي (Speech Synthesis) ---
+            runSpeechSynthesis(word);
+        });
+    });
+};
+
+// دالة مساعدة للنطق الآلي عشان الكود يكون نظيف
+function runSpeechSynthesis(text) {
     if ('speechSynthesis' in window) {
-        // تنظيف طابور الصوت عشان الموبايل ما يعلق
         window.speechSynthesis.cancel();
-
-        const utterance = new SpeechSynthesisUtterance(textToSpeak);
+        const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'en-US';
-        utterance.rate = 0.9; // أبطأ شوي لتكون اللفظة أوضح
-        utterance.pitch = 1.0;
-
-        // 4. سحب الأصوات المتاحة وتحديد صوت إنجليزي
+        utterance.rate = 0.9;
         const voices = window.speechSynthesis.getVoices();
         if (voices.length > 0) {
-            const englishVoice = voices.find(v => v.lang.startsWith('en')) || voices[0];
-            utterance.voice = englishVoice;
+            utterance.voice = voices.find(v => v.lang.startsWith('en')) || voices[0];
         }
-
-        // 5. تشغيل الصوت
         window.speechSynthesis.speak(utterance);
-    } else {
-        alert("عذراً، متصفحك لا يدعم ميزة نطق الصوت.");
     }
-};
+}
     
     window.onload = function() {
         if ('speechSynthesis' in window) {
