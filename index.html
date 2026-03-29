@@ -759,7 +759,7 @@ window.addWord = async function() {
         // ... كود الإضافة اللي عندك (بدون تغيير) ...
     }
     // --- الجزء الثاني: إضافة كلمة جديدة (هون الـ else الصح) ---
-    else {
+     else {
         const newWord = {
             id: Date.now().toString(), 
             word: w,
@@ -775,7 +775,7 @@ window.addWord = async function() {
             const realId = await window.saveWordToCloud(w, c, m, ex);
             if (realId) newWord.id = realId; 
         }
-    }
+     }
 
     // تنظيف الخانات وحفظ البيانات ورسم الجدول
     // --- نهاية كود التعديل (Update) ---
