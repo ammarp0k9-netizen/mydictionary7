@@ -770,12 +770,11 @@ window.addWord = async function() {
             forgetCount: 0
         };
         window.words.unshift(newWord);
-
+     }
         if (typeof window.saveWordToCloud === "function") {
             const realId = await window.saveWordToCloud(w, c, m, ex);
             if (realId) newWord.id = realId; 
         }
-     }
 
     // تنظيف الخانات وحفظ البيانات ورسم الجدول
     // --- نهاية كود التعديل (Update) ---
