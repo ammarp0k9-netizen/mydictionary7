@@ -728,7 +728,9 @@ window.addWord = async function() {
     }
 
     // --- الجزء الأول: إذا كنا في وضع التعديل ---
+   // --- 1. وضع التعديل (Update) ---
     if (window.editId) {
+        // نحدث المصفوفة المحلية أولاً
         window.words = window.words.map(item => {
             if (item.id === window.editId) {
                 return { ...item, word: w, meaning: m, example: ex, category: c };
@@ -736,15 +738,26 @@ window.addWord = async function() {
             return item;
         });
 
+        // نحدث السحابة (لازم نمرر الـ ID قبل ما نصفر قيمته)
         if (typeof window.updateWordInCloud === "function") {
-            await window.updateWordInCloud(window.editId, { word: w, meaning: m, example: ex, category: c });
+            await window.updateWordInCloud(window.editId, { 
+                word: w, 
+                meaning: m, 
+                example: ex, 
+                category: c 
+            });
         }
 
-        // تصفير معرف التعديل ورجوع الزر لطبيعته
-        window.editId = null;
-        document.getElementById('addBtn').innerText = "إضافة للقاموس";
-        document.getElementById('addBtn').style.background = "";
+        // هسا "فقط" بنصفر الـ ID وبنرجع الزر لطبيعته
+        window.editId = null; 
+        const addBtn = document.getElementById('addBtn');
+        addBtn.innerText = "إضافة للقاموس";
+        addBtn.style.background = "";
     } 
+    // --- 2. وضع الإضافة الجديدة ---
+    else {
+        // ... كود الإضافة اللي عندك (بدون تغيير) ...
+    }
     // --- الجزء الثاني: إضافة كلمة جديدة (هون الـ else الصح) ---
     else {
         const newWord = {
