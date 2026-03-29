@@ -754,10 +754,7 @@ window.addWord = async function() {
         addBtn.innerText = "إضافة للقاموس";
         addBtn.style.background = "";
     } 
-    // --- 2. وضع الإضافة الجديدة ---
-    else {
-        // ... كود الإضافة اللي عندك (بدون تغيير) ...
-    }
+   
     // --- الجزء الثاني: إضافة كلمة جديدة (هون الـ else الصح) ---
      else {
         const newWord = {
@@ -770,7 +767,7 @@ window.addWord = async function() {
             forgetCount: 0
         };
         window.words.unshift(newWord);
-     }
+    
         if (typeof window.saveWordToCloud === "function") {
             const realId = await window.saveWordToCloud(w, c, m, ex);
             if (realId) newWord.id = realId; 
