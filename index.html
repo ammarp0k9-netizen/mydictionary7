@@ -431,34 +431,24 @@ const firebaseConfig = {
     
     // حط هاي جوا الموديول عند دوال الفايربيس
 window.updateWordInCloud = async function(docId, updatedData) {
-    // 1. التأكد من تسجيل الدخول
     const user = auth.currentUser;
-    if (!user) {
-        console.error("❌ خطأ: لم يتم العثور على مستخدم مسجل!");
-        return;
-    }
-
-    // 2. التأكد من وجود ID للكلمة
-    if (!docId) {
-        console.error("❌ خطأ: الـ ID الممرر للدالة فارغ (null)!");
-        return;
-    }
+    if (!user || !docId) return;
 
     try {
-        // استيراد الدوال اللازمة من فايربيس
         const { doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js");
-        
-        // بناء المرجع بدقة (تأكد من ترتيب المجلدات: users -> UID -> words -> docId)
         const docRef = doc(db, "users", user.uid, "words", docId);
         
-        // تنفيذ التحديث
-        await updateDoc(docRef, updatedData);
+        // 🔥 هون السر: لازم نستخدم "text" عشان يطابق الصورة اللي بعتتها
+        await updateDoc(docRef, {
+            text: updatedData.word,      // حوّلنا word لـ text عشان السحابة
+            meaning: updatedData.meaning,
+            example: updatedData.example,
+            category: updatedData.category
+        });
         
-        console.log(`✅ تم تحديث الكلمة [${docId}] في السحابة بنجاح!`);
+        console.log("✅ تم التعديل في السحابة باستخدام حقل text");
     } catch (e) {
-        console.error("❌ فشل تحديث السحابة:", e);
-        // تنبيه صغير عشان تعرف إذا فشل
-        alert("فشل الحفظ في السحابة، تأكد من الإنترنت!");
+        console.error("❌ خطأ في التحديث:", e);
     }
 };
     
