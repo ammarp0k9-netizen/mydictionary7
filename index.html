@@ -727,10 +727,9 @@ window.addWord = async function() {
         return;
     }
 
-    // --- الجزء الأول: إذا كنا في وضع التعديل ---
-   // --- 1. وضع التعديل (Update) ---
+    // --- الحالة الأولى: وضع التعديل (Update) ---
     if (window.editId) {
-        // نحدث المصفوفة المحلية أولاً
+        // 1. تحديث المصفوفة المحلية
         window.words = window.words.map(item => {
             if (item.id === window.editId) {
                 return { ...item, word: w, meaning: m, example: ex, category: c };
@@ -738,7 +737,7 @@ window.addWord = async function() {
             return item;
         });
 
-        // نحدث السحابة (لازم نمرر الـ ID قبل ما نصفر قيمته)
+        // 2. تحديث السحابة
         if (typeof window.updateWordInCloud === "function") {
             await window.updateWordInCloud(window.editId, { 
                 word: w, 
@@ -748,17 +747,16 @@ window.addWord = async function() {
             });
         }
 
-        // هسا "فقط" بنصفر الـ ID وبنرجع الزر لطبيعته
+        // 3. تصفير الـ ID ورجوع الزر لطبيعته
         window.editId = null; 
         const addBtn = document.getElementById('addBtn');
         addBtn.innerText = "إضافة للقاموس";
         addBtn.style.background = "";
     } 
-   
-    // --- الجزء الثاني: إضافة كلمة جديدة (هون الـ else الصح) ---
-     else {
+    // --- الحالة الثانية: إضافة كلمة جديدة (Add) ---
+    else {
         const newWord = {
-            id: Date.now().toString(), 
+            id: Date.now().toString(),
             word: w,
             meaning: m,
             example: ex,
@@ -767,42 +765,22 @@ window.addWord = async function() {
             forgetCount: 0
         };
         window.words.unshift(newWord);
-    
+
         if (typeof window.saveWordToCloud === "function") {
             const realId = await window.saveWordToCloud(w, c, m, ex);
-            if (realId) newWord.id = realId; 
+            if (realId) newWord.id = realId;
         }
+    }
 
-    // تنظيف الخانات وحفظ البيانات ورسم الجدول
-    // --- نهاية كود التعديل (Update) ---
-    if (typeof window.updateWordInCloud === "function") {
-        await window.updateWordInCloud(window.editId, { word: w, meaning: m, example: ex, category: c });
-  
-
-    window.editId = null;
-    document.getElementById('addBtn').innerText = "إضافة للقاموس";
-    document.getElementById('addBtn').style.background = "";
+    // --- الخطوة الأخيرة: التحديث العام (خارج الـ if والـ else) ---
+    if (typeof clearInputs === "function") clearInputs();
     
-    // هون بنسكر الـ if وبنفتح الـ else فوراً بدون ما نحط أي سطر بينهم
-} else { 
-    // --- حالة إضافة كلمة جديدة (Add) ---
-    const newWord = {
-        id: Date.now().toString(),
-        word: w,
-        meaning: m,
-        example: ex,
-        category: c,
-        starred: false,
-        forgetCount: 0
-    };
-    window.words.unshift(newWord);
-
-    if (typeof window.saveWordToCloud === "function") {
-        const realId = await window.saveWordToCloud(w, c, m, ex);
-        if (realId) newWord.id = realId;
-        }
-    } // نهاية الـ else
-}   
+    if (typeof window.saveAndRender === "function") {
+        window.saveAndRender();
+    } else if (typeof render === "function") {
+        render(); 
+    }
+};
     function saveAndRender() {
         localStorage.setItem('myContextDict', JSON.stringify(words));
         render();
