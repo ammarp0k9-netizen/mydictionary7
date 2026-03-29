@@ -822,42 +822,41 @@ const firebaseConfig = {
         window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
-    function playSound(word, event) {
-        if (event) event.stopPropagation();
-        const cleanWord = word.trim().toLowerCase();
+window.playSound = function(id, event) {
+    // 1. منع تداخل النقرات (عشان ما يفتح تفاصيل الكلمة وهو بكبس زر الصوت)
+    if (event) event.stopPropagation();
 
-        // 1. محاولة تشغيل الملف الصوتي لو موجود
-        const audio = new Audio(`sounds/${cleanWord}.mp3`);
-        
-        const playPromise = audio.play();
+    // 2. البحث عن الكلمة في المصفوفة باستخدام الـ ID
+    const wordObj = window.words.find(w => w.id === id);
+    
+    // إذا ما لقى الكلمة (احتياطاً) وقف الشغل
+    if (!wordObj || !wordObj.word) return; 
 
-        if (playPromise !== undefined) {
-            playPromise.then(() => {
-                console.log("Audio file played");
-            }).catch(() => {
-                console.log("Using Device TTS...");
-                
-                // 2. تنظيف طابور الصوت عشان الموبايل ما يعلق
-                window.speechSynthesis.cancel();
+    const textToSpeak = wordObj.word;
 
-                const utterance = new SpeechSynthesisUtterance(word);
-                utterance.lang = 'en-US';
-                utterance.rate = 0.9; // أبطأ شوي لتكون اللفظة أوضح
-                utterance.pitch = 1.0;
+    // 3. التأكد من دعم المتصفح للصوت
+    if ('speechSynthesis' in window) {
+        // تنظيف طابور الصوت عشان الموبايل ما يعلق
+        window.speechSynthesis.cancel();
 
-                // 3. سحب الأصوات المتاحة في نظام التلفون
-                const voices = window.speechSynthesis.getVoices();
-                if (voices.length > 0) {
-                    // هون السر: بندور على أي صوت إنجليزي بغض النظر عن اسم الشركة
-                    const englishVoice = voices.find(v => v.lang.startsWith('en')) || voices[0];
-                    utterance.voice = englishVoice;
-                }
+        const utterance = new SpeechSynthesisUtterance(textToSpeak);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.9; // أبطأ شوي لتكون اللفظة أوضح
+        utterance.pitch = 1.0;
 
-                // 4. تشغيل الصوت
-                window.speechSynthesis.speak(utterance);
-            });
+        // 4. سحب الأصوات المتاحة وتحديد صوت إنجليزي
+        const voices = window.speechSynthesis.getVoices();
+        if (voices.length > 0) {
+            const englishVoice = voices.find(v => v.lang.startsWith('en')) || voices[0];
+            utterance.voice = englishVoice;
         }
+
+        // 5. تشغيل الصوت
+        window.speechSynthesis.speak(utterance);
+    } else {
+        alert("عذراً، متصفحك لا يدعم ميزة نطق الصوت.");
     }
+};
     
     window.onload = function() {
         if ('speechSynthesis' in window) {
@@ -1009,12 +1008,11 @@ const firebaseConfig = {
                 '<span style="font-size:20px; color:#ccc;">☰</span>' 
                 :
                 `<div class="actions">
-                    <button class="icon-circle sound-btn" 
-                        onclick="playSound('${w.word}', event)">🔊</button>
+                   <button class="icon-circle sound-btn" 
+                        onclick="playSound('${w.id}', event)">🔊</button>
 
                     <button class="icon-circle edit-btn" 
-                        onclick="editWord('${w.id}', event)">📝</button>
-
+                        onclick="startEdit('${w.id}', event)">📝</button>
                     <button class="icon-circle del-btn" 
                         onclick="deleteWord('${w.id}', event)">×</button>
                 </div>`
