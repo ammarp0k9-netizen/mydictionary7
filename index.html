@@ -370,328 +370,834 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
   import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
-  import { getFirestore, collection, addDoc, getDocs, query, orderBy, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+  import { getFirestore, collection, addDoc, getDocs, query, orderBy, where, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyDQB5N4wxJw69-tb8suI2T2SfEfCpwFA2c",
-    authDomain: "quizapp-ede17.firebaseapp.com",
-    projectId: "quizapp-ede17",
-    storageBucket: "quizapp-ede17.firebasestorage.app",
-    messagingSenderId: "473471031803",
-    appId: "1:473471031803:web:1b803237aeb0444040535e",
-    measurementId: "G-C06S6C7JYT"
-  };
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyDQB5N4wxJw69-tb8suI2T2SfEfCpwFA2c",
+  authDomain: "quizapp-ede17.firebaseapp.com",
+  projectId: "quizapp-ede17",
+  storageBucket: "quizapp-ede17.firebasestorage.app",
+  messagingSenderId: "473471031803",
+  appId: "1:473471031803:web:1b803237aeb0444040535e",
+  measurementId: "G-C06S6C7JYT"
+};
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
 
-  // مراقب حالة تسجيل الدخول
-  onAuthStateChanged(auth, (user) => {
+  // 1. مراقب حالة تسجيل الدخول
+  onAuthStateChanged(auth, async (user) => {
     if (user) {
       const btn = document.getElementById('loginBtn');
       if(btn) btn.innerText = "أهلاً بك يا " + user.displayName + " ✅";
+      console.log("تم تسجيل الدخول، جاري جلب البيانات...");
       window.loadWordsFromCloud(); 
     }
   });
 
+  // 2. دالة تسجيل الدخول
   window.login = function() {
-    signInWithPopup(auth, new GoogleAuthProvider()).catch(e => alert("حدث خطأ: " + e.message));
+    const provider = new GoogleAuthProvider();
+    signInWithPopup(auth, provider)
+      .then((result) => {
+        console.log("تم تسجيل الدخول بنجاح");
+      })
+      .catch((error) => {
+        alert("حدث خطأ في تسجيل الدخول: " + error.message);
+      });
   };
 
-  // دالة حفظ الكلمة للسحابة
+  // 3. دالة حفظ الكلمة للسحابة
+ // 3. دالة حفظ الكلمة للسحابة (الإضافة)
   window.saveWordToCloud = async function(wordText, wordCategory, meaning, example) {
     const user = auth.currentUser;
-    if (!user) return null;
-    try {
-      const docRef = await addDoc(collection(db, "users", user.uid, "words"), {
-        word: wordText, // وحدنا الاسم لـ word
-        category: wordCategory,
-        meaning: meaning,
-        example: example,
-        createdAt: new Date(),
-        starred: false,
-        forgetCount: 0
-      });
-      return docRef.id; 
-    } catch (e) { console.error("❌ خطأ سحابي: ", e); return null; }
-  };
-
-  window.updateWordInCloud = async function(docId, updatedData) {
-    const user = auth.currentUser;
-    if (!user || !docId) return;
-    try {
-      const docRef = doc(db, "users", user.uid, "words", docId);
-      await updateDoc(docRef, updatedData);
-      console.log("✅ تم التحديث في السحابة");
-    } catch (e) { console.error("❌ خطأ تحديث: ", e); }
-  };
-
-  window.deleteWord = async function(id, event) {
-    if (event) event.stopPropagation();
-    if (!confirm("هل أنت متأكد من حذف هذه الكلمة نهائياً؟")) return;
-    const user = auth.currentUser;
-    try {
-      if (user && id.length > 15) { // التأكد أنه معرف فايربيس وليس محلي مؤقت
-        await deleteDoc(doc(db, "users", user.uid, "words", id));
+    if (user) {
+      try {
+        const docRef = await addDoc(collection(db, "users", user.uid, "words"), {
+          text: wordText, // لازم text عشان يطابق قاعدة البيانات
+          category: wordCategory,
+          meaning: meaning,
+          example: example,
+          createdAt: new Date()
+        });
+        return docRef.id; 
+      } catch (e) {
+        console.error("❌ خطأ أثناء إضافة الكلمة للسحابة: ", e);
       }
-      window.words = window.words.filter(w => w.id !== id);
-      window.saveAndRender();
-    } catch (e) { console.error("❌ خطأ حذف: ", e); }
+    }
   };
+    
+  // 4. دالة التحديث في السحابة
+  window.updateWordInCloud = async function(docId, updatedData) {
+      const user = auth.currentUser;
+      if (!user || !docId) return;
 
+      try {
+          // شلنا سطر الـ import الزايد لأنك مستورده فوق
+          const docRef = doc(db, "users", user.uid, "words", docId);
+          
+          await updateDoc(docRef, {
+              text: updatedData.word,      
+              meaning: updatedData.meaning,
+              example: updatedData.example,
+              category: updatedData.category
+          });
+          
+          console.log("✅ تم التعديل في السحابة بنجاح");
+
+          // تحديث المصفوفة المحلية
+          if (window.words) {
+              window.words = window.words.map(item => {
+                  if (item.id === docId) {
+                      return { ...item, ...updatedData }; 
+                  }
+                  return item;
+              });
+              
+              // 🔥 أمر إجباري لتحديث الشاشة فوراً
+              if (typeof window.saveAndRender === "function") {
+                  window.saveAndRender();
+              } else if (typeof window.render === "function") {
+                  window.render();
+              }
+          }
+
+      } catch (e) {
+          console.error("❌ خطأ في التحديث:", e);
+      }
+  };
+    
+  // 5. دالة الحذف من السحابة
+  window.deleteWord = async function(id, event) {
+      if (event) event.stopPropagation();
+
+      id = String(id); 
+
+      if (!confirm("هل أنت متأكد من حذف هذه الكلمة نهائياً؟")) return;
+
+      const user = auth.currentUser;
+
+      try {
+          if (user && id) {
+              await deleteDoc(doc(db, "users", user.uid, "words", id));
+          }
+
+          // تصفية المصفوفة وحذف الكلمة محلياً
+          window.words = window.words.filter(w => String(w.id) !== id);
+          localStorage.setItem('myContextDict', JSON.stringify(window.words));
+
+          // 🔥 التصليح هون: استخدام window.render عشان الموديول يشوفها
+          if (typeof window.saveAndRender === "function") {
+              window.saveAndRender();
+          } else if (typeof window.render === "function") {
+              window.render();
+          }
+
+      } catch (e) {
+          console.error("❌ خطأ بالحذف:", e);
+      }
+  };
+    
+  // 4. دالة جلب الكلمات من السحابة (تم تعديل doc لـ wordDoc لمنع التعارض)
   window.loadWordsFromCloud = async function() {
     const user = auth.currentUser;
     if (!user) return;
+
     try {
       const q = query(collection(db, "users", user.uid, "words"), orderBy("createdAt", "desc"));
       const snapshot = await getDocs(q);
-      let cloudWords = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      let cloudWords = [];
+
+      snapshot.forEach((wordDoc) => {
+        const data = wordDoc.data();
+        cloudWords.push({
+          id: wordDoc.id,
+          word: data.text,
+          meaning: data.meaning || "",
+          example: data.example || "",
+          category: data.category,
+          starred: data.starred || false,
+          forgetCount: data.forgetCount || 0
+        });
+      });
+
       if (cloudWords.length > 0) {
         window.words = cloudWords;
-        window.saveAndRender();
-        console.log("✅ تم جلب البيانات من السحابة");
+        localStorage.setItem('myContextDict', JSON.stringify(window.words));
+        
+        if (typeof window.saveAndRender === "function") {
+          window.saveAndRender();
+        }
+        console.log("✅ تم تحديث القائمة من السحابة");
       }
-    } catch (e) { console.error("❌ خطأ جلب: ", e); }
+    } catch (e) {
+      console.error("خطأ في جلب الكلمات: ", e);
+    }
   };
-</script>
 
+  // 5. دالة الحذف من السحابة (تم تعديل doc لـ wordDoc)
+        
+  // 6. دوال التعديل والحذف للواجهة عشان المتصفح يشوفهم
+  window.startEdit = function(id, event) {
+    if (event) event.stopPropagation();
+    
+    let item = window.words.find(w => w.id === id);
+    if (!item) return;
+
+    document.getElementById('wordInput').value = item.word || '';
+    document.getElementById('meaningInput').value = item.meaning || '';
+    document.getElementById('exampleInput').value = item.example || '';
+    document.getElementById('categoryInput').value = item.category || 'عام';
+    
+    window.editId = id; 
+    
+    const addBtn = document.getElementById('addBtn');
+    if(addBtn) {
+        addBtn.innerText = "تحديث الكلمة 💾";
+        addBtn.style.background = "#27ae60";
+    }
+    
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+
+</script>
+   
 <script>
-    // تهيئة المتغيرات العالمية
-    window.words = JSON.parse(localStorage.getItem('myContextDict')) || [];
-    window.editId = null;
+    let words = JSON.parse(localStorage.getItem('myContextDict')) || [];
     let currentFilter = 'all';
+    let editId = null;
     let isReorderMode = false;
     let selectedIndices = [];
+    
     let currentQuizWords = [];
     let quizIndex = 0;
-    let currentStreak = 0;
+    let currentStreak = 0; // عداد الحماس
 
-    // --- نظام العرض (Rendering) ---
-    window.saveAndRender = function() {
-        localStorage.setItem('myContextDict', JSON.stringify(window.words));
-        window.render();
-        window.updateStats();
+    // 1. فتح شاشة الإعدادات
+    function openQuizSetup() {
+        if(words.length === 0) {
+            alert("القاموس فاضي! ضيف كلمات أول عشان نختبرك.");
+            return;
+        }
+        const overlay = document.getElementById('quizSetupOverlay');
+        overlay.style.display = 'flex';
+        setTimeout(() => overlay.classList.add('show'), 10);
+    }
+
+    function closeQuizSetup() {
+        const overlay = document.getElementById('quizSetupOverlay');
+        overlay.classList.remove('show');
+        setTimeout(() => overlay.style.display = 'none', 300);
+    }
+
+    // 2. بدء الاختبار الفعلي بناءً على اختيارك
+    function startActualQuiz(mode) {
+        closeQuizSetup();
+        let wordsToTest = [...words];
+
+        if (mode === 'recent') {
+            // ترتيب من الأحدث للأقدم
+            wordsToTest.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+            wordsToTest = wordsToTest.slice(0, 10);
+        } else if (mode === 'old') {
+            // ترتيب من الأقدم للأحدث
+            wordsToTest.sort((a,b) => a.id - b.id);
+            wordsToTest = wordsToTest.slice(0, 10);
+        } else if (mode === 'forgotten') {
+            // الكلمات اللي غلطت فيها أكثر من صفر
+            wordsToTest = wordsToTest.filter(w => w.forgetCount > 0);
+            wordsToTest.sort((a,b) => b.forgetCount - a.forgetCount);
+            if(wordsToTest.length === 0) {
+                alert("ما شاء الله! ما عندك كلمات بتغلط فيها. رح نختبرك بعشر كلمات عشوائية.");
+                wordsToTest = [...words].sort(() => Math.random() - 0.5).slice(0, 10);
+            } else {
+                wordsToTest = wordsToTest.slice(0, 10);
+            }
+        } else if (mode === 'starred') {
+            wordsToTest = wordsToTest.filter(w => w.starred);
+            if(wordsToTest.length === 0) {
+                alert("ما عندك كلمات صعبة/مفضلة (⭐). رح نختبرك بالكل.");
+                wordsToTest = [...words];
+            }
+        } else if (mode === 'all') {
+            // خلط كل الكلمات عشوائياً
+            wordsToTest.sort(() => Math.random() - 0.5);
+        }
+
+        currentQuizWords = wordsToTest;
+        quizIndex = 0;
+        currentStreak = 0; 
+        
+        const overlay = document.getElementById('quizOverlay');
+        overlay.style.display = 'flex';
+        setTimeout(() => overlay.classList.add('show'), 10); 
+        
+        updateCard();
+    }
+
+    // عرض الرسائل التحفيزية
+    function showStreakMessage(streak) {
+        const msgs = {
+            3: "وحش! 3 إجابات صح ورا بعض 🔥",
+            5: "أسطورة! 5 صح.. ذاكرتك حديد 💪",
+            7: "مستحيل! 7 صح.. أنت قفلّت اللعبة 🚀",
+            10: "يا عيني عليك! 10 ورا بعض 👑"
+        };
+        
+        if(msgs[streak]) {
+            const toast = document.getElementById('toastMessage');
+            toast.innerText = msgs[streak];
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 2500);
+        }
+    }
+
+    function markRemember() {
+        const currentWord = currentQuizWords[quizIndex];
+
+        words = words.map(w =>
+            w.id === currentWord.id
+                ? { ...w, forgetCount: Math.max((w.forgetCount || 0) - 1, 0) }
+                : w
+        );
+
+        saveAndRender();
+
+        currentStreak++; // زيادة العداد
+        showStreakMessage(currentStreak);
+
+        if (quizIndex < currentQuizWords.length - 1) {
+            quizIndex++;
+            updateCard();
+        } else {
+            setTimeout(() => {
+                alert("أبدعت! 👏 خلصت الكلمات المختارة.");
+                closeQuiz();
+            }, 300);
+        }
+    }
+
+    function markForgot() {
+        currentStreak = 0; // تصفير العداد لأنك أخطأت
+
+        const currentWord = currentQuizWords[quizIndex];
+
+        words = words.map(w =>
+            w.id === currentWord.id
+                ? { ...w, forgetCount: (w.forgetCount || 0) + 1 }
+                : w
+        );
+
+        saveAndRender();
+
+        const insertIndex = Math.min(quizIndex + 3, currentQuizWords.length);
+        currentQuizWords.splice(insertIndex, 0, currentWord);
+
+        quizIndex++;
+        updateCard();
+    }
+
+    function updateCard() {
+        if (quizIndex >= currentQuizWords.length) {
+            alert("أبدعت! أنهيت الكلمات 👏");
+            closeQuiz();
+            return;
+        }
+
+        const card = document.getElementById('mainCard');
+        
+        if (card.classList.contains('is-flipped')) {
+            card.style.transition = 'none'; 
+            card.classList.remove('is-flipped'); 
+            void card.offsetWidth; 
+            card.style.transition = ''; 
+        }
+
+        const w = currentQuizWords[quizIndex];
+        
+        document.getElementById('cardFrontText').innerText = w.word;
+        document.getElementById('cardBackText').innerText = w.meaning;
+        document.getElementById('cardBackExample').innerText = w.example ? w.example : "";
+        
+        const hintEl = document.getElementById('quizHintText');
+        hintEl.innerText = w.example ? w.example : "لا يوجد مثال لهذه الكلمة";
+        hintEl.classList.remove('show');
+    }
+
+    function flipCard() {
+        document.getElementById('mainCard').classList.toggle('is-flipped');
+    }
+
+    function showHint(event) {
+        event.stopPropagation();
+        document.getElementById('quizHintText').classList.add('show');
+    }
+
+    function closeQuiz() {
+        const overlay = document.getElementById('quizOverlay');
+        overlay.classList.remove('show');
+        setTimeout(() => overlay.style.display = 'none', 300); 
+    }
+
+    function playQuizSound(event) {
+        if (currentQuizWords.length > 0 && currentQuizWords[quizIndex]) {
+            playSound(currentQuizWords[quizIndex].word, event);
+        }
+    }
+
+window.addWord = async function() {
+    const w = document.getElementById('wordInput').value.trim();
+    const m = document.getElementById('meaningInput').value.trim();
+    const ex = document.getElementById('exampleInput').value.trim();
+    const c = document.getElementById('categoryInput').value;
+
+    if (!w || !m) {
+        alert("عبّي الكلمة ومعناها يا بطل!");
+        return;
+    }
+
+    // --- الحالة الأولى: وضع التعديل (Update) ---
+    if (window.editId) {
+        // 1. تحديث المصفوفة المحلية
+        window.words = window.words.map(item => {
+            if (item.id === window.editId) {
+                return { ...item, word: w, meaning: m, example: ex, category: c };
+            }
+            return item;
+        });
+
+        // 2. تحديث السحابة
+        if (typeof window.updateWordInCloud === "function") {
+            await window.updateWordInCloud(window.editId, { 
+                word: w, 
+                meaning: m, 
+                example: ex, 
+                category: c 
+            });
+        }
+
+        // 3. تصفير الـ ID ورجوع الزر لطبيعته
+        window.editId = null; 
+        const addBtn = document.getElementById('addBtn');
+        addBtn.innerText = "إضافة للقاموس";
+        addBtn.style.background = "";
+    } 
+    // --- الحالة الثانية: إضافة كلمة جديدة (Add) ---
+    else {
+        const newWord = {
+            id: Date.now().toString(),
+            word: w,
+            meaning: m,
+            example: ex,
+            category: c,
+            starred: false,
+            forgetCount: 0
+        };
+        window.words.unshift(newWord);
+
+        if (typeof window.saveWordToCloud === "function") {
+            const realId = await window.saveWordToCloud(w, c, m, ex);
+            if (realId) newWord.id = realId;
+        }
+    }
+
+    // --- الخطوة الأخيرة: التحديث العام (خارج الـ if والـ else) ---
+    if (typeof clearInputs === "function") clearInputs();
+    
+    if (typeof window.saveAndRender === "function") {
+        window.saveAndRender();
+    } else if (typeof render === "function") {
+        render(); 
+    }
+};
+    function saveAndRender() {
+        localStorage.setItem('myContextDict', JSON.stringify(words));
+        render();
+        updateStats(); // إذا عندك دالة بتحدث الأرقام فوق
+    }
+
+    function clearInputs() {
+        document.getElementById('wordInput').value = '';
+        document.getElementById('meaningInput').value = '';
+        document.getElementById('exampleInput').value = '';
+        document.getElementById('categoryInput').value = 'عام';
+    }
+
+    function toggleStar(id, event) {
+        event.stopPropagation();
+        words = words.map(w => w.id === id ? {...w, starred: !w.starred} : w);
+        saveAndRender();
+    }
+
+    function setFilter(f) {
+        currentFilter = f;
+        document.getElementById('toolAll').classList.toggle('active-tool', f === 'all');
+        document.getElementById('toolStarred').classList.toggle('active-tool', f === 'starred');
+        render();
+    }
+
+    window.editWord = function(id, event) {
+    if (event) event.stopPropagation();
+
+    // 1. البحث عن الكلمة في المصفوفة
+    const wordObj = window.words.find(w => w.id === id);
+    if (!wordObj) return;
+
+    // 2. تعبئة الخانات بالبيانات القديمة
+    document.getElementById('wordInput').value = wordObj.word;
+    document.getElementById('meaningInput').value = wordObj.meaning;
+    document.getElementById('exampleInput').value = wordObj.example || "";
+    document.getElementById('categoryInput').value = wordObj.category;
+
+    // 3. أهم خطوة: تخزين الـ ID في متغير عالمي عشان نعرف إننا "بنعدل"
+    window.editId = id;
+
+    // 4. تغيير شكل زر الإضافة عشان تنتبه إنك بتعدل
+    const addBtn = document.getElementById('addBtn');
+    addBtn.innerText = "تحديث الكلمة 💾";
+    addBtn.style.background = "#28a745"; // لون أخضر للتعديل
+    
+    // ارفع الشاشة لفوق عشان تبدأ تعدل
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+window.playSound = function(id, event) {
+    if (event) event.stopPropagation();
+
+    // 1. نجيب الكلمة من المصفوفة
+    const wordObj = window.words.find(w => w.id === id);
+    if (!wordObj || !wordObj.word) return;
+
+    const word = wordObj.word.trim();
+    console.log("🔊 محاولة تشغيل الصوت للكلمة:", word);
+
+    // تجهيز مسار الملف المحلي (Webster)
+    const localPath = `sounds/${word}.mp3`;
+    // رابط جوجل (الخيار الثاني)
+    const googleSnd = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(word)}&tl=en&client=tw-ob`;
+
+    const audio = new Audio();
+
+    // --- المحاولة الأولى: ملف sounds المحلي ---
+    audio.src = localPath;
+
+    audio.play().catch(() => {
+        console.log("⚠️ لم يتم العثور على ملف محلي، جاري تجربة جوجل...");
+        
+        // --- المحاولة الثانية: لفظ جوجل ---
+        audio.src = googleSnd;
+        audio.play().catch(() => {
+            console.log("⚠️ فشل لفظ جوجل، جاري التحويل للنطق الآلي...");
+            
+            // --- المحاولة الثالثة: النطق الآلي (Speech Synthesis) ---
+            runSpeechSynthesis(word);
+        });
+    });
+};
+
+// دالة مساعدة للنطق الآلي عشان الكود يكون نظيف
+function runSpeechSynthesis(text) {
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.9;
+        const voices = window.speechSynthesis.getVoices();
+        if (voices.length > 0) {
+            utterance.voice = voices.find(v => v.lang.startsWith('en')) || voices[0];
+        }
+        window.speechSynthesis.speak(utterance);
+    }
+}
+    
+    window.onload = function() {
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.getVoices();
+            if (speechSynthesis.onvoiceschanged !== undefined) {
+                speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+            }
+        }
+        if (typeof render === "function") render();
     };
 
-    window.render = function() {
-        const list = document.getElementById('list');
-        if (!list) return;
+    function handleLiClick(index, el) {
+        if (isReorderMode) {
+            if (selectedIndices.includes(index)) {
+                selectedIndices = selectedIndices.filter(i => i !== index);
+                el.classList.remove('selected-for-move');
+            } else {
+                selectedIndices.push(index);
+                el.classList.add('selected-for-move');
+            }
+        } else {
+            el.classList.toggle('show-example');
+        }
+    }
+
+    function toggleReorderMode() {
+        isReorderMode = !isReorderMode;
+        selectedIndices = [];
+        const btn = document.getElementById('reorderBtn');
+        btn.classList.toggle('active-tool', isReorderMode);
+        btn.innerText = isReorderMode ? "✅حفظ الترتيب " : "🔄";
+        if (!isReorderMode) {
+            localStorage.setItem('myContextDict', JSON.stringify(words));
+        }
+        render();
+    }
+
+    function allowDrop(ev) { ev.preventDefault(); }
+    
+    function drag(ev, index) { 
+        if (!selectedIndices.includes(index)) {
+            selectedIndices = [index];
+        }
+        ev.dataTransfer.setData("draggedIndices", JSON.stringify(selectedIndices));
+    }
+
+    function drop(ev, dropIndex) {
+        ev.preventDefault();
+        let draggedIndices = JSON.parse(ev.dataTransfer.getData("draggedIndices")).sort((a,b) => b-a);
+        
+        let itemsToMove = [];
+        draggedIndices.forEach(idx => {
+            itemsToMove.push(words.splice(idx, 1)[0]);
+        });
+        itemsToMove.reverse();
+
+        let actualDropIndex = dropIndex;
+        draggedIndices.forEach(idx => { if (idx < dropIndex) actualDropIndex--; });
+        if (actualDropIndex < 0) actualDropIndex = 0;
+
+        words.splice(actualDropIndex, 0, ...itemsToMove);
+        words.forEach((w, index) => {
+            w.order = index;
+          });
+        localStorage.setItem('myContextDict', JSON.stringify(words));
+        
+        selectedIndices = []; 
+        render();
+    }
+
+    function highlightText(text, query) {
+    if (!query) return text;
+
+    const regex = new RegExp(`(${query})`, "gi");
+    return text.replace(regex, '<span class="highlight">$1</span>');
+    }
+    
+    function render() {
+        updateStats();
 
         let query = document.getElementById('searchInput').value.toLowerCase().trim();
         let searchType = document.getElementById('searchFilter').value;
 
-        let filtered = window.words.filter(w => {
+        let filtered = words.filter(w => {
             if (!w.word) return false;
-            let wordMatch = w.word.toLowerCase().includes(query);
-            let meaningMatch = (w.meaning || "").toLowerCase().includes(query);
-            let exampleMatch = (w.example || "").toLowerCase().includes(query);
-            
-            let matchesSearch = (searchType === "word") ? wordMatch : 
-                               (searchType === "meaning") ? meaningMatch :
-                               (searchType === "example") ? exampleMatch : 
-                               (wordMatch || meaningMatch || exampleMatch);
 
-            return matchesSearch && (currentFilter === 'all' || w.starred);
-        });
+        let wordMatch = w.word.toLowerCase().includes(query);
+        let meaningMatch = w.meaning.toLowerCase().includes(query);
+        let exampleMatch = (w.example || "").toLowerCase().includes(query);
 
-        let html = '';
-        filtered.forEach((w) => {
-            const realIndex = window.words.findIndex(item => item.id === w.id);
-            const dragAttrs = isReorderMode ? `draggable="true" ondragstart="drag(event, ${realIndex})" ondragover="allowDrop(event)" ondrop="drop(event, ${realIndex})"` : '';
-            
-            html += `
-            <li ${dragAttrs} class="${isReorderMode ? 'reorder-mode-li' : ''} ${selectedIndices.includes(realIndex) ? 'selected-for-move' : ''}" 
-                onclick="handleLiClick(${realIndex}, this)">
-                <div class="top-row">
-                    <button class="star-btn ${w.starred ? 'active' : ''}" onclick="window.toggleStar('${w.id}', event)">★</button>
-                    <div class="word-box">
-                        <div class="word-text">${highlightText(w.word, query)} <span class="cat-tag tag-${w.category}">${w.category}</span></div>
-                        <div class="meaning-text">${highlightText(w.meaning, query)}</div>
-                    </div>
-                    ${isReorderMode ? '<span style="font-size:20px; color:#ccc;">☰</span>' : `
-                    <div class="actions">
-                        <button class="icon-circle sound-btn" onclick="window.playSound('${w.id}', event)">🔊</button>
-                        <button class="icon-circle edit-btn" onclick="window.startEdit('${w.id}', event)">📝</button>
-                        <button class="icon-circle del-btn" onclick="window.deleteWord('${w.id}', event)">×</button>
-                    </div>`}
-                </div>
-                ${w.example ? `<div class="example-box"><b>Ex:</b> ${highlightText(w.example, query)}</div>` : ''}
-            </li>`;
-        });
-        list.innerHTML = html;
-    };
+        let matchesSearch = false;
 
-    // --- إضافة وتعديل الكلمات ---
-    window.addWord = async function() {
-        const wInput = document.getElementById('wordInput');
-        const mInput = document.getElementById('meaningInput');
-        const exInput = document.getElementById('exampleInput');
-        const cInput = document.getElementById('categoryInput');
-
-        if (!wInput.value.trim() || !mInput.value.trim()) {
-            alert("اكتب الكلمة ومعناها يا بطل!"); return;
-        }
-
-        if (window.editId) {
-            const updatedData = { word: wInput.value, meaning: mInput.value, example: exInput.value, category: cInput.value };
-            window.words = window.words.map(item => item.id === window.editId ? { ...item, ...updatedData } : item);
-            await window.updateWordInCloud(window.editId, updatedData);
-            window.editId = null;
-            document.getElementById('addBtn').innerText = "إضافة للقاموس";
-            document.getElementById('addBtn').style.background = "";
+        if (searchType === "word") {
+            matchesSearch = wordMatch;
+        } else if (searchType === "meaning") {
+            matchesSearch = meaningMatch;
+        } else if (searchType === "example") {
+            matchesSearch = exampleMatch;
         } else {
-            const tempId = Date.now().toString();
-            const newWord = { id: tempId, word: wInput.value, meaning: mInput.value, example: exInput.value, category: cInput.value, starred: false, forgetCount: 0 };
-            window.words.unshift(newWord);
-            const realId = await window.saveWordToCloud(wInput.value, cInput.value, mInput.value, exInput.value);
-            if (realId) newWord.id = realId;
+            matchesSearch = wordMatch || meaningMatch || exampleMatch;
         }
-        
-        wInput.value = ''; mInput.value = ''; exInput.value = '';
-        window.saveAndRender();
-    };
 
-    window.startEdit = function(id, event) {
-        if (event) event.stopPropagation();
-        const item = window.words.find(w => w.id === id);
-        if (!item) return;
-        document.getElementById('wordInput').value = item.word;
-        document.getElementById('meaningInput').value = item.meaning;
-        document.getElementById('exampleInput').value = item.example || "";
-        document.getElementById('categoryInput').value = item.category;
-        window.editId = id;
-        document.getElementById('addBtn').innerText = "تحديث الكلمة 💾";
-        document.getElementById('addBtn').style.background = "#27ae60";
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
+        return matchesSearch && (currentFilter === 'all' || w.starred);
+    });
 
-    // --- نظام الاختبار (Quiz) ---
-    window.openQuizSetup = () => {
-        if(window.words.length < 1) return alert("أضف كلمات أولاً!");
-        const el = document.getElementById('quizSetupOverlay');
-        el.style.display = 'flex'; setTimeout(() => el.classList.add('show'), 10);
-    };
+    if (query) {
+        filtered.sort((a, b) => {
+            const aStarts = a.word.toLowerCase().startsWith(query);
+            const bStarts = b.word.toLowerCase().startsWith(query);
 
-    window.startActualQuiz = (mode) => {
-        document.getElementById('quizSetupOverlay').classList.remove('show');
-        setTimeout(() => document.getElementById('quizSetupOverlay').style.display='none', 300);
-        
-        let pool = [...window.words];
-        if(mode === 'starred') pool = pool.filter(w => w.starred);
-        if(mode === 'forgotten') pool = pool.filter(w => w.forgetCount > 0);
-        
-        currentQuizWords = pool.sort(() => Math.random() - 0.5).slice(0, 10);
-        quizIndex = 0; currentStreak = 0;
-        
-        const qO = document.getElementById('quizOverlay');
-        qO.style.display = 'flex'; setTimeout(() => qO.classList.add('show'), 10);
-        updateCard();
-    };
+            if (aStarts && !bStarts) return -1;
+            if (!aStarts && bStarts) return 1;
 
-    function updateCard() {
-        const w = currentQuizWords[quizIndex];
-        const card = document.getElementById('mainCard');
-        card.classList.remove('is-flipped');
-        document.getElementById('cardFrontText').innerText = w.word;
-        document.getElementById('cardBackText').innerText = w.meaning;
-        document.getElementById('cardBackExample').innerText = w.example || "";
-        document.getElementById('quizHintText').innerText = w.example || "لا يوجد مثال";
-        document.getElementById('quizHintText').classList.remove('show');
+            return a.word.localeCompare(b.word);
+        });
     }
 
-    window.markRemember = () => {
-        const id = currentQuizWords[quizIndex].id;
-        window.words = window.words.map(w => w.id === id ? {...w, forgetCount: Math.max(0, (w.forgetCount||0)-1)} : w);
-        currentStreak++;
-        if(currentStreak % 3 === 0) showToast(`وحش! ${currentStreak} إجابات صحيحة 🔥`);
-        nextQuestion();
-    };
+    let html = '';
 
-    window.markForgot = () => {
-        const id = currentQuizWords[quizIndex].id;
-        window.words = window.words.map(w => w.id === id ? {...w, forgetCount: (w.forgetCount||0)+1} : w);
-        currentStreak = 0;
-        nextQuestion();
-    };
+    filtered.forEach((w) => {
+    const realIndex = words.findIndex(item => item.id === w.id);
 
-    function nextQuestion() {
-        quizIndex++;
-        if(quizIndex < currentQuizWords.length) updateCard();
-        else { alert("انتهى الاختبار! أبدعت."); window.closeQuiz(); window.saveAndRender(); }
-    }
+    const dragAttrs = isReorderMode ? 
+        `draggable="true" ondragstart="drag(event, ${realIndex})" ondragover="allowDrop(event)" ondrop="drop(event, ${realIndex})"` 
+        : '';
 
-    window.closeQuiz = () => {
-        document.getElementById('quizOverlay').classList.remove('show');
-        setTimeout(() => document.getElementById('quizOverlay').style.display='none', 300);
-    };
+    const reorderClass = isReorderMode ? 'reorder-mode-li' : '';
+    const selectedClass = selectedIndices.includes(realIndex) ? 'selected-for-move' : '';
 
-    // --- الأدوات المساعدة ---
-    window.toggleStar = (id, event) => {
-        if (event) event.stopPropagation();
-        window.words = window.words.map(w => w.id === id ? {...w, starred: !w.starred} : w);
-        window.saveAndRender();
-    };
+    html += `
+    <li ${dragAttrs} class="${reorderClass} ${selectedClass}" onclick="handleLiClick(${realIndex}, this)">
+        <div class="top-row">
+            
+            <button class="star-btn ${w.starred ? 'active' : ''}" 
+                onclick="toggleStar('${w.id}', event)">★</button>
 
-    window.playSound = (id, event) => {
-        if (event) event.stopPropagation();
-        const item = window.words.find(w => w.id === id);
-        if (!item) return;
-        const msg = new SpeechSynthesisUtterance(item.word);
-        msg.lang = 'en-US'; window.speechSynthesis.speak(msg);
-    };
+            <div class="word-box">
+                <div class="word-text">
+                    ${highlightText(w.word, query)} 
+                    <span class="cat-tag tag-${w.category}">${w.category}</span>
+                </div>
 
-    function highlightText(text, q) {
-        if (!q) return text;
-        return text.replace(new RegExp(`(${q})`, "gi"), '<span class="highlight">$1</span>');
-    }
+                <div class="meaning-text">
+                    ${highlightText(w.meaning, query)}
+                </div>
+            </div>
 
-    function showToast(m) {
-        const t = document.getElementById('toastMessage');
-        t.innerText = m; t.classList.add('show');
-        setTimeout(() => t.classList.remove('show'), 2500);
-    }
+            ${isReorderMode ? 
+                '<span style="font-size:20px; color:#ccc;">☰</span>' 
+                :
+                `<div class="actions">
+                   <button class="icon-circle sound-btn" 
+                        onclick="playSound('${w.id}', event)">🔊</button>
 
-    window.updateStats = () => {
+                    <button class="icon-circle edit-btn" 
+                        onclick="startEdit('${w.id}', event)">📝</button>
+                    <button class="icon-circle del-btn" 
+                        onclick="deleteWord('${w.id}', event)">×</button>
+                </div>`
+            }
+
+        </div>
+
+        // ... هاد الجزء اللي بكمل رسم الـ HTML (خليه زي ما هو بس تأكد إنه جوا الدالة تبعتك)
+        </div>
+
+        ${w.example ? 
+            `<div class="example-box">
+                <b>Ex:</b> ${highlightText(w.example, query)}
+            </div>` 
+            : ''
+        }
+
+    </li>`;
+});
+    document.getElementById('list').innerHTML = html; 
+} // <--- تسكيرة دالة الـ render أو saveAndRender
+
+    // ربطنا الدوال بـ window عشان الـ HTML يشوفهم
+    window.updateStats = function() {
+        if (!window.words) return;
         document.getElementById('totalCount').innerText = `إجمالي الكلمات: ${window.words.length}`;
         document.getElementById('starredCount').innerText = `⭐ الصعبة: ${window.words.filter(w => w.starred).length}`;
     };
 
-    // --- نظام الترتيب (Drag & Drop) ---
-    window.toggleReorderMode = () => {
-        isReorderMode = !isReorderMode;
-        const btn = document.getElementById('reorderBtn');
-        btn.innerText = isReorderMode ? "✅ حفظ الترتيب" : "🔄";
-        btn.classList.toggle('active-tool', isReorderMode);
-        window.render();
+    window.exportData = function() {
+        if (!window.words) return;
+        const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(JSON.stringify(window.words));
+        const link = document.createElement('a');
+        link.setAttribute('href', dataUri);
+        link.setAttribute('download', 'my_dict.json');
+        link.click();
     };
 
-    window.drag = (ev, idx) => { ev.dataTransfer.setData("idx", idx); selectedIndices = [idx]; };
-    window.allowDrop = (ev) => ev.preventDefault();
-    window.drop = (ev, dropIdx) => {
-        ev.preventDefault();
-        const dragIdx = parseInt(ev.dataTransfer.getData("idx"));
-        const movedItem = window.words.splice(dragIdx, 1)[0];
-        window.words.splice(dropIdx, 0, movedItem);
-        selectedIndices = [];
-        window.saveAndRender();
-    };
+    window.importData = function(event) {
+        const file = event.target.files[0];
+        if (!file) return;
 
-    function handleLiClick(idx, el) {
-        if (isReorderMode) {
-            selectedIndices = [idx]; window.render();
-        } else { el.classList.toggle('show-example'); }
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+            try {
+                const importedWords = JSON.parse(e.target.result);
+                if (Array.isArray(importedWords)) {
+                    // 1. تحديث المصفوفة المحلية (باستخدام window.words)
+                    window.words = window.words || []; // عشان لو كانت فاضية
+                    window.words = [...importedWords, ...window.words];
+                    
+                    // تنظيف التكرار
+                    const uniqueWords = [];
+                    const map = new Map();
+                    for (const item of window.words) {
+                        if(!map.has(item.word.toLowerCase())){
+                            map.set(item.word.toLowerCase(), true);
+                            uniqueWords.push(item);
+                        }
+                    }
+                    window.words = uniqueWords;
+
+                    // تحديث الشاشة فوراً
+                    if (typeof window.saveAndRender === "function") {
+                        window.saveAndRender();
+                    } else if (typeof window.render === "function") {
+                        window.render();
+                    }
+
+                    // 2. المحرك السحابي: رفع كل الكلمات المستوردة للفايربيس
+                    if (typeof window.saveWordToCloud === "function") {
+                        console.log("جاري رفع الكلمات المستوردة للسحابة...");
+                        
+                        // بنرفعهم كلمة كلمة
+                        for (let item of importedWords) {
+                            await window.saveWordToCloud(item.word, item.category, item.meaning, item.example);
+                        }
+                        
+                        alert("تم استيراد الكلمات ورفعها للفايربيس بنجاح ✅");
+                    }
+                }
+            } catch (err) {
+                alert("خطأ في قراءة الملف، تأكد إنه بصيغة JSON صحيحة.");
+            }
+        };
+        reader.readAsText(file);
+    };
+    // ===== Dark Mode System =====
+
+// تشغيل الوضع الليلي
+function enableDark(){
+    document.body.classList.add("dark");
+    localStorage.setItem("darkMode","on");
+}
+
+// إيقاف الوضع الليلي
+function disableDark(){
+    document.body.classList.remove("dark");
+    localStorage.setItem("darkMode","off");
+}
+
+// زر التبديل
+function toggleDark(){
+    if(document.body.classList.contains("dark")){
+        disableDark();
+    }else{
+        enableDark();
+    }
+}
+
+// تحميل الوضع عند فتح الموقع
+(function(){
+
+    const savedMode = localStorage.getItem("darkMode");
+
+    // إذا المستخدم اختار وضع سابقًا
+    if(savedMode === "on"){
+        enableDark();
+    }
+    else if(savedMode === "off"){
+        disableDark();
+    }
+    else{
+        // إذا لم يختر شيء → نتبع وضع الجهاز
+        if(window.matchMedia('(prefers-color-scheme: dark)').matches){
+            enableDark();
+        }
     }
 
-    // التحميل الأولي
-    window.onload = () => {
-        if(localStorage.getItem("darkMode") === "on") document.body.classList.add("dark");
-        window.render();
-        window.updateStats();
-    };
+})();
 </script>
 </body>
 </html>
