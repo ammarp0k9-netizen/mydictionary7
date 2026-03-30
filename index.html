@@ -410,59 +410,95 @@ const firebaseConfig = {
   };
 
   // 3. دالة حفظ الكلمة للسحابة
- window.saveWordToCloud = async function(wordText, wordCategory, meaning, example) {
-  const user = auth.currentUser;
-  if (user) {
-    try {
-      const docRef = await addDoc(collection(db, "users", user.uid, "words"), {
-        text: wordText,
-        category: wordCategory,
-        meaning: meaning,
-        example: example,
-        createdAt: new Date()
-      });
-
-      return docRef.id; // 🔥 رجع ID الحقيقي
-    } catch (e) {
-      console.error("❌ خطأ أثناء الإرسال: ", e);
-    }
-  }
-};
-    
-    // حط هاي جوا الموديول عند دوال الفايربيس
-window.updateWordInCloud = async function(docId, updatedData) {
+ // 3. دالة حفظ الكلمة للسحابة (الإضافة)
+  window.saveWordToCloud = async function(wordText, wordCategory, meaning, example) {
     const user = auth.currentUser;
-    if (!user || !docId) return;
-
-    try {
-        const { doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js");
-        const docRef = doc(db, "users", user.uid, "words", docId);
-        
-        // 1. التحديث في السحابة (باستخدام "text" زي ما اتفقنا)
-        await updateDoc(docRef, {
-            text: updatedData.word,      
-            meaning: updatedData.meaning,
-            example: updatedData.example,
-            category: updatedData.category
+    if (user) {
+      try {
+        const docRef = await addDoc(collection(db, "users", user.uid, "words"), {
+          text: wordText, // لازم text عشان يطابق قاعدة البيانات
+          category: wordCategory,
+          meaning: meaning,
+          example: example,
+          createdAt: new Date()
         });
-        
-        console.log("✅ تم التعديل في السحابة");
-
-        // 🔥 2. أهم خطوة: تحديث المصفوفة المحلية فوراً عشان تظهر على الشاشة
-        if (window.words) {
-            window.words = window.words.map(item => {
-                if (item.id === docId) {
-                    return { ...item, ...updatedData }; // ندمج البيانات الجديدة
-                }
-                return item;
-            });
-            console.log("✅ تم تحديث المصفوفة المحلية");
-        }
-
-    } catch (e) {
-        console.error("❌ خطأ في التحديث:", e);
+        return docRef.id; 
+      } catch (e) {
+        console.error("❌ خطأ أثناء إضافة الكلمة للسحابة: ", e);
+      }
     }
-};
+  };
+    
+  // 4. دالة التحديث في السحابة
+  window.updateWordInCloud = async function(docId, updatedData) {
+      const user = auth.currentUser;
+      if (!user || !docId) return;
+
+      try {
+          // شلنا سطر الـ import الزايد لأنك مستورده فوق
+          const docRef = doc(db, "users", user.uid, "words", docId);
+          
+          await updateDoc(docRef, {
+              text: updatedData.word,      
+              meaning: updatedData.meaning,
+              example: updatedData.example,
+              category: updatedData.category
+          });
+          
+          console.log("✅ تم التعديل في السحابة بنجاح");
+
+          // تحديث المصفوفة المحلية
+          if (window.words) {
+              window.words = window.words.map(item => {
+                  if (item.id === docId) {
+                      return { ...item, ...updatedData }; 
+                  }
+                  return item;
+              });
+              
+              // 🔥 أمر إجباري لتحديث الشاشة فوراً
+              if (typeof window.saveAndRender === "function") {
+                  window.saveAndRender();
+              } else if (typeof window.render === "function") {
+                  window.render();
+              }
+          }
+
+      } catch (e) {
+          console.error("❌ خطأ في التحديث:", e);
+      }
+  };
+    
+  // 5. دالة الحذف من السحابة
+  window.deleteWord = async function(id, event) {
+      if (event) event.stopPropagation();
+
+      id = String(id); 
+
+      if (!confirm("هل أنت متأكد من حذف هذه الكلمة نهائياً؟")) return;
+
+      const user = auth.currentUser;
+
+      try {
+          if (user && id) {
+              await deleteDoc(doc(db, "users", user.uid, "words", id));
+          }
+
+          // تصفية المصفوفة وحذف الكلمة محلياً
+          window.words = window.words.filter(w => String(w.id) !== id);
+          localStorage.setItem('myContextDict', JSON.stringify(window.words));
+
+          // 🔥 التصليح هون: استخدام window.render عشان الموديول يشوفها
+          if (typeof window.saveAndRender === "function") {
+              window.saveAndRender();
+          } else if (typeof window.render === "function") {
+              window.render();
+          }
+
+      } catch (e) {
+          console.error("❌ خطأ بالحذف:", e);
+      }
+  };
     
   // 4. دالة جلب الكلمات من السحابة (تم تعديل doc لـ wordDoc لمنع التعارض)
   window.loadWordsFromCloud = async function() {
@@ -502,30 +538,6 @@ window.updateWordInCloud = async function(docId, updatedData) {
   };
 
   // 5. دالة الحذف من السحابة (تم تعديل doc لـ wordDoc)
- window.deleteWord = async function(id, event) {
-    if (event) event.stopPropagation();
-
-    id = String(id); // 🔥 مهم جدًا
-
-    if (!confirm("هل أنت متأكد من حذف هذه الكلمة؟")) return;
-
-    const user = auth.currentUser;
-
-    try {
-        if (user && id) {
-            await deleteDoc(doc(db, "users", user.uid, "words", id));
-        }
-
-        window.words = window.words.filter(w => String(w.id) !== id);
-
-        localStorage.setItem('myContextDict', JSON.stringify(window.words));
-
-        render();
-
-    } catch (e) {
-        console.error("❌ خطأ بالحذف:", e);
-    }
-};
         
   // 6. دوال التعديل والحذف للواجهة عشان المتصفح يشوفهم
   window.startEdit = function(id, event) {
