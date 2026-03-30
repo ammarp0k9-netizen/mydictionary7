@@ -1075,6 +1075,9 @@ function runSpeechSynthesis(text) {
 
         </div>
 
+        // ... هاد الجزء اللي بكمل رسم الـ HTML (خليه زي ما هو بس تأكد إنه جوا الدالة تبعتك)
+        </div>
+
         ${w.example ? 
             `<div class="example-box">
                 <b>Ex:</b> ${highlightText(w.example, query)}
@@ -1085,22 +1088,25 @@ function runSpeechSynthesis(text) {
     </li>`;
 });
     document.getElementById('list').innerHTML = html; 
-}
+} // <--- تسكيرة دالة الـ render أو saveAndRender
 
-    function updateStats() {
-        document.getElementById('totalCount').innerText = `إجمالي الكلمات: ${words.length}`;
-        document.getElementById('starredCount').innerText = `⭐ الصعبة: ${words.filter(w => w.starred).length}`;
-    }
+    // ربطنا الدوال بـ window عشان الـ HTML يشوفهم
+    window.updateStats = function() {
+        if (!window.words) return;
+        document.getElementById('totalCount').innerText = `إجمالي الكلمات: ${window.words.length}`;
+        document.getElementById('starredCount').innerText = `⭐ الصعبة: ${window.words.filter(w => w.starred).length}`;
+    };
 
-    function exportData() {
-        const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(JSON.stringify(words));
+    window.exportData = function() {
+        if (!window.words) return;
+        const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(JSON.stringify(window.words));
         const link = document.createElement('a');
         link.setAttribute('href', dataUri);
         link.setAttribute('download', 'my_dict.json');
         link.click();
-    }
+    };
 
-    function importData(event) {
+    window.importData = function(event) {
         const file = event.target.files[0];
         if (!file) return;
 
@@ -1109,21 +1115,27 @@ function runSpeechSynthesis(text) {
             try {
                 const importedWords = JSON.parse(e.target.result);
                 if (Array.isArray(importedWords)) {
-                    // 1. تحديث المصفوفة المحلية
-                    words = [...importedWords, ...words];
+                    // 1. تحديث المصفوفة المحلية (باستخدام window.words)
+                    window.words = window.words || []; // عشان لو كانت فاضية
+                    window.words = [...importedWords, ...window.words];
                     
-                    // تنظيف التكرار (اختياري بس بنصح فيه عشان ما يمتلئ الفايربيس كلمات مكررة)
+                    // تنظيف التكرار
                     const uniqueWords = [];
                     const map = new Map();
-                    for (const item of words) {
+                    for (const item of window.words) {
                         if(!map.has(item.word.toLowerCase())){
                             map.set(item.word.toLowerCase(), true);
                             uniqueWords.push(item);
                         }
                     }
-                    words = uniqueWords;
+                    window.words = uniqueWords;
 
-                    saveAndRender();
+                    // تحديث الشاشة فوراً
+                    if (typeof window.saveAndRender === "function") {
+                        window.saveAndRender();
+                    } else if (typeof window.render === "function") {
+                        window.render();
+                    }
 
                     // 2. المحرك السحابي: رفع كل الكلمات المستوردة للفايربيس
                     if (typeof window.saveWordToCloud === "function") {
@@ -1142,7 +1154,7 @@ function runSpeechSynthesis(text) {
             }
         };
         reader.readAsText(file);
-    }
+    };
     // ===== Dark Mode System =====
 
 // تشغيل الوضع الليلي
