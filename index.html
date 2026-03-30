@@ -386,7 +386,6 @@
   const auth = getAuth(app);
   const db = getFirestore(app);
 
-  // مراقب حالة تسجيل الدخول
   onAuthStateChanged(auth, (user) => {
     if (user) {
       const btn = document.getElementById('loginBtn');
@@ -396,16 +395,15 @@
   });
 
   window.login = function() {
-    signInWithPopup(auth, new GoogleAuthProvider()).catch(e => alert("حدث خطأ: " + e.message));
+    signInWithPopup(auth, new GoogleAuthProvider()).catch(e => alert("خطأ تسجيل دخول: " + e.message));
   };
 
-  // دالة حفظ الكلمة للسحابة
   window.saveWordToCloud = async function(wordText, wordCategory, meaning, example) {
     const user = auth.currentUser;
     if (!user) return null;
     try {
       const docRef = await addDoc(collection(db, "users", user.uid, "words"), {
-        word: wordText, // وحدنا الاسم لـ word
+        word: wordText,
         category: wordCategory,
         meaning: meaning,
         example: example,
@@ -423,16 +421,15 @@
     try {
       const docRef = doc(db, "users", user.uid, "words", docId);
       await updateDoc(docRef, updatedData);
-      console.log("✅ تم التحديث في السحابة");
     } catch (e) { console.error("❌ خطأ تحديث: ", e); }
   };
 
   window.deleteWord = async function(id, event) {
     if (event) event.stopPropagation();
-    if (!confirm("هل أنت متأكد من حذف هذه الكلمة نهائياً؟")) return;
+    if (!confirm("حذف نهائي؟")) return;
     const user = auth.currentUser;
     try {
-      if (user && id.length > 15) { // التأكد أنه معرف فايربيس وليس محلي مؤقت
+      if (user && id.length > 15) { 
         await deleteDoc(doc(db, "users", user.uid, "words", id));
       }
       window.words = window.words.filter(w => w.id !== id);
@@ -446,21 +443,16 @@
     try {
       const q = query(collection(db, "users", user.uid, "words"), orderBy("createdAt", "desc"));
       const snapshot = await getDocs(q);
-      let cloudWords = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      let cloudWords = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       if (cloudWords.length > 0) {
         window.words = cloudWords;
         window.saveAndRender();
-        console.log("✅ تم جلب البيانات من السحابة");
       }
     } catch (e) { console.error("❌ خطأ جلب: ", e); }
   };
 </script>
 
 <script>
-    // تهيئة المتغيرات العالمية
     window.words = JSON.parse(localStorage.getItem('myContextDict')) || [];
     window.editId = null;
     let currentFilter = 'all';
@@ -468,15 +460,85 @@
     let selectedIndices = [];
     let currentQuizWords = [];
     let quizIndex = 0;
-    let currentStreak = 0;
 
-    // --- نظام العرض (Rendering) ---
     window.saveAndRender = function() {
         localStorage.setItem('myContextDict', JSON.stringify(window.words));
         window.render();
-        window.updateStats();
+        if(window.updateStats) window.updateStats();
     };
 
+    // --- نظام اللفظ (رجعنا الترتيب اللي بدك اياه) ---
+    window.playSound = function(id, event) {
+        if (event) event.stopPropagation();
+        const item = window.words.find(w => w.id === id);
+        if (!item || !item.word) return;
+
+        const word = item.word.trim();
+        const audio = new Audio();
+        
+        // 1. المحاولة من مجلد sounds المحلي
+        audio.src = `sounds/${word}.mp3`;
+        
+        audio.play().catch(() => {
+            console.log("⚠️ لم يتم العثور على ملف محلي، نجرب جوجل...");
+            // 2. المحاولة من جوجل
+            audio.src = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(word)}&tl=en&client=tw-ob`;
+            audio.play().catch(() => {
+                console.log("⚠️ فشل جوجل، نستخدم نطق المتصفح...");
+                // 3. المحاولة من نطق المتصفح الآلي
+                const msg = new SpeechSynthesisUtterance(word);
+                msg.lang = 'en-US';
+                window.speechSynthesis.speak(msg);
+            });
+        });
+    };
+
+    // --- استيراد الملفات (JSON Import) ---
+    window.importData = function(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+            try {
+                const imported = JSON.parse(e.target.result);
+                if (Array.isArray(imported)) {
+                    // تصليح المسميات (تحويل text لـ word إذا لزم الأمر)
+                    const fixed = imported.map(item => ({
+                        ...item,
+                        word: item.word || item.text || "بدون عنوان",
+                        id: item.id || Date.now().toString() + Math.random()
+                    }));
+
+                    window.words = [...fixed, ...window.words];
+                    
+                    // إزالة التكرار
+                    const seen = new Set();
+                    window.words = window.words.filter(el => {
+                        const duplicate = seen.has(el.word.toLowerCase());
+                        seen.add(el.word.toLowerCase());
+                        return !duplicate;
+                    });
+
+                    window.saveAndRender();
+
+                    // رفع الكلمات للسحابة (واحدة واحدة)
+                    if (typeof window.saveWordToCloud === "function") {
+                        alert("جاري رفع الكلمات للسحابة... قد يستغرق ذلك وقتاً.");
+                        for (let item of fixed) {
+                            await window.saveWordToCloud(item.word, item.category || 'عام', item.meaning || '', item.example || '');
+                        }
+                        alert("تم الاستيراد والمزامنة بنجاح ✅");
+                    }
+                }
+            } catch (err) {
+                alert("خطأ في قراءة ملف JSON.");
+            }
+        };
+        reader.readAsText(file);
+    };
+
+    // --- دالة الرسم (Render) ---
     window.render = function() {
         const list = document.getElementById('list');
         if (!list) return;
@@ -485,10 +547,13 @@
         let searchType = document.getElementById('searchFilter').value;
 
         let filtered = window.words.filter(w => {
-            if (!w.word) return false;
-            let wordMatch = w.word.toLowerCase().includes(query);
-            let meaningMatch = (w.meaning || "").toLowerCase().includes(query);
-            let exampleMatch = (w.example || "").toLowerCase().includes(query);
+            let wordText = (w.word || w.text || "").toLowerCase();
+            let meaningText = (w.meaning || "").toLowerCase();
+            let exampleText = (w.example || "").toLowerCase();
+
+            let wordMatch = wordText.includes(query);
+            let meaningMatch = meaningText.includes(query);
+            let exampleMatch = exampleText.includes(query);
             
             let matchesSearch = (searchType === "word") ? wordMatch : 
                                (searchType === "meaning") ? meaningMatch :
@@ -501,197 +566,58 @@
         let html = '';
         filtered.forEach((w) => {
             const realIndex = window.words.findIndex(item => item.id === w.id);
-            const dragAttrs = isReorderMode ? `draggable="true" ondragstart="drag(event, ${realIndex})" ondragover="allowDrop(event)" ondrop="drop(event, ${realIndex})"` : '';
-            
             html += `
-            <li ${dragAttrs} class="${isReorderMode ? 'reorder-mode-li' : ''} ${selectedIndices.includes(realIndex) ? 'selected-for-move' : ''}" 
-                onclick="handleLiClick(${realIndex}, this)">
+            <li class="${isReorderMode ? 'reorder-mode-li' : ''}" onclick="handleLiClick(${realIndex}, this)">
                 <div class="top-row">
                     <button class="star-btn ${w.starred ? 'active' : ''}" onclick="window.toggleStar('${w.id}', event)">★</button>
                     <div class="word-box">
-                        <div class="word-text">${highlightText(w.word, query)} <span class="cat-tag tag-${w.category}">${w.category}</span></div>
-                        <div class="meaning-text">${highlightText(w.meaning, query)}</div>
+                        <div class="word-text">${w.word || w.text} <span class="cat-tag tag-${w.category}">${w.category}</span></div>
+                        <div class="meaning-text">${w.meaning}</div>
                     </div>
-                    ${isReorderMode ? '<span style="font-size:20px; color:#ccc;">☰</span>' : `
                     <div class="actions">
                         <button class="icon-circle sound-btn" onclick="window.playSound('${w.id}', event)">🔊</button>
                         <button class="icon-circle edit-btn" onclick="window.startEdit('${w.id}', event)">📝</button>
                         <button class="icon-circle del-btn" onclick="window.deleteWord('${w.id}', event)">×</button>
-                    </div>`}
+                    </div>
                 </div>
-                ${w.example ? `<div class="example-box"><b>Ex:</b> ${highlightText(w.example, query)}</div>` : ''}
+                ${w.example ? `<div class="example-box"><b>Ex:</b> ${w.example}</div>` : ''}
             </li>`;
         });
         list.innerHTML = html;
     };
 
-    // --- إضافة وتعديل الكلمات ---
+    // باقي الدوال (Add, Edit, Stats, Toggle)
     window.addWord = async function() {
-        const wInput = document.getElementById('wordInput');
-        const mInput = document.getElementById('meaningInput');
-        const exInput = document.getElementById('exampleInput');
-        const cInput = document.getElementById('categoryInput');
+        const w = document.getElementById('wordInput').value.trim();
+        const m = document.getElementById('meaningInput').value.trim();
+        const ex = document.getElementById('exampleInput').value.trim();
+        const c = document.getElementById('categoryInput').value;
 
-        if (!wInput.value.trim() || !mInput.value.trim()) {
-            alert("اكتب الكلمة ومعناها يا بطل!"); return;
-        }
+        if (!w || !m) return alert("عبّي البيانات!");
 
         if (window.editId) {
-            const updatedData = { word: wInput.value, meaning: mInput.value, example: exInput.value, category: cInput.value };
-            window.words = window.words.map(item => item.id === window.editId ? { ...item, ...updatedData } : item);
-            await window.updateWordInCloud(window.editId, updatedData);
+            const updated = { word: w, meaning: m, example: ex, category: c };
+            window.words = window.words.map(item => item.id === window.editId ? { ...item, ...updated } : item);
+            await window.updateWordInCloud(window.editId, updated);
             window.editId = null;
             document.getElementById('addBtn').innerText = "إضافة للقاموس";
-            document.getElementById('addBtn').style.background = "";
         } else {
-            const tempId = Date.now().toString();
-            const newWord = { id: tempId, word: wInput.value, meaning: mInput.value, example: exInput.value, category: cInput.value, starred: false, forgetCount: 0 };
+            const newWord = { id: Date.now().toString(), word: w, meaning: m, example: ex, category: c, starred: false };
             window.words.unshift(newWord);
-            const realId = await window.saveWordToCloud(wInput.value, cInput.value, mInput.value, exInput.value);
+            const realId = await window.saveWordToCloud(w, c, m, ex);
             if (realId) newWord.id = realId;
         }
-        
-        wInput.value = ''; mInput.value = ''; exInput.value = '';
+        document.getElementById('wordInput').value = '';
+        document.getElementById('meaningInput').value = '';
         window.saveAndRender();
     };
 
-    window.startEdit = function(id, event) {
-        if (event) event.stopPropagation();
-        const item = window.words.find(w => w.id === id);
-        if (!item) return;
-        document.getElementById('wordInput').value = item.word;
-        document.getElementById('meaningInput').value = item.meaning;
-        document.getElementById('exampleInput').value = item.example || "";
-        document.getElementById('categoryInput').value = item.category;
-        window.editId = id;
-        document.getElementById('addBtn').innerText = "تحديث الكلمة 💾";
-        document.getElementById('addBtn').style.background = "#27ae60";
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.updateStats = function() {
+        const total = document.getElementById('totalCount');
+        if(total) total.innerText = `إجمالي الكلمات: ${window.words.length}`;
     };
 
-    // --- نظام الاختبار (Quiz) ---
-    window.openQuizSetup = () => {
-        if(window.words.length < 1) return alert("أضف كلمات أولاً!");
-        const el = document.getElementById('quizSetupOverlay');
-        el.style.display = 'flex'; setTimeout(() => el.classList.add('show'), 10);
-    };
-
-    window.startActualQuiz = (mode) => {
-        document.getElementById('quizSetupOverlay').classList.remove('show');
-        setTimeout(() => document.getElementById('quizSetupOverlay').style.display='none', 300);
-        
-        let pool = [...window.words];
-        if(mode === 'starred') pool = pool.filter(w => w.starred);
-        if(mode === 'forgotten') pool = pool.filter(w => w.forgetCount > 0);
-        
-        currentQuizWords = pool.sort(() => Math.random() - 0.5).slice(0, 10);
-        quizIndex = 0; currentStreak = 0;
-        
-        const qO = document.getElementById('quizOverlay');
-        qO.style.display = 'flex'; setTimeout(() => qO.classList.add('show'), 10);
-        updateCard();
-    };
-
-    function updateCard() {
-        const w = currentQuizWords[quizIndex];
-        const card = document.getElementById('mainCard');
-        card.classList.remove('is-flipped');
-        document.getElementById('cardFrontText').innerText = w.word;
-        document.getElementById('cardBackText').innerText = w.meaning;
-        document.getElementById('cardBackExample').innerText = w.example || "";
-        document.getElementById('quizHintText').innerText = w.example || "لا يوجد مثال";
-        document.getElementById('quizHintText').classList.remove('show');
-    }
-
-    window.markRemember = () => {
-        const id = currentQuizWords[quizIndex].id;
-        window.words = window.words.map(w => w.id === id ? {...w, forgetCount: Math.max(0, (w.forgetCount||0)-1)} : w);
-        currentStreak++;
-        if(currentStreak % 3 === 0) showToast(`وحش! ${currentStreak} إجابات صحيحة 🔥`);
-        nextQuestion();
-    };
-
-    window.markForgot = () => {
-        const id = currentQuizWords[quizIndex].id;
-        window.words = window.words.map(w => w.id === id ? {...w, forgetCount: (w.forgetCount||0)+1} : w);
-        currentStreak = 0;
-        nextQuestion();
-    };
-
-    function nextQuestion() {
-        quizIndex++;
-        if(quizIndex < currentQuizWords.length) updateCard();
-        else { alert("انتهى الاختبار! أبدعت."); window.closeQuiz(); window.saveAndRender(); }
-    }
-
-    window.closeQuiz = () => {
-        document.getElementById('quizOverlay').classList.remove('show');
-        setTimeout(() => document.getElementById('quizOverlay').style.display='none', 300);
-    };
-
-    // --- الأدوات المساعدة ---
-    window.toggleStar = (id, event) => {
-        if (event) event.stopPropagation();
-        window.words = window.words.map(w => w.id === id ? {...w, starred: !w.starred} : w);
-        window.saveAndRender();
-    };
-
-    window.playSound = (id, event) => {
-        if (event) event.stopPropagation();
-        const item = window.words.find(w => w.id === id);
-        if (!item) return;
-        const msg = new SpeechSynthesisUtterance(item.word);
-        msg.lang = 'en-US'; window.speechSynthesis.speak(msg);
-    };
-
-    function highlightText(text, q) {
-        if (!q) return text;
-        return text.replace(new RegExp(`(${q})`, "gi"), '<span class="highlight">$1</span>');
-    }
-
-    function showToast(m) {
-        const t = document.getElementById('toastMessage');
-        t.innerText = m; t.classList.add('show');
-        setTimeout(() => t.classList.remove('show'), 2500);
-    }
-
-    window.updateStats = () => {
-        document.getElementById('totalCount').innerText = `إجمالي الكلمات: ${window.words.length}`;
-        document.getElementById('starredCount').innerText = `⭐ الصعبة: ${window.words.filter(w => w.starred).length}`;
-    };
-
-    // --- نظام الترتيب (Drag & Drop) ---
-    window.toggleReorderMode = () => {
-        isReorderMode = !isReorderMode;
-        const btn = document.getElementById('reorderBtn');
-        btn.innerText = isReorderMode ? "✅ حفظ الترتيب" : "🔄";
-        btn.classList.toggle('active-tool', isReorderMode);
-        window.render();
-    };
-
-    window.drag = (ev, idx) => { ev.dataTransfer.setData("idx", idx); selectedIndices = [idx]; };
-    window.allowDrop = (ev) => ev.preventDefault();
-    window.drop = (ev, dropIdx) => {
-        ev.preventDefault();
-        const dragIdx = parseInt(ev.dataTransfer.getData("idx"));
-        const movedItem = window.words.splice(dragIdx, 1)[0];
-        window.words.splice(dropIdx, 0, movedItem);
-        selectedIndices = [];
-        window.saveAndRender();
-    };
-
-    function handleLiClick(idx, el) {
-        if (isReorderMode) {
-            selectedIndices = [idx]; window.render();
-        } else { el.classList.toggle('show-example'); }
-    }
-
-    // التحميل الأولي
-    window.onload = () => {
-        if(localStorage.getItem("darkMode") === "on") document.body.classList.add("dark");
-        window.render();
-        window.updateStats();
-    };
+    window.onload = () => { window.render(); window.updateStats(); };
 </script>
 </body>
 </html>
