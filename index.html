@@ -370,17 +370,18 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
   import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
-  import { getFirestore, collection, addDoc, getDocs, query, orderBy, where, deleteDoc } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+  import { getFirestore, collection, addDoc, getDocs, query, orderBy, where, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyDQB5N4wxJw69-tb8suI2T2SfEfCpwFA2c",
-    authDomain: "quizapp-ede17.firebaseapp.com",
-    projectId: "quizapp-ede17",
-    storageBucket: "quizapp-ede17.firebasestorage.app",
-    messagingSenderId: "473471031803",
-    appId: "1:473471031803:web:1b803237aeb0444040535e",
-    measurementId: "G-C06S6C7JYT"
-  };
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyDQB5N4wxJw69-tb8suI2T2SfEfCpwFA2c",
+  authDomain: "quizapp-ede17.firebaseapp.com",
+  projectId: "quizapp-ede17",
+  storageBucket: "quizapp-ede17.firebasestorage.app",
+  messagingSenderId: "473471031803",
+  appId: "1:473471031803:web:1b803237aeb0444040535e",
+  measurementId: "G-C06S6C7JYT"
+};
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
@@ -408,25 +409,96 @@
       });
   };
 
-  // 3. دالة حفظ الكلمة للسحابة
+  // 3. دالة حفظ الكلمة للسحابة (الإضافة)
   window.saveWordToCloud = async function(wordText, wordCategory, meaning, example) {
     const user = auth.currentUser;
     if (user) {
       try {
-        await addDoc(collection(db, "users", user.uid, "words"), {
-          text: wordText,
+        const docRef = await addDoc(collection(db, "users", user.uid, "words"), {
+          text: wordText, // لازم text عشان يطابق قاعدة البيانات
           category: wordCategory,
           meaning: meaning,
           example: example,
           createdAt: new Date()
         });
-        console.log("🚀 تم الحفظ في السحابة بنجاح!");
+        return docRef.id; 
       } catch (e) {
-        console.error("❌ خطأ أثناء الإرسال: ", e);
+        console.error("❌ خطأ أثناء إضافة الكلمة للسحابة: ", e);
       }
     }
   };
+    
+  // 4. دالة التحديث في السحابة
+  window.updateWordInCloud = async function(docId, updatedData) {
+      const user = auth.currentUser;
+      if (!user || !docId) return;
 
+      try {
+          // شلنا سطر الـ import الزايد لأنك مستورده فوق
+          const docRef = doc(db, "users", user.uid, "words", docId);
+          
+          await updateDoc(docRef, {
+              text: updatedData.word,      
+              meaning: updatedData.meaning,
+              example: updatedData.example,
+              category: updatedData.category
+          });
+          
+          console.log("✅ تم التعديل في السحابة بنجاح");
+
+          // تحديث المصفوفة المحلية
+          if (window.words) {
+              window.words = window.words.map(item => {
+                  if (item.id === docId) {
+                      return { ...item, ...updatedData }; 
+                  }
+                  return item;
+              });
+              
+              // 🔥 أمر إجباري لتحديث الشاشة فوراً
+              if (typeof window.saveAndRender === "function") {
+                  window.saveAndRender();
+              } else if (typeof window.render === "function") {
+                  window.render();
+              }
+          }
+
+      } catch (e) {
+          console.error("❌ خطأ في التحديث:", e);
+      }
+  };
+    
+  // 5. دالة الحذف من السحابة
+  window.deleteWord = async function(id, event) {
+      if (event) event.stopPropagation();
+
+      id = String(id); 
+
+      if (!confirm("هل أنت متأكد من حذف هذه الكلمة نهائياً؟")) return;
+
+      const user = auth.currentUser;
+
+      try {
+          if (user && id) {
+              await deleteDoc(doc(db, "users", user.uid, "words", id));
+          }
+
+          // تصفية المصفوفة وحذف الكلمة محلياً
+          window.words = window.words.filter(w => String(w.id) !== id);
+          localStorage.setItem('myContextDict', JSON.stringify(window.words));
+
+          // 🔥 التصليح هون: استخدام window.render عشان الموديول يشوفها
+          if (typeof window.saveAndRender === "function") {
+              window.saveAndRender();
+          } else if (typeof window.render === "function") {
+              window.render();
+          }
+
+      } catch (e) {
+          console.error("❌ خطأ بالحذف:", e);
+      }
+  };
+    
   // 4. دالة جلب الكلمات من السحابة (تم تعديل doc لـ wordDoc لمنع التعارض)
   window.loadWordsFromCloud = async function() {
     const user = auth.currentUser;
@@ -465,37 +537,7 @@
   };
 
   // 5. دالة الحذف من السحابة (تم تعديل doc لـ wordDoc)
-  window.deleteWord = function(id, event) {
-    if (event) event.stopPropagation();
-
-    // 1. تنبيه للتأكيد
-    if (!confirm("أكيد بدك تحذف هاي الكلمة؟")) return;
-
-    console.log("جاري حذف المعرف:", id);
-
-    // 2. تحديث المصفوفة (الحذف من الشاشة فوراً)
-    // بنجيب الكلمة قبل الحذف عشان نعرف اسمها ونحذفها من السحابة
-    let wordToCloudDelete = window.words.find(w => w.id === id);
-    
-    window.words = window.words.filter(w => w.id !== id);
-
-    // 3. حفظ في التخزين المحلي ورسم الجدول من جديد
-    localStorage.setItem('myContextDict', JSON.stringify(window.words));
-    
-    if (typeof window.saveAndRender === "function") {
-        window.saveAndRender();
-    } else {
-        render(); 
-    }
-
-    // 4. الحذف من السحابة (Firebase)
-    if (wordToCloudDelete && typeof window.deleteWordFromCloud === "function") {
-        window.deleteWordFromCloud(wordToCloudDelete.word);
-    }
-    
-    alert("تم الحذف بنجاح!");
-};
-    
+        
   // 6. دوال التعديل والحذف للواجهة عشان المتصفح يشوفهم
   window.startEdit = function(id, event) {
     if (event) event.stopPropagation();
@@ -519,27 +561,11 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  window.deleteWord = function(id, event) {
-    if (event) event.stopPropagation();
-    
-    let itemToDelete = window.words.find(w => w.id === id);
-    
-    if (confirm("هل أنت متأكد من حذف هذه الكلمة؟")) {
-        window.words = window.words.filter(w => w.id !== id);
-        
-        if (typeof window.saveAndRender === "function") {
-            window.saveAndRender();
-        }
 
-        if (itemToDelete && typeof window.deleteWordFromCloud === "function") {
-            window.deleteWordFromCloud(itemToDelete.word);
-        }
-    }
-  };
 </script>
    
 <script>
-    let words = JSON.parse(localStorage.getItem('myContextDict')) || [];
+    window.words = JSON.parse(localStorage.getItem('myContextDict')) || [];
     let currentFilter = 'all';
     let editId = null;
     let isReorderMode = false;
@@ -551,7 +577,7 @@
 
     // 1. فتح شاشة الإعدادات
     function openQuizSetup() {
-        if(words.length === 0) {
+        if(window.words.length === 0) {
             alert("القاموس فاضي! ضيف كلمات أول عشان نختبرك.");
             return;
         }
@@ -569,11 +595,11 @@
     // 2. بدء الاختبار الفعلي بناءً على اختيارك
     function startActualQuiz(mode) {
         closeQuizSetup();
-        let wordsToTest = [...words];
+        let wordsToTest = [...window.words];
 
         if (mode === 'recent') {
             // ترتيب من الأحدث للأقدم
-            wordsToTest.sort((a,b) => (b.id || 0) - (a.id || 0));
+            wordsToTest.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
             wordsToTest = wordsToTest.slice(0, 10);
         } else if (mode === 'old') {
             // ترتيب من الأقدم للأحدث
@@ -585,7 +611,7 @@
             wordsToTest.sort((a,b) => b.forgetCount - a.forgetCount);
             if(wordsToTest.length === 0) {
                 alert("ما شاء الله! ما عندك كلمات بتغلط فيها. رح نختبرك بعشر كلمات عشوائية.");
-                wordsToTest = [...words].sort(() => Math.random() - 0.5).slice(0, 10);
+                wordsToTest = [...window.words].sort(() => Math.random() - 0.5).slice(0, 10);
             } else {
                 wordsToTest = wordsToTest.slice(0, 10);
             }
@@ -593,7 +619,7 @@
             wordsToTest = wordsToTest.filter(w => w.starred);
             if(wordsToTest.length === 0) {
                 alert("ما عندك كلمات صعبة/مفضلة (⭐). رح نختبرك بالكل.");
-                wordsToTest = [...words];
+                wordsToTest = [...window.words];
             }
         } else if (mode === 'all') {
             // خلط كل الكلمات عشوائياً
@@ -631,7 +657,7 @@
     function markRemember() {
         const currentWord = currentQuizWords[quizIndex];
 
-        words = words.map(w =>
+        window.words = window.words.map(w =>
             w.id === currentWord.id
                 ? { ...w, forgetCount: Math.max((w.forgetCount || 0) - 1, 0) }
                 : w
@@ -658,7 +684,7 @@
 
         const currentWord = currentQuizWords[quizIndex];
 
-        words = words.map(w =>
+        window.words = window.words.map(w =>
             w.id === currentWord.id
                 ? { ...w, forgetCount: (w.forgetCount || 0) + 1 }
                 : w
@@ -721,20 +747,20 @@
         }
     }
 
-   window.addWord = function() {
+window.addWord = async function() {
     const w = document.getElementById('wordInput').value.trim();
     const m = document.getElementById('meaningInput').value.trim();
     const ex = document.getElementById('exampleInput').value.trim();
     const c = document.getElementById('categoryInput').value;
 
     if (!w || !m) {
-        alert("يا غالي عبّي الكلمة ومعناها أول!");
+        alert("عبّي الكلمة ومعناها يا بطل!");
         return;
     }
 
+    // --- الحالة الأولى: وضع التعديل (Update) ---
     if (window.editId) {
-        // --- حالة التعديل (Update) ---
-        // بنحدث المصفوفة المحلية
+        // 1. تحديث المصفوفة المحلية
         window.words = window.words.map(item => {
             if (item.id === window.editId) {
                 return { ...item, word: w, meaning: m, example: ex, category: c };
@@ -742,19 +768,26 @@
             return item;
         });
 
-        console.log("تم التعديل محلياً، جاري تحديث السحابة...");
-        
-        // (اختياري) هون ممكن تنادي دالة تحديث في الفايربيس إذا حبيت
-        // بس حالياً بنعتمد إنه التعديل صار في المصفوفة
-        
-        window.editId = null; // أهم سطر: تصفير الـ ID عشان نطلع من وضع التعديل
-        document.getElementById('addBtn').innerText = "إضافة للقاموس";
-        document.getElementById('addBtn').style.background = ""; // رجع اللون الأصلي
-        
-    } else {
-        // --- حالة إضافة كلمة جديدة (Add) ---
+        // 2. تحديث السحابة
+        if (typeof window.updateWordInCloud === "function") {
+            await window.updateWordInCloud(window.editId, { 
+                word: w, 
+                meaning: m, 
+                example: ex, 
+                category: c 
+            });
+        }
+
+        // 3. تصفير الـ ID ورجوع الزر لطبيعته
+        window.editId = null; 
+        const addBtn = document.getElementById('addBtn');
+        addBtn.innerText = "إضافة للقاموس";
+        addBtn.style.background = "";
+    } 
+    // --- الحالة الثانية: إضافة كلمة جديدة (Add) ---
+    else {
         const newWord = {
-            id: Date.now().toString(), // ID مؤقت
+            id: Date.now().toString(),
             word: w,
             meaning: m,
             example: ex,
@@ -764,22 +797,23 @@
         };
         window.words.unshift(newWord);
 
-        // إرسال للسحابة
         if (typeof window.saveWordToCloud === "function") {
-            window.saveWordToCloud(w, c, m, ex);
+            const realId = await window.saveWordToCloud(w, c, m, ex);
+            if (realId) newWord.id = realId;
         }
     }
 
-    // تنظيف الخانات وتحديث الشاشة
-    clearInputs(); 
+    // --- الخطوة الأخيرة: التحديث العام (خارج الـ if والـ else) ---
+    if (typeof clearInputs === "function") clearInputs();
+    
     if (typeof window.saveAndRender === "function") {
         window.saveAndRender();
-    } else {
-        render(); // إذا مش موجودة saveAndRender نادي render مباشرة
+    } else if (typeof render === "function") {
+        render(); 
     }
 };
     function saveAndRender() {
-        localStorage.setItem('myContextDict', JSON.stringify(words));
+        localStorage.setItem('myContextDict', JSON.stringify(window.words));
         render();
         updateStats(); // إذا عندك دالة بتحدث الأرقام فوق
     }
@@ -793,7 +827,7 @@
 
     function toggleStar(id, event) {
         event.stopPropagation();
-        words = words.map(w => w.id === id ? {...w, starred: !w.starred} : w);
+        window.words = window.words.map(w => w.id === id ? {...w, starred: !w.starred} : w);
         saveAndRender();
     }
 
@@ -804,63 +838,79 @@
         render();
     }
 
-    function editWord(id, event) {
-        if (event) event.stopPropagation();
+    window.editWord = function(id, event) {
+    if (event) event.stopPropagation();
 
-        id = Number(id); // مهم
+    // 1. البحث عن الكلمة في المصفوفة
+    const wordObj = window.words.find(w => w.id === id);
+    if (!wordObj) return;
 
-        let item = words.find(w => Number(w.id) === id);
+    // 2. تعبئة الخانات بالبيانات القديمة
+    document.getElementById('wordInput').value = wordObj.word;
+    document.getElementById('meaningInput').value = wordObj.meaning;
+    document.getElementById('exampleInput').value = wordObj.example || "";
+    document.getElementById('categoryInput').value = wordObj.category;
 
-        if (!item) return;
+    // 3. أهم خطوة: تخزين الـ ID في متغير عالمي عشان نعرف إننا "بنعدل"
+    window.editId = id;
 
-        document.getElementById('wordInput').value = item.word;
-        document.getElementById('meaningInput').value = item.meaning;
-        document.getElementById('exampleInput').value = item.example;
-        document.getElementById('categoryInput').value = item.category;
-
-        editId = id;
-
-        document.getElementById('addBtn').innerText = "تحديث الكلمة";
+    // 4. تغيير شكل زر الإضافة عشان تنتبه إنك بتعدل
+    const addBtn = document.getElementById('addBtn');
+    addBtn.innerText = "تحديث الكلمة 💾";
+    addBtn.style.background = "#28a745"; // لون أخضر للتعديل
     
-        window.scrollTo({ top: 0, behavior: "smooth" });
-    }
+    // ارفع الشاشة لفوق عشان تبدأ تعدل
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+};
 
-    function playSound(word, event) {
-        if (event) event.stopPropagation();
-        const cleanWord = word.trim().toLowerCase();
+window.playSound = function(id, event) {
+    if (event) event.stopPropagation();
 
-        // 1. محاولة تشغيل الملف الصوتي لو موجود
-        const audio = new Audio(`sounds/${cleanWord}.mp3`);
+    // 1. نجيب الكلمة من المصفوفة
+    const wordObj = window.words.find(w => w.id === id);
+    if (!wordObj || !wordObj.word) return;
+
+    const word = wordObj.word.trim();
+    console.log("🔊 محاولة تشغيل الصوت للكلمة:", word);
+
+    // تجهيز مسار الملف المحلي (Webster)
+    const localPath = `sounds/${word}.mp3`;
+    // رابط جوجل (الخيار الثاني)
+    const googleSnd = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(word)}&tl=en&client=tw-ob`;
+
+    const audio = new Audio();
+
+    // --- المحاولة الأولى: ملف sounds المحلي ---
+    audio.src = localPath;
+
+    audio.play().catch(() => {
+        console.log("⚠️ لم يتم العثور على ملف محلي، جاري تجربة جوجل...");
         
-        const playPromise = audio.play();
+        // --- المحاولة الثانية: لفظ جوجل ---
+        audio.src = googleSnd;
+        audio.play().catch(() => {
+            console.log("⚠️ فشل لفظ جوجل، جاري التحويل للنطق الآلي...");
+            
+            // --- المحاولة الثالثة: النطق الآلي (Speech Synthesis) ---
+            runSpeechSynthesis(word);
+        });
+    });
+};
 
-        if (playPromise !== undefined) {
-            playPromise.then(() => {
-                console.log("Audio file played");
-            }).catch(() => {
-                console.log("Using Device TTS...");
-                
-                // 2. تنظيف طابور الصوت عشان الموبايل ما يعلق
-                window.speechSynthesis.cancel();
-
-                const utterance = new SpeechSynthesisUtterance(word);
-                utterance.lang = 'en-US';
-                utterance.rate = 0.9; // أبطأ شوي لتكون اللفظة أوضح
-                utterance.pitch = 1.0;
-
-                // 3. سحب الأصوات المتاحة في نظام التلفون
-                const voices = window.speechSynthesis.getVoices();
-                if (voices.length > 0) {
-                    // هون السر: بندور على أي صوت إنجليزي بغض النظر عن اسم الشركة
-                    const englishVoice = voices.find(v => v.lang.startsWith('en')) || voices[0];
-                    utterance.voice = englishVoice;
-                }
-
-                // 4. تشغيل الصوت
-                window.speechSynthesis.speak(utterance);
-            });
+// دالة مساعدة للنطق الآلي عشان الكود يكون نظيف
+function runSpeechSynthesis(text) {
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.9;
+        const voices = window.speechSynthesis.getVoices();
+        if (voices.length > 0) {
+            utterance.voice = voices.find(v => v.lang.startsWith('en')) || voices[0];
         }
+        window.speechSynthesis.speak(utterance);
     }
+}
     
     window.onload = function() {
         if ('speechSynthesis' in window) {
@@ -893,7 +943,7 @@
         btn.classList.toggle('active-tool', isReorderMode);
         btn.innerText = isReorderMode ? "✅حفظ الترتيب " : "🔄";
         if (!isReorderMode) {
-            localStorage.setItem('myContextDict', JSON.stringify(words));
+            localStorage.setItem('myContextDict', JSON.stringify(window.words));
         }
         render();
     }
@@ -913,7 +963,7 @@
         
         let itemsToMove = [];
         draggedIndices.forEach(idx => {
-            itemsToMove.push(words.splice(idx, 1)[0]);
+            itemsToMove.push(window.words.splice(idx, 1)[0]);
         });
         itemsToMove.reverse();
 
@@ -921,11 +971,11 @@
         draggedIndices.forEach(idx => { if (idx < dropIndex) actualDropIndex--; });
         if (actualDropIndex < 0) actualDropIndex = 0;
 
-        words.splice(actualDropIndex, 0, ...itemsToMove);
-        words.forEach((w, index) => {
+        window.words.splice(actualDropIndex, 0, ...itemsToMove);
+        window.words.forEach((w, index) => {
             w.order = index;
           });
-        localStorage.setItem('myContextDict', JSON.stringify(words));
+        localStorage.setItem('myContextDict', JSON.stringify(window.words));
         
         selectedIndices = []; 
         render();
@@ -944,7 +994,7 @@
         let query = document.getElementById('searchInput').value.toLowerCase().trim();
         let searchType = document.getElementById('searchFilter').value;
 
-        let filtered = words.filter(w => {
+        let filtered = window.words.filter(w => {
             if (!w.word) return false;
 
         let wordMatch = w.word.toLowerCase().includes(query);
@@ -981,7 +1031,7 @@
     let html = '';
 
     filtered.forEach((w) => {
-    const realIndex = words.findIndex(item => item.id === w.id);
+    const realIndex = window.words.findIndex(item => item.id === w.id);
 
     const dragAttrs = isReorderMode ? 
         `draggable="true" ondragstart="drag(event, ${realIndex})" ondragover="allowDrop(event)" ondrop="drop(event, ${realIndex})"` 
@@ -995,7 +1045,7 @@
         <div class="top-row">
             
             <button class="star-btn ${w.starred ? 'active' : ''}" 
-                onclick="toggleStar(${w.id}, event)">★</button>
+                onclick="toggleStar('${w.id}', event)">★</button>
 
             <div class="word-box">
                 <div class="word-text">
@@ -1012,17 +1062,18 @@
                 '<span style="font-size:20px; color:#ccc;">☰</span>' 
                 :
                 `<div class="actions">
-                    <button class="icon-circle sound-btn" 
-                        onclick="playSound('${w.word}', event)">🔊</button>
+                   <button class="icon-circle sound-btn" 
+                        onclick="playSound('${w.id}', event)">🔊</button>
 
                     <button class="icon-circle edit-btn" 
-                        onclick="editWord('${w.id}', event)">📝</button>
-
+                        onclick="startEdit('${w.id}', event)">📝</button>
                     <button class="icon-circle del-btn" 
                         onclick="deleteWord('${w.id}', event)">×</button>
                 </div>`
             }
 
+        </div>
+        
         </div>
 
         ${w.example ? 
@@ -1035,22 +1086,25 @@
     </li>`;
 });
     document.getElementById('list').innerHTML = html; 
-}
+} // <--- تسكيرة دالة الـ render أو saveAndRender
 
-    function updateStats() {
-        document.getElementById('totalCount').innerText = `إجمالي الكلمات: ${words.length}`;
-        document.getElementById('starredCount').innerText = `⭐ الصعبة: ${words.filter(w => w.starred).length}`;
-    }
+    // ربطنا الدوال بـ window عشان الـ HTML يشوفهم
+    window.updateStats = function() {
+        if (!window.words) return;
+        document.getElementById('totalCount').innerText = `إجمالي الكلمات: ${window.words.length}`;
+        document.getElementById('starredCount').innerText = `⭐ الصعبة: ${window.words.filter(w => w.starred).length}`;
+    };
 
-    function exportData() {
-        const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(JSON.stringify(words));
+    window.exportData = function() {
+        if (!window.words) return;
+        const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(JSON.stringify(window.words));
         const link = document.createElement('a');
         link.setAttribute('href', dataUri);
         link.setAttribute('download', 'my_dict.json');
         link.click();
-    }
+    };
 
-    function importData(event) {
+    window.importData = function(event) {
         const file = event.target.files[0];
         if (!file) return;
 
@@ -1059,21 +1113,27 @@
             try {
                 const importedWords = JSON.parse(e.target.result);
                 if (Array.isArray(importedWords)) {
-                    // 1. تحديث المصفوفة المحلية
-                    words = [...importedWords, ...words];
+                    // 1. تحديث المصفوفة المحلية (باستخدام window.words)
+                    window.words = window.words || []; // عشان لو كانت فاضية
+                    window.words = [...importedWords, ...window.words];
                     
-                    // تنظيف التكرار (اختياري بس بنصح فيه عشان ما يمتلئ الفايربيس كلمات مكررة)
+                    // تنظيف التكرارر
                     const uniqueWords = [];
                     const map = new Map();
-                    for (const item of words) {
+                    for (const item of window.words) {
                         if(!map.has(item.word.toLowerCase())){
                             map.set(item.word.toLowerCase(), true);
                             uniqueWords.push(item);
                         }
                     }
-                    words = uniqueWords;
+                    window.words = uniqueWords;
 
-                    saveAndRender();
+                    // تحديث الشاشة فوراً
+                    if (typeof window.saveAndRender === "function") {
+                        window.saveAndRender();
+                    } else if (typeof window.render === "function") {
+                        window.render();
+                    }
 
                     // 2. المحرك السحابي: رفع كل الكلمات المستوردة للفايربيس
                     if (typeof window.saveWordToCloud === "function") {
@@ -1092,7 +1152,7 @@
             }
         };
         reader.readAsText(file);
-    }
+    };
     // ===== Dark Mode System =====
 
 // تشغيل الوضع الليلي
@@ -1136,7 +1196,6 @@ function toggleDark(){
     }
 
 })();
-    
 </script>
 </body>
 </html>
