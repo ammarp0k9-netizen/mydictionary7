@@ -863,20 +863,34 @@ window.addWord = async function() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
-window.playSound = function(id, event) {
+window.playSound = function(identifier, event) {
+    // إيقاف انتقال الحدث عشان ما يقلب البطاقة إذا كبست على زر الصوت
     if (event) event.stopPropagation();
 
-    // 1. نجيب الكلمة من المصفوفة
-    const wordObj = window.words.find(w => w.id === id);
-    if (!wordObj || !wordObj.word) return;
+    let wordToPlay = "";
 
-    const word = wordObj.word.trim();
-    console.log("🔊 محاولة تشغيل الصوت للكلمة:", word);
+    // 1. محاولة البحث عن الكلمة إذا كان الممرر هو ID (رقم أو نص)
+    const wordObj = window.words.find(w => w.id === identifier || String(w.id) === String(identifier));
+    
+    if (wordObj && wordObj.word) {
+        wordToPlay = wordObj.word.trim();
+    } 
+    // 2. إذا ما لقاه كـ ID، ممكن الممرر يكون الكلمة نفسها (مثل 'admit')
+    else if (typeof identifier === 'string' && identifier.trim() !== '') {
+        wordToPlay = identifier.trim();
+    } 
+    // 3. إذا فشل كل شيء، اطبع المشكلة بالكونسول بوضوح!
+    else {
+        console.error("❌ خطأ: لم يتم العثور على الكلمة، والقيمة الممررة غير صحيحة:", identifier);
+        return;
+    }
 
-    // تجهيز مسار الملف المحلي (Webster)
-    const localPath = `sounds/${word}.mp3`;
-    // رابط جوجل (الخيار الثاني)
-    const googleSnd = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(word)}&tl=en&client=tw-ob`;
+    console.log("🔊 محاولة تشغيل الصوت للكلمة:", wordToPlay);
+
+    // تجهيز مسار الملف المحلي (مع تحويل الكلمة لأحرف صغيرة عشان GitHub Pages)
+    const localPath = `sounds/${wordToPlay.toLowerCase()}.mp3`;
+    // رابط جوجل
+    const googleSnd = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(wordToPlay)}&tl=en&client=tw-ob`;
 
     const audio = new Audio();
 
@@ -892,12 +906,12 @@ window.playSound = function(id, event) {
             console.log("⚠️ فشل لفظ جوجل، جاري التحويل للنطق الآلي...");
             
             // --- المحاولة الثالثة: النطق الآلي (Speech Synthesis) ---
-            runSpeechSynthesis(word);
+            runSpeechSynthesis(wordToPlay);
         });
     });
 };
 
-// دالة مساعدة للنطق الآلي عشان الكود يكون نظيف
+// الدالة المساعدة خليها زي ما هي عندك (ممتازة)
 function runSpeechSynthesis(text) {
     if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
