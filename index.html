@@ -305,48 +305,36 @@ body.dark #logoutBtn:hover {
         body.dark .quiz-word, body.dark .quiz-meaning { color: #fff; }
         body.dark .quiz-sound-btn { background: #1e3a5f; color: #6fbaff; }
         body.dark .hint-text, body.dark .quiz-example { color: #aaa; }
-        /* حل مشكلة تمدد الخانات */
-.input-group div input {
-    margin-bottom: 0 !important; /* عشان ما يدفش الزر لتحت */
+        /* تأكد إن الـ container هو الأب لكل شي */
+.container { 
+    max-width: 480px; 
+    margin: 20px auto; /* متموضع في المنتصف مع مسافة من فوق وتحت */
+    background: var(--card-bg); 
+    padding: 25px; 
+    border-radius: 20px; 
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* بيعمل مسافة ثابتة ومنتظمة بين كل "بلوك" والثاني */
 }
 
-/* دعم الوضع الليلي لصندوق الاقتراحات */
-body.dark #suggestionsBox {
-    background: #2a2a2a !important;
-    border-color: #444 !important;
-}
-
-body.dark #suggestionsList div {
-    background: #333 !important;
-    border-color: #555 !important;
-    color: white !important;
-}
-
-body.dark #suggestionsList div div {
-    color: #eee !important;
-}
-
-/* توحيد مقاسات كل الخانات عشان ما تطلع وحدة أكبر من الثانية */
-input, select, textarea {
+/* توحيد عرض كل العناصر داخل الـ container */
+.container > * {
     width: 100%;
-    box-sizing: border-box; /* أهم سطر عشان العرض يكون شامل الـ padding */
+    box-sizing: border-box;
 }
 
-/* تعديل خاص لخانة الإنجليزي عشان الزر جنبها */
-.ai-search-container input {
-    width: auto; /* بنلغي الـ 100% هون عشان الـ flex يشتغل */
+/* حل مشكلة "الفاصل" الكبير أو الفراغ الميت */
+.stats-bar, .toolbar, .search-section, #suggestionsBox, #searchInput, ul {
+    margin-bottom: 5px !important; /* تقليل المسافات السفلية ليكون التصميم متراص */
 }
 
-/* تحسين شكل صندوق الاقتراحات في الوضع الليلي */
-body.dark #suggestionsBox {
-    background: #2a2a2a !important;
-    border-color: #444 !important;
+/* إذا القاموس (ul) طالع برا، هاد بجمعه */
+ul {
+    max-height: 400px; /* اختياري: عشان ما تطول الصفحة بزيادة */
+    overflow-y: auto;
+    padding: 0;
 }
-
-body.dark #suggestionsList div {
-    background: #333 !important;
-    border-color: #555 !important;
-}        
 
     </style>
 </head>
