@@ -428,16 +428,19 @@ const firebaseConfig = {
   const db = getFirestore(app);
 
     // كود استقبال نتيجة الدخول بعد التوجيه
-    getRedirectResult(auth)
-      .then((result) => {
-        if (result) {
-          console.log("تم تسجيل الدخول بنجاح بعد العودة");
-          // هون بتقدر تستدعي أي دالة بتخفي زر الدخول وبتعرض الكلمات
+    window.addEventListener("load", async () => {
+      try {
+        const result = await getRedirectResult(auth);
+
+        if (result && result.user) {
+          console.log("✅ تسجيل دخول ناجح:", result.user.email);
+        } else {
+          console.log("ℹ️ لا يوجد نتيجة Redirect");
         }
-      })
-      .catch((error) => {
-        console.error("حدث خطأ أثناء العودة من تسجيل الدخول: ", error.message);
-      });
+      } catch (error) {
+        console.error("❌ خطأ بالـ redirect:", error.message);
+      }
+    });
 
   // 1. مراقب حالة تسجيل الدخول
   onAuthStateChanged(auth, (user) => {
@@ -607,8 +610,6 @@ const firebaseConfig = {
         document.getElementById('logoutBtn').style.display = 'none';
         document.getElementById('loginBtn').style.display = 'block';
         
-        // إذا بدك تعمل ريفريش، اعمله بعد ثانية وحدة بس
-        setTimeout(() => { location.reload(); }, 500); 
     });
 };
         
