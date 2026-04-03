@@ -112,6 +112,15 @@
         .sound-btn { background: #ebf5fb; color: #3498db; }
         .edit-btn { background: #eafaf1; color: #27ae60; }
         .del-btn { background: #fdedec; color: #e74c3c; }
+        .ai-search-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        #suggestionsBox {
+            margin-top: -10px;
+        }
         #logoutBtn {
     /* المساحة والأبعاد: نسخة كربونية عن زر الدخول اللي عندك */
     width: 100%; 
@@ -306,16 +315,15 @@ body.dark #logoutBtn:hover {
         body.dark .quiz-sound-btn { background: #1e3a5f; color: #6fbaff; }
         body.dark .hint-text, body.dark .quiz-example { color: #aaa; }
         /* تأكد إن الـ container هو الأب لكل شي */
-.container { 
-    max-width: 480px; 
-    margin: 20px auto; /* متموضع في المنتصف مع مسافة من فوق وتحت */
-    background: var(--card-bg); 
-    padding: 25px; 
-    border-radius: 20px; 
-    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+.container {
+    max-width: 480px;
+    margin: 20px auto;
+    background: var(--card-bg);
+    padding: 20px; /* كان 25 */
+    border-radius: 20px;
     display: flex;
     flex-direction: column;
-    gap: 15px; /* بيعمل مسافة ثابتة ومنتظمة بين كل "بلوك" والثاني */
+    gap: 12px; /* أهم شي */
 }
 
 /* توحيد عرض كل العناصر داخل الـ container */
@@ -327,13 +335,6 @@ body.dark #logoutBtn:hover {
 /* حل مشكلة "الفاصل" الكبير أو الفراغ الميت */
 .stats-bar, .toolbar, .search-section, #suggestionsBox, #searchInput, ul {
     margin-bottom: 5px !important; /* تقليل المسافات السفلية ليكون التصميم متراص */
-}
-
-/* إذا القاموس (ul) طالع برا، هاد بجمعه */
-ul {
-    max-height: 400px; /* اختياري: عشان ما تطول الصفحة بزيادة */
-    overflow-y: auto;
-    padding: 0;
 }
 
     </style>
@@ -719,7 +720,11 @@ window.fetchSuggestions = async function() {
             body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
         });
 
-        if (!response.ok) throw new Error('API Error');
+        if (!response.ok) {
+            const err = await response.text();
+            console.error("🔥 API FULL ERROR:", err);
+            throw new Error('API Error');
+        }
 
         const data = await response.json();
         let text = data.candidates[0].content.parts[0].text;
