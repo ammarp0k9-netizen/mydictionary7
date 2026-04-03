@@ -469,12 +469,21 @@ const firebaseConfig = {
 });
 
   // 2. دالة تسجيل الدخول
- window.login = function() {
-  const provider = new GoogleAuthProvider();
-  
-      // استخدم التوجيه (Redirect) بدل النافذة المنبثقة لتفادي حظر الآيفون
-      signInWithRedirect(auth, provider);
-    };
+ window.login = async function() {
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+
+    try {
+        const result = await signInWithPopup(auth, provider);
+        console.log("تم سحب بيانات جوجل بنجاح. الإيميل:", result.user.email);
+        
+        // تم مسح location.reload() هنا.
+        // دالة onAuthStateChanged التي كتبناها سابقاً ستتكفل بإخفاء زر الدخول وإظهار زر الخروج تلقائياً.
+        
+    } catch (error) {
+        console.error("فشل الدخول:", error.code, error.message);
+    }
+};
     
   // 3. دالة حفظ الكلمة للسحابة (الإضافة)
   window.saveWordToCloud = async function(wordText, wordCategory, meaning, example) {
