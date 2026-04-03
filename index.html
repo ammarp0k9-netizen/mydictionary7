@@ -9,6 +9,11 @@
     <link rel="apple-touch-icon" href="favicon.png">
     
     <style> 
+        /* إعدادات أساسية لضمان عدم تمدد أي عنصر خارج الشاشة */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
         :root { 
             --primary: #3498db; 
             --star-color: #f1c40f; 
@@ -22,15 +27,25 @@
             background: var(--bg); 
             padding: 15px; 
             color: var(--text-main); 
+            margin: 0;
         }
 
+        /* تم دمج الكلاسين هنا ليكون المربع الرئيسي متناسق ويلم كل العناصر */
         .container { 
             max-width: 480px; 
-            margin: auto; 
+            margin: 20px auto; 
             background: var(--card-bg); 
-            padding: 25px; 
+            padding: 20px; 
             border-radius: 20px; 
             box-shadow: 0 15px 35px rgba(0,0,0,0.1); 
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* توحيد عرض كل العناصر المباشرة داخل الـ container */
+        .container > * {
+            width: 100%;
         }
 
         h2 { 
@@ -47,7 +62,7 @@
             background: #f9f9f9;
             padding: 10px;
             border-radius: 12px;
-            margin-bottom: 15px;
+            margin-bottom: 5px !important;
             font-size: 13px;
             font-weight: bold;
             color: #7f8c8d;
@@ -55,7 +70,9 @@
         }
 
         .input-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+        
         input, select, textarea { 
+            width: 100%;
             padding: 12px; border: 2px solid #eee; border-radius: 12px; outline: none; 
             text-align: center; font-size: 15px; font-family: inherit;
         }
@@ -64,15 +81,16 @@
         .btn-main { 
             background: var(--primary); color: white; border: none; padding: 14px; 
             border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.2s;
+            width: 100%;
         }
 
-        .toolbar { display: flex; gap: 8px; margin-bottom: 15px; }
-        .btn-tool { flex: 1; padding: 10px; border-radius: 20px; border: 1px solid #ddd; background: #fff; cursor: pointer; font-weight: 600; }
+        .toolbar { display: flex; gap: 5px; margin-bottom: 5px !important; }
+        .btn-tool { flex: 1; padding: 8px 5px; border-radius: 20px; border: 1px solid #ddd; background: #fff; cursor: pointer; font-weight: 600; font-size: 13px; white-space: nowrap; }
         .active-tool { background: var(--primary); color: white; border-color: var(--primary); }
 
-        #searchInput { width: 100%; box-sizing: border-box; background: #fff9db; border: 2px solid #f1c40f; margin-bottom: 15px; }
+        #searchInput { background: #fff9db; border: 2px solid #f1c40f; margin-bottom: 5px !important; }
 
-        ul { list-style: none; padding: 0; }
+        ul { list-style: none; padding: 0; margin-bottom: 5px !important; }
         li { 
             background: #fff; margin-bottom: 10px; padding: 16px; border-radius: 15px; 
             border-right: 6px solid var(--primary); box-shadow: 0 3px 10px rgba(0,0,0,0.05); 
@@ -112,6 +130,7 @@
         .sound-btn { background: #ebf5fb; color: #3498db; }
         .edit-btn { background: #eafaf1; color: #27ae60; }
         .del-btn { background: #fdedec; color: #e74c3c; }
+        
         .ai-search-container {
             display: flex;
             flex-direction: column;
@@ -120,47 +139,42 @@
 
         #suggestionsBox {
             margin-top: -10px;
+            margin-bottom: 5px !important;
         }
+
         #logoutBtn {
-    /* المساحة والأبعاد: نسخة كربونية عن زر الدخول اللي عندك */
-    width: 100%; 
-    margin-bottom: 15px;
-    padding: 12px;
-    border-radius: 12px; /* نفس التدويرة بالظبط */
-    font-size: 16px;
-    font-weight: bold;
-    
-    /* الألوان في الحالة العادية (لون هادي ومش فاقع) */
-    background-color: #E8F5E9; /* أخضر هادي جداً ومريح */
-    color: #2c3e50;
-    border: 2px solid #81C784; /* حدود خضراء ناعمة */
-    
-    /* خصائص أساسية */
-    cursor: pointer;
-    transition: 0.3s;
-    display: none; /* بيظهر بس لما يسجل دخول */
-    font-family: inherit;
-}
+            width: 100%; 
+            margin-bottom: 15px;
+            padding: 12px;
+            border-radius: 12px; 
+            font-size: 16px;
+            font-weight: bold;
+            background-color: #E8F5E9; 
+            color: #2c3e50;
+            border: 2px solid #81C784; 
+            cursor: pointer;
+            transition: 0.3s;
+            display: none; 
+            font-family: inherit;
+        }
 
-/* الألوان لما تحط الماوس عليه (Hover) */
-#logoutBtn:hover {
-    background-color: #fdedec; /* أحمر خفيف جداً (ميلك شيك فراولة) */
-    color: #e74c3c; /* خط أحمر واضح بس مش فاقع */
-    border-color: #f5b7b1; /* حدود متناسقة مع الأحمر الخفيف */
-}
+        #logoutBtn:hover {
+            background-color: #fdedec; 
+            color: #e74c3c; 
+            border-color: #f5b7b1; 
+        }
 
-/* دعم الوضع الليلي عشان ما يضل أبيض فاقع وسط السواد */
-body.dark #logoutBtn {
-    background-color: #2a2a2a;
-    color: #e0e0e0;
-    border-color: #444;
-}
+        body.dark #logoutBtn {
+            background-color: #2a2a2a;
+            color: #e0e0e0;
+            border-color: #444;
+        }
 
-body.dark #logoutBtn:hover {
-    background-color: #442726; /* أحمر غامق هادي للوضع الليلي */
-    color: #ff8a80;
-    border-color: #641e16;
-}
+        body.dark #logoutBtn:hover {
+            background-color: #442726; 
+            color: #ff8a80;
+            border-color: #641e16;
+        }
         
        .cat-tag { 
             font-size: 11px; padding: 3px 10px; border-radius: 8px; 
@@ -277,7 +291,8 @@ body.dark #logoutBtn:hover {
         .btn-old { background: #8e44ad; }
         .btn-starred { background: #f39c12; }
         .btn-all { background: #2c3e50; }
-                 /* -------- ستايلات الوضع الليلي الشامل -------- */
+
+        /* -------- ستايلات الوضع الليلي الشامل -------- */
         body.dark { background: #121212; color: #e0e0e0; }
         body.dark .container { background: #1e1e1e; box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
         
@@ -314,30 +329,7 @@ body.dark #logoutBtn:hover {
         body.dark .quiz-word, body.dark .quiz-meaning { color: #fff; }
         body.dark .quiz-sound-btn { background: #1e3a5f; color: #6fbaff; }
         body.dark .hint-text, body.dark .quiz-example { color: #aaa; }
-        /* تأكد إن الـ container هو الأب لكل شي */
-.container {
-    max-width: 480px;
-    margin: 20px auto;
-    background: var(--card-bg);
-    padding: 20px; /* كان 25 */
-    border-radius: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px; /* أهم شي */
-}
-
-/* توحيد عرض كل العناصر داخل الـ container */
-.container > * {
-    width: 100%;
-    box-sizing: border-box;
-}
-
-/* حل مشكلة "الفاصل" الكبير أو الفراغ الميت */
-.stats-bar, .toolbar, .search-section, #suggestionsBox, #searchInput, ul {
-    margin-bottom: 5px !important; /* تقليل المسافات السفلية ليكون التصميم متراص */
-}
-
-    </style>
+</style>
 </head>
 <body>
     
@@ -714,7 +706,7 @@ window.fetchSuggestions = async function() {
     Return ONLY pure JSON array. No markdown.`;
 
     try {
-               const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`, {
+               const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
