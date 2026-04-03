@@ -601,17 +601,16 @@ const firebaseConfig = {
   };
 
   window.logout = function() {
-        // استدعاء دالة الخروج من فايربيس
-        signOut(auth).then(() => {
-            // بعد ما يطلع بنجاح، أحسن إشي تعمله هو ريفريش للصفحة
-            // عشان تختفي بيانات المستخدم والكلمات وترجع صفحة الدخول
-            console.log("تم تسجيل الخروج بنجاح");
-            location.reload(); 
-        }).catch((error) => {
-            console.error("حدث خطأ أثناء تسجيل الخروج:", error.message);
-            alert("مش قادر أطلعك! جرب مرة ثانية.");
-        });
-    };
+    signOut(auth).then(() => {
+        console.log("تم الخروج");
+        // بدل ما نعمل ريفريش فوري، خلينا نتأكد إن الأزرار تبدلت
+        document.getElementById('logoutBtn').style.display = 'none';
+        document.getElementById('loginBtn').style.display = 'block';
+        
+        // إذا بدك تعمل ريفريش، اعمله بعد ثانية وحدة بس
+        setTimeout(() => { location.reload(); }, 500); 
+    });
+};
         
   // 6. دوال التعديل والحذف للواجهة عشان المتصفح يشوفهم
   window.startEdit = function(id, event) {
