@@ -766,7 +766,6 @@ window.fetchSuggestions = async function() {
             div.onmouseout = () => div.style.background = "#f8f9fa";
             list.appendChild(div);
         });
-
     } catch (error) {
         console.error(error);
         list.innerHTML = "<p style='color:red; font-size:12px;'>الرابط ضرب 404 أو المفتاح غلط!</p>";
