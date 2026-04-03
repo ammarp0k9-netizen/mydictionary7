@@ -681,67 +681,73 @@ const firebaseConfig = {
 
 
     // حط مفتاحك هون
-const GEMINI_API_KEY = "AIzaSyCQOb8UrhhrQIRsbNRcLwlSAj1KHNByAsk"; 
+const GEMINI_API_KEY = "AIzaSyCQOb8UrhhrQIRsbNRcLwlSAj1KHNByAsk";
 
-// تعريف الدالة كـ window عشان الـ HTML يشوفها
 window.fetchSuggestions = async function() {
-    const wordInput = document.getElementById('wordEn');
-    const word = wordInput.value.trim();
+    const word = document.getElementById('wordEn').value.trim();
     const btn = document.getElementById('searchBtn');
     const box = document.getElementById('suggestionsBox');
     const list = document.getElementById('suggestionsList');
 
-    if (!word) return alert("اكتب كلمة أولاً!");
+    if (!word) return alert("اكتب الكلمة أولاً يا وحش!");
 
-    btn.innerText = "⏳";
+    // تجهيز الشكل للتحميل
+    btn.innerHTML = "⏳";
     btn.disabled = true;
-    list.innerHTML = "<p style='text-align:center; font-size:13px; color:#999;'>لحظة ببحثلك...</p>";
     box.style.display = "block";
+    list.innerHTML = "<p style='text-align:center; font-size:12px; color:#999;'>بجيبلك المعاني من المريخ...</p>";
 
-    const prompt = `Translate "${word}" to Arabic. Give me 4 meanings. 
-    Format: [{"ar": "معنى", "pos": "اسم/فعل/صفة", "stars": 1-3}] 
-    Return ONLY JSON.`;
+    // الطلب بلهجة واضحة للـ AI
+    const prompt = `Translate the English word "${word}" to Arabic. Provide 4 meanings. 
+    Format: [{"ar": "معنى", "pos": "اسم/فعل/صفة", "stars": 1-3}]. 
+    Return ONLY pure JSON array. No markdown.`;
 
     try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;{
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
         });
 
-        const data = await response.json();
-        let resultText = data.candidates[0].content.parts[0].text;
-        const suggestions = JSON.parse(resultText.replace(/```json|```/g, "").trim());
-        
-        list.innerHTML = ""; 
+        if (!response.ok) throw new Error('API Error');
 
+        const data = await response.json();
+        let text = data.candidates[0].content.parts[0].text;
+        
+        // تنظيف أي زوائد من الـ AI
+        const cleanJson = text.replace(/```json|```/g, "").trim();
+        const suggestions = JSON.parse(cleanJson);
+
+        list.innerHTML = "";
         suggestions.forEach(item => {
             const div = document.createElement('div');
-            div.style = "padding: 12px; background: #f8f9fa; border-radius: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border: 1px solid #eee;";
+            div.style = "padding: 12px; background: #f8f9fa; border-radius: 10px; cursor: pointer; border: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; transition: 0.2s;";
             div.innerHTML = `
                 <div style="text-align: right;">
                     <div style="font-weight: bold; color: #2c3e50;">${item.ar}</div>
                     <div style="font-size: 11px; color: #7f8c8d;">${item.pos}</div>
                 </div>
-                <div>${"⭐".repeat(item.stars)}</div>
+                <div style="font-size: 12px;">${"⭐".repeat(item.stars)}</div>
             `;
             
             div.onclick = () => {
-                document.getElementById('meaningInput').value = item.ar;
-                // تأكد إن اسم الـ ID عندك category للتصنيف
-                if(document.getElementById('categoryInput')) {
-                    document.getElementById('categoryInput').value = item.pos;
-                }
+                document.getElementById('wordAr').value = item.ar;
+                // إذا عندك قائمة تصنيف، بنختارها
+                const catSelect = document.getElementById('category');
+                if (catSelect) catSelect.value = item.pos;
                 box.style.display = "none";
             };
+            
+            div.onmouseover = () => div.style.background = "#eef7ff";
+            div.onmouseout = () => div.style.background = "#f8f9fa";
             list.appendChild(div);
         });
 
-    } catch (e) {
-        console.error(e);
-        list.innerHTML = "<p style='color:red;'>صار خطأ، جرب مرة ثانية</p>";
+    } catch (error) {
+        console.error(error);
+        list.innerHTML = "<p style='color:red; font-size:12px;'>الرابط ضرب 404 أو المفتاح غلط!</p>";
     } finally {
-        btn.innerText = "🔍";
+        btn.innerHTML = "🔍";
         btn.disabled = false;
     }
 };
