@@ -112,37 +112,46 @@
         .sound-btn { background: #ebf5fb; color: #3498db; }
         .edit-btn { background: #eafaf1; color: #27ae60; }
         .del-btn { background: #fdedec; color: #e74c3c; }
-        #logoutBtn {  background-color: #c0392b;   color: white;
-          /* المساحة والحجم: نسخنا قيم .btn-tool بالظبط */
-            padding: 10px 20px; 
-            font-size: 14px; /* حجم خط متناسق مع باقي الأزرار */
-            font-weight: 600;
-        
-            /* التدويرة: 20px عشان يطابق أزرار الـ toolbar */
-            border-radius: 20px; 
+        #logoutBtn {
+    /* المساحة والأبعاد: نسخة كربونية عن زر الدخول اللي عندك */
+    width: 100%; 
+    margin-bottom: 15px;
+    padding: 12px;
+    border-radius: 12px; /* نفس التدويرة بالظبط */
+    font-size: 16px;
+    font-weight: bold;
     
-            /* خصائص أساسية */
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: none; /* بظهر عن طريق الجافاسكريبت */
-                
-            /* عشان يجي جنب أزرار التولبار لو حطيته معهم */
-            flex: 1; 
-            text-align: center;
-        }
+    /* الألوان في الحالة العادية (لون هادي ومش فاقع) */
+    background-color: #f8f9fa; /* رمادي فاتح جداً مريح للعين */
+    color: #2c3e50;
+    border: 2px solid #ddd; /* حدود خفيفة */
+    
+    /* خصائص أساسية */
+    cursor: pointer;
+    transition: 0.3s;
+    display: none; /* بيظهر بس لما يسجل دخول */
+    font-family: inherit;
+}
 
-        /* تأثيرات الحركية */
-        #logoutBtn:hover {
-            background-color: #a93226;
-            transform: scale(1.02); /* تكبير خفيف جداً بدل الارتفاع */
-        }
+/* الألوان لما تحط الماوس عليه (Hover) */
+#logoutBtn:hover {
+    background-color: #fdedec; /* أحمر خفيف جداً (ميلك شيك فراولة) */
+    color: #e74c3c; /* خط أحمر واضح بس مش فاقع */
+    border-color: #f5b7b1; /* حدود متناسقة مع الأحمر الخفيف */
+}
 
-        /* تعديل الوضع الليلي للزر عشان ما يختفي */
-        body.dark #logoutBtn {
-            background-color: #8c261b; /* أحمر أغمق نتفة ليناسب سواد الصفحة */
-            border: 1px solid #5c1a16;
-        }
+/* دعم الوضع الليلي عشان ما يضل أبيض فاقع وسط السواد */
+body.dark #logoutBtn {
+    background-color: #2a2a2a;
+    color: #e0e0e0;
+    border-color: #444;
+}
+
+body.dark #logoutBtn:hover {
+    background-color: #442726; /* أحمر غامق هادي للوضع الليلي */
+    color: #ff8a80;
+    border-color: #641e16;
+}
         
        .cat-tag { 
             font-size: 11px; padding: 3px 10px; border-radius: 8px; 
