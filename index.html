@@ -305,21 +305,26 @@ body.dark #logoutBtn:hover {
         body.dark .quiz-word, body.dark .quiz-meaning { color: #fff; }
         body.dark .quiz-sound-btn { background: #1e3a5f; color: #6fbaff; }
         body.dark .hint-text, body.dark .quiz-example { color: #aaa; }
-        /* تأثير ظهور الصندوق */
-        #suggestionsBox {
-            animation: slideDown 0.3s ease-out;
-        }
+        /* حل مشكلة تمدد الخانات */
+.input-group div input {
+    margin-bottom: 0 !important; /* عشان ما يدفش الزر لتحت */
+}
 
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-15px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+/* دعم الوضع الليلي لصندوق الاقتراحات */
+body.dark #suggestionsBox {
+    background: #2a2a2a !important;
+    border-color: #444 !important;
+}
 
-        /* تحسين شكل الزر عند التحميل */
-        #searchBtn:disabled {
-            background-color: #bdc3c7 !important;
-            cursor: not-allowed;
-        }
+body.dark #suggestionsList div {
+    background: #333 !important;
+    border-color: #555 !important;
+    color: white !important;
+}
+
+body.dark #suggestionsList div div {
+    color: #eee !important;
+}
         
 
     </style>
@@ -345,19 +350,18 @@ body.dark #logoutBtn:hover {
         <span id="starredCount">⭐ الصعبة: 0</span>
     </div>
     
-    <div class="input-group">
+   <div class="input-group">
     <label>الكلمة بالإنجليزية:</label>
-        <div style="display: flex; gap: 8px;">
-            <input type="text" id="wordEn" placeholder="مثلاً: Break" style="flex: 1; margin-bottom: 0;">
-            <button onclick="fetchSuggestions()" id="searchBtn" type="button" style="background: #3498db; color: white; border: none; padding: 0 15px; border-radius: 12px; cursor: pointer; transition: 0.3s;">🔍</button>
-        </div>
+    <div style="display: flex; gap: 8px; align-items: stretch;">
+        <input type="text" id="wordEn" placeholder="مثلاً: Break" style="flex: 1; margin-bottom: 0;">
+        <button onclick="fetchSuggestions()" id="searchBtn" type="button" style="background: var(--primary); color: white; border: none; padding: 0 15px; border-radius: 12px; cursor: pointer;">🔍</button>
     </div>
-    
-    <div id="suggestionsBox" style="display: none; margin-top: -10px; margin-bottom: 20px; border: 2px solid #e3f2fd; padding: 15px; border-radius: 15px; background: #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.05);">
-        <p style="font-size: 13px; color: #3498db; font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px;">مقترحات الذكاء الاصطناعي:</p>
-        <div id="suggestionsList" style="display: flex; flex-direction: column; gap: 10px;">
-            </div>
-    </div>
+</div>
+
+<div id="suggestionsBox" style="display: none; margin-top: -10px; margin-bottom: 20px; border: 2px solid #e3f2fd; padding: 15px; border-radius: 15px; background: #fff;">
+    <p style="font-size: 13px; color: var(--primary); font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px;">مقترحات الذكاء الاصطناعي:</p>
+    <div id="suggestionsList" style="display: flex; flex-direction: column; gap: 10px;"></div>
+</div>
         <input type="text" id="meaningInput" placeholder="المعنى بالعربي">
         <textarea id="exampleInput" placeholder="جملة مثال (اختياري)" rows="2"></textarea>
         <select id="categoryInput">
@@ -673,87 +677,71 @@ const firebaseConfig = {
   };
 
 
-    const GEMINI_API_KEY = "AIzaSyCQOb8UrhhrQIRsbNRcLwlSAj1KHNByAsk"; 
+    // حط مفتاحك هون
+const GEMINI_API_KEY = "AIzaSyCQOb8UrhhrQIRsbNRcLwlSAj1KHNByAsk"; 
 
-    async function fetchSuggestions() {
-        const word = document.getElementById('wordEn').value.trim();
-        const btn = document.getElementById('searchBtn');
-        const box = document.getElementById('suggestionsBox');
-        const list = document.getElementById('suggestionsList');
-    
-        if (!word) {
-            alert("يا حبيبنا اكتب الكلمة بالإنجليزي أول!");
-            return;
-        }
-    
-        // حالة التحميل
-        btn.innerText = "⏳";
-        btn.disabled = true;
-        list.innerHTML = "<p style='text-align:center; font-size:14px; color:#999;'>جاري جلب المعاني...</p>";
-        box.style.display = "block";
-    
-        const prompt = `Translate the English word "${word}" to Arabic. 
-        Give me 4 distinct meanings. For each:
-        1. Arabic translation.
-        2. Part of speech (Noun, Verb, Adjective, Adverb, Phrase). Translate POS to Arabic (اسم، فعل، صفة، ظرف، جمل).
-        3. Popularity (3 for very common, 2 for common, 1 for rare).
-        Return ONLY a JSON array: [{"ar": "...", "pos": "...", "stars": 3}]`;
-    
-        try {
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-            });
-    
-            const data = await response.json();
-            // تنظيف الاستجابة من أي كود Markdown
-            let resultText = data.candidates[0].content.parts[0].text;
-            resultText = resultText.replace(/```json/g, "").replace(/```/g, "").trim();
+// تعريف الدالة كـ window عشان الـ HTML يشوفها
+window.fetchSuggestions = async function() {
+    const wordInput = document.getElementById('wordEn');
+    const word = wordInput.value.trim();
+    const btn = document.getElementById('searchBtn');
+    const box = document.getElementById('suggestionsBox');
+    const list = document.getElementById('suggestionsList');
+
+    if (!word) return alert("اكتب كلمة أولاً!");
+
+    btn.innerText = "⏳";
+    btn.disabled = true;
+    list.innerHTML = "<p style='text-align:center; font-size:13px; color:#999;'>لحظة ببحثلك...</p>";
+    box.style.display = "block";
+
+    const prompt = `Translate "${word}" to Arabic. Give me 4 meanings. 
+    Format: [{"ar": "معنى", "pos": "اسم/فعل/صفة", "stars": 1-3}] 
+    Return ONLY JSON.`;
+
+    try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+        });
+
+        const data = await response.json();
+        let resultText = data.candidates[0].content.parts[0].text;
+        const suggestions = JSON.parse(resultText.replace(/```json|```/g, "").trim());
+        
+        list.innerHTML = ""; 
+
+        suggestions.forEach(item => {
+            const div = document.createElement('div');
+            div.style = "padding: 12px; background: #f8f9fa; border-radius: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border: 1px solid #eee;";
+            div.innerHTML = `
+                <div style="text-align: right;">
+                    <div style="font-weight: bold; color: #2c3e50;">${item.ar}</div>
+                    <div style="font-size: 11px; color: #7f8c8d;">${item.pos}</div>
+                </div>
+                <div>${"⭐".repeat(item.stars)}</div>
+            `;
             
-            const suggestions = JSON.parse(resultText);
-            list.innerHTML = ""; // مسح رسالة التحميل
-    
-            suggestions.forEach(item => {
-                const starIcons = "⭐".repeat(item.stars);
-                const div = document.createElement('div');
-                // تصميم الاقتراح كأنه كبسة فخمة
-                div.style = `
-                    padding: 12px; background: #f8f9fa; border-radius: 10px; cursor: pointer; 
-                    display: flex; justify-content: space-between; align-items: center;
-                    border: 1px solid #eee; transition: 0.2s;
-                `;
-                
-                div.innerHTML = `
-                    <div style="text-align: right;">
-                        <div style="font-weight: bold; color: #2c3e50;">${item.ar}</div>
-                        <div style="font-size: 11px; color: #7f8c8d;">تصنيف: ${item.pos}</div>
-                    </div>
-                    <div style="font-size: 14px;">${starIcons}</div>
-                `;
-    
-                // عند الضغط: يعبي البيانات ويخفي الصندوق
-                div.onclick = () => {
-                    document.getElementById('meaningInput').value = item.ar;
+            div.onclick = () => {
+                document.getElementById('meaningInput').value = item.ar;
+                // تأكد إن اسم الـ ID عندك category للتصنيف
+                if(document.getElementById('categoryInput')) {
                     document.getElementById('categoryInput').value = item.pos;
-                    box.style.display = "none";
-                };
-    
-                // حركات الـ Hover
-                div.onmouseover = () => div.style.backgroundColor = "#eaf2f8";
-                div.onmouseout = () => div.style.backgroundColor = "#f8f9fa";
-    
-                list.appendChild(div);
-            });
-    
-        } catch (error) {
-            console.error("خطأ:", error);
-            list.innerHTML = "<p style='color:red; font-size:12px;'>فشل الاتصال بالذكاء الاصطناعي</p>";
-        } finally {
-            btn.innerText = "🔍";
-            btn.disabled = false;
-        }
+                }
+                box.style.display = "none";
+            };
+            list.appendChild(div);
+        });
+
+    } catch (e) {
+        console.error(e);
+        list.innerHTML = "<p style='color:red;'>صار خطأ، جرب مرة ثانية</p>";
+    } finally {
+        btn.innerText = "🔍";
+        btn.disabled = false;
     }
+};
     
     
 </script>
