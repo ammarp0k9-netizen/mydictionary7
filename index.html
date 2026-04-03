@@ -31,21 +31,22 @@
         }
 
         /* تم دمج الكلاسين هنا ليكون المربع الرئيسي متناسق ويلم كل العناصر */
-        .container { 
-            max-width: 480px; 
-            margin: 20px auto; 
-            background: var(--card-bg); 
-            padding: 20px; 
-            border-radius: 20px; 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1); 
+        .container {
+            width: 95%; /* بضمن إنه ما يلزق بحواف الموبايل */
+            max-width: 480px; /* القفل اللي بدك إياه */
+            margin: 20px auto !important; /* التوسيط الإجباري */
+            padding: 20px;
+            background: var(--card-bg);
+            border-radius: 20px;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            /* أي عنصر جوا الـ container رح يلتزم بعرضه */
         }
 
-        /* توحيد عرض كل العناصر المباشرة داخل الـ container */
+        /* هاد السطر هو "الشرطي" اللي بمنع العناصر تطيش برا */
         .container > * {
-            width: 100%;
+            max-width: 100%; 
+            box-sizing: border-box;
         }
 
         h2 { 
