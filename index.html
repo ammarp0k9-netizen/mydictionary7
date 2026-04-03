@@ -366,10 +366,10 @@
     </div>
     <button class="btn-close" onclick="closeQuiz()">إغلاق الاختبار</button>
 </div>
-
+    
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
-  import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
+  import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signInWithRedirect, getRedirectResult } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
   import { getFirestore, collection, addDoc, getDocs, query, orderBy, where, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
   // For Firebase JS SDK v7.20.0 and later, measurementId is optional
@@ -387,6 +387,18 @@ const firebaseConfig = {
   const auth = getAuth(app);
   const db = getFirestore(app);
 
+    // كود استقبال نتيجة الدخول بعد التوجيه
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result) {
+          console.log("تم تسجيل الدخول بنجاح بعد العودة");
+          // هون بتقدر تستدعي أي دالة بتخفي زر الدخول وبتعرض الكلمات
+        }
+      })
+      .catch((error) => {
+        console.error("حدث خطأ أثناء العودة من تسجيل الدخول: ", error.message);
+      });
+
   // 1. مراقب حالة تسجيل الدخول
   onAuthStateChanged(auth, async (user) => {
     if (user) {
@@ -398,9 +410,12 @@ const firebaseConfig = {
   });
 
   // 2. دالة تسجيل الدخول
-  window.login = function() {
-    const provider = new GoogleAuthProvider();
-    signInWithPopup(auth, provider)
+ window.login = function() {
+  const provider = new GoogleAuthProvider();
+  
+      // استخدم التوجيه (Redirect) بدل النافذة المنبثقة لتفادي حظر الآيفون
+      signInWithRedirect(auth, provider);
+    };
       .then((result) => {
         console.log("تم تسجيل الدخول بنجاح");
       })
