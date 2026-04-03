@@ -416,14 +416,7 @@ const firebaseConfig = {
       // استخدم التوجيه (Redirect) بدل النافذة المنبثقة لتفادي حظر الآيفون
       signInWithRedirect(auth, provider);
     };
-      .then((result) => {
-        console.log("تم تسجيل الدخول بنجاح");
-      })
-      .catch((error) => {
-        alert("حدث خطأ في تسجيل الدخول: " + error.message);
-      });
-  };
-
+    
   // 3. دالة حفظ الكلمة للسحابة (الإضافة)
   window.saveWordToCloud = async function(wordText, wordCategory, meaning, example) {
     const user = auth.currentUser;
