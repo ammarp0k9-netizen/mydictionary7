@@ -347,8 +347,8 @@ ul {
 
     <button id="loginBtn" onclick="login()" style="width: 100%; margin-bottom: 15px; background-color: #E3F2FD; color: #2c3e50; border: 2px solid #3498db; padding: 12px; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.3s;">
         تسجيل دخول بجوجل 🚀
-    <button id="logoutBtn" onclick="logout()">تسجيل الخروج</button>
     </button>
+    <button id="logoutBtn" onclick="logout()">تسجيل الخروج</button>
     
     <button onclick="toggleDark()" 
     style="width:100%; margin-bottom:15px; padding:12px; border-radius:12px; border:2px solid #444; font-weight:bold;">
@@ -741,9 +741,9 @@ window.fetchSuggestions = async function() {
             `;
             
             div.onclick = () => {
-                document.getElementById('wordAr').value = item.ar;
+                document.getElementById('meaningInput').value = item.ar;
                 // إذا عندك قائمة تصنيف، بنختارها
-                const catSelect = document.getElementById('category');
+                const catSelect = document.getElementById('categoryInput');
                 if (catSelect) catSelect.value = item.pos;
                 box.style.display = "none";
             };
