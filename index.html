@@ -708,19 +708,21 @@ Return JSON only like:
     method: "POST",
     headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${GROQ_API_KEY}`
+        "Authorization": "Bearer YOUR_API_KEY"
     },
     body: JSON.stringify({
         model: "llama3-8b-8192",
         messages: [
             {
                 role: "user",
-                content: `Translate "${word}" to Arabic and give 4 meanings. Return JSON only.`
+                content: "Translate the word 'test' to Arabic and give 2 meanings in JSON."
             }
         ]
     })
 });
-        const data = await response.json();
+
+const data = await response.json();
+console.log(data);
 
         if (!response.ok) {
             console.error(data);
