@@ -744,7 +744,7 @@ window.fetchSuggestions = async function() {
 
         list.innerHTML = suggestions.map(s => `
             <div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #eee; cursor:pointer;"
-                 onclick="document.getElementById('wordInput').value='${s.ar}'; document.getElementById('categoryInput').value='${s.pos}';">
+                 onclick="document.getElementById('meaningInput').value='${s.ar}'; document.getElementById('categoryInput').value='${s.pos}';">
                 <b>${s.ar}</b> <span style="font-size:11px;color:#999">${s.pos}</span>
             </div>
         `).join('');
