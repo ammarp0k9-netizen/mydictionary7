@@ -700,9 +700,9 @@ window.fetchSuggestions = async function() {
     list.innerHTML = "<p style='text-align:center; font-size:12px; color:#999;'>بجيبلك المعاني من المريخ...</p>";
 
     // الـ Prompt المعدل لضمان JSON نظيف
-    const finalPrompt = `Translate the English word "${word}" to Arabic. Provide exactly 4 meanings. 
-    Return ONLY a JSON array like this: [{"ar": "معنى", "pos": "اسم/فعل/صفة"}]. No talk, no markdown.`;
-
+   const finalPrompt = `Translate the English word "${word}" to Arabic. Provide 4 meanings.
+    Return ONLY a JSON array: [{"ar": "معنى", "pos": "اسم/فعل/صفة", "stars": 1-3, "ex": "English example sentence using the word"}]. 
+    The "ex" should be a simple, clear English sentence.`;
     try {
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
@@ -742,12 +742,37 @@ window.fetchSuggestions = async function() {
         
         const suggestions = JSON.parse(cleanJson);
 
-        list.innerHTML = suggestions.map(s => `
-            <div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #eee; cursor:pointer;"
-                 onclick="document.getElementById('meaningInput').value='${s.ar}'; document.getElementById('categoryInput').value='${s.pos}';">
-                <b>${s.ar}</b> <span style="font-size:11px;color:#999">${s.pos}</span>
+        list.innerHTML = suggestions.map(s => {
+    const starsHtml = '⭐'.repeat(s.stars || 1);
+    // تنظيف النصوص من علامات التنصيص عشان ما تخرب الـ onclick
+    const cleanEx = s.ex.replace(/'/g, "\\'");
+    const cleanAr = s.ar.replace(/'/g, "\\'");
+
+    return `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid #eee; cursor:pointer;"
+             onclick="
+                const targetAr = document.getElementById('wordAr');
+                const targetPos = document.getElementById('category');
+                const targetEx = document.getElementById('exampleInput');
+                
+                if(targetAr && targetPos && targetEx) {
+                    targetAr.value = '${cleanAr}';
+                    targetPos.value = '${s.pos}';
+                    targetEx.value = '${cleanEx}';
+                    document.getElementById('suggestionsBox').style.display = 'none';
+                } else {
+                    console.error('تأكد من وجود IDs: wordAr, category, exampleInput');
+                }
+             ">
+            <div>
+                <b style="color:#2c3e50; font-size:15px;">${s.ar}</b>
+                <div style="font-size:10px; color:#f1c40f;">${starsHtml}</div>
+                <div style="font-size:11px; color:#666; margin-top:4px; font-style:italic;">"${s.ex}"</div>
             </div>
-        `).join('');
+            <span style="font-size:11px; color:#999; background:#f0f0f0; padding:2px 6px; border-radius:10px;">${s.pos}</span>
+        </div>
+    `;
+}).join('');
 
     } catch (err) {
         console.error("FETCH ERROR:", err);
