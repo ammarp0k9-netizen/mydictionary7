@@ -752,7 +752,7 @@ window.fetchSuggestions = async function() {
         <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid #eee; cursor:pointer;"
              onclick="
                 const targetAr = document.getElementById('meaningInput');
-                const targetPos = document.getElementById('category');
+                const targetPos = document.getElementById('categoryInput');
                 const targetEx = document.getElementById('exampleInput');
                 
                 if(targetAr && targetPos && targetEx) {
@@ -761,7 +761,7 @@ window.fetchSuggestions = async function() {
                     targetEx.value = '${cleanEx}';
                     document.getElementById('suggestionsBox').style.display = 'none';
                 } else {
-                    console.error('تأكد من وجود IDs: wordAr, category, exampleInput');
+                    console.error('تأكد من وجود IDs: meaningInput, categoryInput, exampleInput');
                 }
              ">
             <div>
