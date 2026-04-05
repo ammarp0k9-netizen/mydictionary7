@@ -692,56 +692,41 @@ window.fetchSuggestions = async function() {
     const box = document.getElementById('suggestionsBox');
     const list = document.getElementById('suggestionsList');
 
-    if (!word) return alert("اكتب الكلمة أولاً يا وحش!");
+    if (!word) return alert("اكتب الكلمة أولاً!");
 
     btn.innerHTML = "⏳";
     btn.disabled = true;
     box.style.display = "block";
     list.innerHTML = "<p style='text-align:center; font-size:12px; color:#999;'>بجيبلك المعاني من المريخ...</p>";
 
-    // 1. تعديل السكربت (الـ Prompt) لمنع الهبد وطلب كل المعاني
-    const finalPrompt = `Translate the English word "${word}" to Arabic. Provide ALL valid, dictionary-verified meanings (up to 10 meanings). 
-    CRITICAL: DO NOT invent, hallucinate, or guess meanings. Only use real translations.
-    Return ONLY a JSON array in this exact format: [{"ar": "معنى", "pos": "اسم/فعل/صفة", "stars": 1-3, "ex": "English example sentence"}]. 
-    Assign 3 stars to the most common meanings, and 1 star to the rare ones. No markdown, no extra text.`;
+    const finalPrompt = `Translate "${word}" to Arabic. Provide ALL valid dictionary meanings (up to 10). 
+    CRITICAL: NO hallucination. Return ONLY JSON array: [{"ar": "معنى", "pos": "اسم/فعل/صفة", "stars": 1-3, "ex": "English example sentence"}].`;
 
     try {
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                // تأكد إنك معرّف GROQ_API_KEY فوق
                 "Authorization": `Bearer ${GROQ_API_KEY}` 
             },
             body: JSON.stringify({
                 model: "llama-3.3-70b-versatile",
                 messages: [
-                    {
-                        role: "system",
-                        // توجيه صارم للذكاء الاصطناعي عشان يكون قاموس دقيق
-                        content: "You are a strict, highly accurate English-Arabic dictionary. Never hallucinate. Output pure JSON."
-                    },
-                    {
-                        role: "user",
-                        content: finalPrompt
-                    }
+                    { role: "system", content: "You are a precise dictionary. Output pure JSON only." },
+                    { role: "user", content: finalPrompt }
                 ],
-                temperature: 0 // الصفر بيمنع الهبد تماماً وبيخليه دقيق
+                temperature: 0
             })
         });
 
         const data = await response.json();
-
-        if (!response.ok) throw new Error(data.error?.message || "API Error");
+        if (!response.ok) throw new Error("API Error");
 
         const text = data.choices[0].message.content;
         const start = text.indexOf('[');
         const end = text.lastIndexOf(']') + 1;
-        const cleanJson = text.substring(start, end);
-        
-        const suggestions = JSON.parse(cleanJson);
+        const suggestions = JSON.parse(text.substring(start, end));
 
-        // 2. بناء الـ HTML مع إخفاء المعاني اللي بعد الرابع
         let htmlContent = '';
         
         suggestions.forEach((s, index) => {
@@ -749,25 +734,17 @@ window.fetchSuggestions = async function() {
             const cleanEx = s.ex.replace(/'/g, "\\'");
             const cleanAr = s.ar.replace(/'/g, "\\'");
             
-            // إذا كان الترتيب 4 وأكثر، بنعطيه كلاس عشان نخفيه مبدئياً
+            // المعاني الإضافية تأخذ كلاس extra-meaning وتكون مخفية
             const displayStyle = index >= 4 ? 'display:none;' : 'display:flex;';
             const extraClass = index >= 4 ? 'extra-meaning' : '';
 
             htmlContent += `
                 <div class="${extraClass}" style="${displayStyle} justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid #eee; cursor:pointer; background:#fff;"
-                     onmouseover="this.style.background='#f9f9f9'" 
-                     onmouseout="this.style.background='#fff'"
                      onclick="
-                        const targetAr = document.getElementById('meaningInput');
-                        const targetPos = document.getElementById('categoryInput');
-                        const targetEx = document.getElementById('exampleInput');
-                        
-                        if(targetAr && targetPos && targetEx) {
-                            targetAr.value = '${cleanAr}';
-                            targetPos.value = '${s.pos}';
-                            targetEx.value = '${cleanEx}';
-                            document.getElementById('suggestionsBox').style.display = 'none';
-                        }
+                        document.getElementById('meaningInput').value = '${cleanAr}';
+                        document.getElementById('categoryInput').value = '${s.pos}';
+                        document.getElementById('exampleInput').value = '${cleanEx}';
+                        document.getElementById('suggestionsBox').style.display = 'none';
                      ">
                     <div>
                         <b style="color:#2c3e50; font-size:15px;">${s.ar}</b>
@@ -779,17 +756,23 @@ window.fetchSuggestions = async function() {
             `;
         });
 
-        // 3. إضافة زر "عرض المزيد" إذا كان عدد المعاني أكثر من 4
+        // إضافة زر التبديل (عرض المزيد / عرض أقل)
         if (suggestions.length > 4) {
             htmlContent += `
-                <div id="showMoreBtn" style="text-align:center; padding:10px; color:#3498db; cursor:pointer; font-size:12px; font-weight:bold; background:#f1f8ff; border-radius: 0 0 8px 8px;"
+                <div id="toggleMeaningsBtn" style="text-align:center; padding:10px; color:#3498db; cursor:pointer; font-size:12px; font-weight:bold; background:#f1f8ff; border-radius: 0 0 8px 8px;"
                      onclick="
-                        // إظهار كل العناصر المخفية
-                        document.querySelectorAll('.extra-meaning').forEach(el => el.style.display = 'flex');
-                        // إخفاء الزر نفسه بعد الضغط
-                        this.style.display = 'none';
+                        const extras = document.querySelectorAll('.extra-meaning');
+                        const isHidden = extras[0].style.display === 'none';
+                        
+                        if (isHidden) {
+                            extras.forEach(el => el.style.display = 'flex');
+                            this.innerHTML = 'عرض أقل';
+                        } else {
+                            extras.forEach(el => el.style.display = 'none');
+                            this.innerHTML = 'عرض المزيد  (${suggestions.length - 4})';
+                        }
                      ">
-                    ⬇️ عرض المزيد من المعاني (${suggestions.length - 4}) ⬇️
+                     عرض المزيد (${suggestions.length - 4})
                 </div>
             `;
         }
@@ -797,8 +780,7 @@ window.fetchSuggestions = async function() {
         list.innerHTML = htmlContent;
 
     } catch (err) {
-        console.error("FETCH ERROR:", err);
-        list.innerHTML = `<p style='color:red; text-align:center; font-size:11px; padding:10px;'>خطأ بالاتصال.. جرب كمان مرة</p>`;
+        list.innerHTML = `<p style='color:red; text-align:center; padding:10px;'>فشل الاتصال..</p>`;
     } finally {
         btn.innerHTML = "🔍";
         btn.disabled = false;
