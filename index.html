@@ -687,7 +687,7 @@ const firebaseConfig = {
 const GROQ_API_KEY = "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";
 
 window.fetchSuggestions = async function() {
-    const word = document.getElementById('wordEn').value.trim();
+    const word = document.getElementById('wordInput').value.trim();
     const btn = document.getElementById('searchBtn');
     const box = document.getElementById('suggestionsBox');
     const list = document.getElementById('suggestionsList');
@@ -697,7 +697,7 @@ window.fetchSuggestions = async function() {
     btn.innerHTML = "⏳";
     btn.disabled = true;
     box.style.display = "block";
-    list.innerHTML = "<p style='text-align:center; font-size:12px; color:#999;'>بجيبلك المعاني الموثقة...</p>";
+    list.innerHTML = "<p style='text-align:center; font-size:12px; color:#999;'>بجيبلك المعاني من المريخ...</p>";
 
     // 1. تعديل السكربت (الـ Prompt) لمنع الهبد وطلب كل المعاني
     const finalPrompt = `Translate the English word "${word}" to Arabic. Provide ALL valid, dictionary-verified meanings (up to 10 meanings). 
