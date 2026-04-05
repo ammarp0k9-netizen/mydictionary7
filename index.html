@@ -699,84 +699,88 @@ window.fetchSuggestions = async function() {
     box.style.display = "block";
     list.innerHTML = "<p style='text-align:center; font-size:12px; color:#999;'>بجيبلك المعاني من المريخ...</p>";
 
-    // الـ Prompt المعدل لضمان JSON نظيف
-   const finalPrompt = `Translate the English word "${word}" to Arabic. Provide 4 meanings.
-    Return ONLY a JSON array: [{"ar": "معنى", "pos": "اسم/فعل/صفة", "stars": 1-3, "ex": "English example sentence using the word"}]. 
-    The "ex" should be a simple, clear English sentence.`;
+    const finalPrompt = `Translate "${word}" to Arabic. Provide ALL valid dictionary meanings (up to 10). 
+    CRITICAL: NO hallucination. Return ONLY JSON array: [{"ar": "معنى", "pos": "اسم/فعل/صفة", "stars": 1-3, "ex": "English example sentence"}].`;
+
     try {
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer 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` // <--- تأكد إنك حطيت مفتاح Groq هون
+                "Authorization": `Bearer ${GROQ_API_KEY}` 
             },
             body: JSON.stringify({
-                model: "llama-3.1-8b-instant",
+                model: "llama-3.3-70b-versatile",
                 messages: [
-                    {
-                        role: "system",
-                        content: "You are a translator that only outputs JSON."
-                    },
-                    {
-                        role: "user",
-                        content: finalPrompt
-                    }
+                    { role: "system", content: "You are a precise dictionary. Output pure JSON only." },
+                    { role: "user", content: finalPrompt }
                 ],
-                temperature: 0 // <--- عشان نضمن الجواب يكون دقيق ومباشر
+                temperature: 0
             })
         });
 
         const data = await response.json();
-
-        if (!response.ok) {
-            console.error("GROQ ERROR:", data);
-            throw new Error(data.error?.message || "API Error");
-        }
+        if (!response.ok) throw new Error("API Error");
 
         const text = data.choices[0].message.content;
-        
-        // تنظيف النص (لأنه لاما أحياناً بتحب تحط مقدمات)
         const start = text.indexOf('[');
         const end = text.lastIndexOf(']') + 1;
-        const cleanJson = text.substring(start, end);
+        const suggestions = JSON.parse(text.substring(start, end));
+
+        let htmlContent = '';
         
-        const suggestions = JSON.parse(cleanJson);
+        suggestions.forEach((s, index) => {
+            const starsHtml = '⭐'.repeat(s.stars || 1);
+            const cleanEx = s.ex.replace(/'/g, "\\'");
+            const cleanAr = s.ar.replace(/'/g, "\\'");
+            
+            // المعاني الإضافية تأخذ كلاس extra-meaning وتكون مخفية
+            const displayStyle = index >= 4 ? 'display:none;' : 'display:flex;';
+            const extraClass = index >= 4 ? 'extra-meaning' : '';
 
-        list.innerHTML = suggestions.map(s => {
-    const starsHtml = '⭐'.repeat(s.stars || 1);
-    // تنظيف النصوص من علامات التنصيص عشان ما تخرب الـ onclick
-    const cleanEx = s.ex.replace(/'/g, "\\'");
-    const cleanAr = s.ar.replace(/'/g, "\\'");
+            htmlContent += `
+                <div class="${extraClass}" style="${displayStyle} justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid #eee; cursor:pointer; background:#fff;"
+                     onclick="
+                        document.getElementById('meaningInput').value = '${cleanAr}';
+                        document.getElementById('categoryInput').value = '${s.pos}';
+                        document.getElementById('exampleInput').value = '${cleanEx}';
+                        document.getElementById('suggestionsBox').style.display = 'none';
+                     ">
+                    <div>
+                        <b style="color:#2c3e50; font-size:15px;">${s.ar}</b>
+                        <div style="font-size:10px; color:#f1c40f;">${starsHtml}</div>
+                        <div style="font-size:11px; color:#666; margin-top:4px; font-style:italic;">"${s.ex}"</div>
+                    </div>
+                    <span style="font-size:11px; color:#999; background:#f0f0f0; padding:2px 6px; border-radius:10px;">${s.pos}</span>
+                </div>
+            `;
+        });
 
-    return `
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid #eee; cursor:pointer;"
-             onclick="
-                const targetAr = document.getElementById('meaningInput');
-                const targetPos = document.getElementById('categoryInput');
-                const targetEx = document.getElementById('exampleInput');
-                
-                if(targetAr && targetPos && targetEx) {
-                    targetAr.value = '${cleanAr}';
-                    targetPos.value = '${s.pos}';
-                    targetEx.value = '${cleanEx}';
-                    document.getElementById('suggestionsBox').style.display = 'none';
-                } else {
-                    console.error('تأكد من وجود IDs: meaningInput, categoryInput, exampleInput');
-                }
-             ">
-            <div>
-                <b style="color:#2c3e50; font-size:15px;">${s.ar}</b>
-                <div style="font-size:10px; color:#f1c40f;">${starsHtml}</div>
-                <div style="font-size:11px; color:#666; margin-top:4px; font-style:italic;">"${s.ex}"</div>
-            </div>
-            <span style="font-size:11px; color:#999; background:#f0f0f0; padding:2px 6px; border-radius:10px;">${s.pos}</span>
-        </div>
-    `;
-}).join('');
+        // إضافة زر التبديل (عرض المزيد / عرض أقل)
+        if (suggestions.length > 4) {
+            htmlContent += `
+                <div id="toggleMeaningsBtn" style="text-align:center; padding:10px; color:#3498db; cursor:pointer; font-size:12px; font-weight:bold; background:#f1f8ff; border-radius: 0 0 8px 8px;"
+                     onclick="
+                        const extras = document.querySelectorAll('.extra-meaning');
+                        const isHidden = extras[0].style.display === 'none';
+                        
+                        if (isHidden) {
+                            extras.forEach(el => el.style.display = 'flex');
+                            this.innerHTML = 'عرض أقل';
+                        } else {
+                            extras.forEach(el => el.style.display = 'none');
+                            this.innerHTML = 'عرض المزيد  (${suggestions.length - 4})';
+                        }
+                     ">
+                     عرض المزيد (${suggestions.length - 4})
+                </div>
+            `;
+        }
+
+        list.innerHTML = htmlContent;
 
     } catch (err) {
-        console.error("FETCH ERROR:", err);
-        list.innerHTML = `<p style='color:red; text-align:center; font-size:11px;'>خطأ: ${err.message}</p>`;
+        list.innerHTML = `<p style='color:red; text-align:center; padding:10px;'>فشل الاتصال..</p>`;
     } finally {
         btn.innerHTML = "🔍";
         btn.disabled = false;
