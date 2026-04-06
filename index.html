@@ -731,7 +731,7 @@ const firebaseConfig = {
 
 
 window.fetchSuggestions = async function() {
-    const word = document.getElementById('wordEn').value.trim();
+    const word = document.getElementById('wordInput').value.trim();
     const btn = document.getElementById('searchBtn');
     const box = document.getElementById('suggestionsBox');
     const list = document.getElementById('suggestionsList');
@@ -741,7 +741,7 @@ window.fetchSuggestions = async function() {
     btn.innerHTML = "⏳";
     btn.disabled = true;
     box.style.display = "block";
-    list.innerHTML = "<p style='text-align:center; font-size:12px; color:#999;'>بجيبلك المعاني من سيرفرك الخاص...</p>";
+    list.innerHTML = "<p style='text-align:center; font-size:12px; color:#999;'>بجيبلك المعاني من المريخ...</p>";
 
     try {
         // بننادي السيرفر الوسيط اللي شغال على جهازك بورت 3000
