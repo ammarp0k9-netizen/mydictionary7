@@ -744,7 +744,7 @@ window.fetchSuggestions = async function() {
     list.innerHTML = "<p style='text-align:center; font-size:12px; color:#999;'>بجيبلك المعاني من المريخ...</p>";
 
     try {
-        // بننادي السيرفر الوسيط اللي شغال على جهازك بورت 3000
+        // 1. منادي السيرفر المحلي تبعك
         const response = await fetch("http://localhost:3000/api/dictionary", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -755,19 +755,66 @@ window.fetchSuggestions = async function() {
         
         if (!response.ok) throw new Error("السيرفر زعلان!");
 
-        // بنفك شفرة المعاني اللي بعثها السيرفر
+        // 2. بنفك شفرة المعاني
         const text = data.choices[0].message.content;
         const start = text.indexOf('[');
         const end = text.lastIndexOf(']') + 1;
         const suggestions = JSON.parse(text.substring(start, end));
 
+        // 3. كود عرض المعاني (بنينا الـ HTML هون مباشرة عشان ما يعطيك Error)
+        let htmlContent = '';
         
-        // دالة عرض المعاني (تأكد إنها لسا عندك بالكود)
-        renderSuggestions(suggestions); 
+        suggestions.forEach((s, index) => {
+            const starsHtml = '⭐'.repeat(s.stars || 1);
+            const cleanEx = s.ex.replace(/'/g, "\\'");
+            const cleanAr = s.ar.replace(/'/g, "\\'");
+            
+            const displayStyle = index >= 4 ? 'display:none;' : 'display:flex;';
+            const extraClass = index >= 4 ? 'extra-meaning' : '';
+
+            htmlContent += `
+                <div class="${extraClass}" style="${displayStyle} justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid #eee; cursor:pointer; background:#fff;"
+                     onclick="
+                        document.getElementById('meaningInput').value = '${cleanAr}';
+                        document.getElementById('categoryInput').value = '${s.pos}';
+                        document.getElementById('exampleInput').value = '${cleanEx}';
+                        document.getElementById('suggestionsBox').style.display = 'none';
+                     ">
+                    <div>
+                        <b style="color:#2c3e50; font-size:15px;">${s.ar}</b>
+                        <div style="font-size:10px; color:#star-color;">${starsHtml}</div>
+                        <div style="font-size:11px; color:#666; margin-top:4px; font-style:italic;">"${s.ex}"</div>
+                    </div>
+                    <span style="font-size:11px; color:#999; background:#f0f0f0; padding:2px 6px; border-radius:10px;">${s.pos}</span>
+                </div>
+            `;
+        });
+
+        // إضافة زر التبديل (عرض المزيد / أقل)
+        if (suggestions.length > 4) {
+            htmlContent += `
+                <div id="toggleMeaningsBtn" style="text-align:center; padding:10px; color:#3498db; cursor:pointer; font-size:12px; font-weight:bold; background:#f1f8ff; border-radius: 0 0 8px 8px;"
+                     onclick="
+                        const extras = document.querySelectorAll('.extra-meaning');
+                        const isHidden = extras[0].style.display === 'none';
+                        if (isHidden) {
+                            extras.forEach(el => el.style.display = 'flex');
+                            this.innerHTML = '⬆️ عرض أقل';
+                        } else {
+                            extras.forEach(el => el.style.display = 'none');
+                            this.innerHTML = '⬇️ عرض المزيد (${suggestions.length - 4})';
+                        }
+                     ">
+                    ⬇️ عرض المزيد (${suggestions.length - 4})
+                </div>
+            `;
+        }
+
+        list.innerHTML = htmlContent;
 
     } catch (err) {
         console.error("Fetch Error:", err);
-        list.innerHTML = "<p style='color:red; text-align:center;'>تأكد إن السيرفر (الشاشة السوداء) شغالة!</p>";
+        list.innerHTML = "<p style='color:red; text-align:center; font-size:11px;'>تأكد إن الشاشة السوداء شغالة ومكتوب فيها 'السيرفر شغال'</p>";
     } finally {
         btn.innerHTML = "🔍";
         btn.disabled = false;
