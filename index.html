@@ -834,6 +834,40 @@ window.fetchSuggestions = async function() {
     }
 };
     
+
+    // مراقب لكبسات الكيبورد على مستوى الصفحة كلها
+document.addEventListener('keydown', function(event) {
+    // إذا الكبسة اللي انضغطت هي Enter
+    if (event.key === 'Enter') {
+        
+        // جلب العنصر اللي المؤشر (الفوكس) عليه حالياً
+        const activeElement = document.activeElement;
+
+        // الحالة الأولى: إذا المؤشر جوا مربع "الكلمة بالإنجليزي"
+        if (activeElement.id === 'wordInput') {
+            event.preventDefault(); // عشان نمنع أي تحديث للصفحة بالغلط
+            fetchSuggestions(); // تشغيل دالة البحث بالذكاء الاصطناعي
+        }
+        
+        // الحالة الثانية: إذا المؤشر مش جوا أي مربع نص (يعني كابس بمكان فاضي)
+        else if (activeElement.tagName !== 'INPUT' && activeElement.tagName !== 'TEXTAREA' && activeElement.tagName !== 'BUTTON') {
+            event.preventDefault(); 
+            
+            // هون بنخلي الكود يكبس على زر "إضافة للقاموس" برمجياً
+            // ⚠️ ملاحظة: غير كلمة 'addBtn' للـ id تبع زر الإضافة عندك
+            const addButton = document.getElementById('addBtn'); 
+            
+            if (addButton) {
+                addButton.click(); // كأنه المستخدم كبس بالماوس
+            } else {
+                console.error("مش لاقي زر الإضافة.. تأكد من الـ ID تبعه!");
+                // إذا عندك دالة للإضافة بتقدر تكتب اسمها هون مباشرة بدل الكبسة، مثلاً:
+                // saveWordToDictionary(); 
+            }
+        }
+    }
+});
+
     
 </script>
    
