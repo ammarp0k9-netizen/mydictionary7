@@ -761,27 +761,6 @@ window.fetchSuggestions = async function() {
         const end = text.lastIndexOf(']') + 1;
         const suggestions = JSON.parse(text.substring(start, end));
 
-         // إضافة زر التبديل (عرض المزيد / عرض أقل)
-        if (suggestions.length > 4) {
-            htmlContent += `
-                <div id="toggleMeaningsBtn" style="text-align:center; padding:10px; color:#3498db; cursor:pointer; font-size:12px; font-weight:bold; background:#f1f8ff; border-radius: 0 0 8px 8px;"
-                     onclick="
-                        const extras = document.querySelectorAll('.extra-meaning');
-                        const isHidden = extras[0].style.display === 'none';
-                        
-                        if (isHidden) {
-                            extras.forEach(el => el.style.display = 'flex');
-                            this.innerHTML = 'عرض أقل';
-                        } else {
-                            extras.forEach(el => el.style.display = 'none');
-                            this.innerHTML = 'عرض المزيد  (${suggestions.length - 4})';
-                        }
-                     ">
-                     عرض المزيد (${suggestions.length - 4})
-                </div>
-            `;
-        }
-
         
         // دالة عرض المعاني (تأكد إنها لسا عندك بالكود)
         renderSuggestions(suggestions); 
