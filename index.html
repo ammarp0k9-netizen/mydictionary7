@@ -730,11 +730,8 @@ const firebaseConfig = {
   };
 
 
-    // حط مفتاحك هون
-const GROQ_API_KEY = "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";
-
 window.fetchSuggestions = async function() {
-    const word = document.getElementById('wordInput').value.trim();
+    const word = document.getElementById('wordEn').value.trim();
     const btn = document.getElementById('searchBtn');
     const box = document.getElementById('suggestionsBox');
     const list = document.getElementById('suggestionsList');
@@ -744,66 +741,27 @@ window.fetchSuggestions = async function() {
     btn.innerHTML = "⏳";
     btn.disabled = true;
     box.style.display = "block";
-    list.innerHTML = "<p style='text-align:center; font-size:12px; color:#999;'>بجيبلك المعاني من المريخ...</p>";
-
-    const finalPrompt = `Translate "${word}" to Arabic. Provide ALL valid dictionary meanings (up to 10). 
-    CRITICAL: NO hallucination. Return ONLY JSON array: [{"ar": "معنى", "pos": "اسم/فعل/صفة", "stars": 1-3, "ex": "English example sentence"}].`;
+    list.innerHTML = "<p style='text-align:center; font-size:12px; color:#999;'>بجيبلك المعاني من سيرفرك الخاص...</p>";
 
     try {
-        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        // بننادي السيرفر الوسيط اللي شغال على جهازك بورت 3000
+        const response = await fetch("http://localhost:3000/api/dictionary", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${GROQ_API_KEY}` 
-            },
-            body: JSON.stringify({
-                model: "llama-3.3-70b-versatile",
-                messages: [
-                    { role: "system", content: "You are a precise dictionary. Output pure JSON only." },
-                    { role: "user", content: finalPrompt }
-                ],
-                temperature: 0
-            })
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ word: word }) 
         });
 
         const data = await response.json();
-        if (!response.ok) throw new Error("API Error");
+        
+        if (!response.ok) throw new Error("السيرفر زعلان!");
 
+        // بنفك شفرة المعاني اللي بعثها السيرفر
         const text = data.choices[0].message.content;
         const start = text.indexOf('[');
         const end = text.lastIndexOf(']') + 1;
         const suggestions = JSON.parse(text.substring(start, end));
 
-        let htmlContent = '';
-        
-        suggestions.forEach((s, index) => {
-            const starsHtml = '⭐'.repeat(s.stars || 1);
-            const cleanEx = s.ex.replace(/'/g, "\\'");
-            const cleanAr = s.ar.replace(/'/g, "\\'");
-            
-            // المعاني الإضافية تأخذ كلاس extra-meaning وتكون مخفية
-            const displayStyle = index >= 4 ? 'display:none;' : 'display:flex;';
-            const extraClass = index >= 4 ? 'extra-meaning' : '';
-
-            htmlContent += `
-                <div class="${extraClass}" style="${displayStyle} justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid #eee; cursor:pointer; background:#fff;"
-                     onclick="
-                        document.getElementById('meaningInput').value = '${cleanAr}';
-                        document.getElementById('categoryInput').value = '${s.pos}';
-                        document.getElementById('exampleInput').value = '${cleanEx}';
-                        document.getElementById('suggestionsBox').style.display = 'none';
-                     ">
-                    <div>
-                        <b style="color:#2c3e50; font-size:15px;">${s.ar}</b>
-                        <div style="font-size:10px; color:#f1c40f;">${starsHtml}</div>
-                        <div style="font-size:11px; color:#666; margin-top:4px; font-style:italic;">"${s.ex}"</div>
-                    </div>
-                    <span style="font-size:11px; color:#999; background:#f0f0f0; padding:2px 6px; border-radius:10px;">${s.pos}</span>
-                </div>
-            `;
-        });
-
-        // إضافة زر التبديل (عرض المزيد / عرض أقل)
+         // إضافة زر التبديل (عرض المزيد / عرض أقل)
         if (suggestions.length > 4) {
             htmlContent += `
                 <div id="toggleMeaningsBtn" style="text-align:center; padding:10px; color:#3498db; cursor:pointer; font-size:12px; font-weight:bold; background:#f1f8ff; border-radius: 0 0 8px 8px;"
@@ -824,16 +782,19 @@ window.fetchSuggestions = async function() {
             `;
         }
 
-        list.innerHTML = htmlContent;
+        
+        // دالة عرض المعاني (تأكد إنها لسا عندك بالكود)
+        renderSuggestions(suggestions); 
 
     } catch (err) {
-        list.innerHTML = `<p style='color:red; text-align:center; padding:10px;'>فشل الاتصال..</p>`;
+        console.error("Fetch Error:", err);
+        list.innerHTML = "<p style='color:red; text-align:center;'>تأكد إن السيرفر (الشاشة السوداء) شغالة!</p>";
     } finally {
         btn.innerHTML = "🔍";
         btn.disabled = false;
     }
 };
-    
+
 
     // مراقب لكبسات الكيبورد على مستوى الصفحة كلها
 document.addEventListener('keydown', function(event) {
