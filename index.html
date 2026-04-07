@@ -494,7 +494,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
   import { getAuth, signInWithPopup, signOut, GoogleAuthProvider, onAuthStateChanged, signInWithRedirect, getRedirectResult } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
-  import { getFirestore, collection, addDoc, getDocs, query, orderBy, where, deleteDoc, doc, updateDoc, set, ref } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+  import { getFirestore, collection, addDoc, getDocs, query, orderBy, where, deleteDoc, doc, updateDoc, } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
   // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
@@ -569,24 +569,24 @@ const firebaseConfig = {
     }
 };
     
-  // 3. دالة حفظ الكلمة للسحابة (الإضافة)
-  window.saveWordToCloud = async function(wordText, wordCategory, meaning, example) {
-    try {
-        const wordRef = ref(db, 'words/' + word); // تأكد إنك بتستخدم الـ word كـ ID
-        await set(wordRef, {
-            word: wordText,
-            category: wordCategory,
-            meaning: meaning,
-            example: example,
-            timestamp: Date.now() // ضيف الوقت عشان تعرف متى انرفعت بالثانية
+ window.saveWordToCloud = async function(wordText, wordCategory, meaning, example) {
+    const user = auth.currentUser;
+    if (user) {
+      try {
+        const docRef = await addDoc(collection(db, "users", user.uid, "words"), {
+          text: wordText, // لازم text عشان يطابق قاعدة البيانات
+          category: wordCategory,
+          meaning: meaning,
+          example: example,
+          createdAt: new Date()
         });
-        console.log("✅ تم رفع الكلمة بنجاح: " + word);
-    } catch (error) {
+        return docRef.id; 
+       } catch (error) {
         console.error("❌ فشل الرفع للفايربيس: ", error);
         alert("في مشكلة بالرفع: " + error.message); // هون رح يحكيلك شو السبب
-    }
-};
-    
+        }
+    };    
+ }    
   // 4. دالة التحديث في السحابة
   window.updateWordInCloud = async function(docId, updatedData) {
       const user = auth.currentUser;
