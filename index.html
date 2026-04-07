@@ -571,22 +571,21 @@ const firebaseConfig = {
     
   // 3. دالة حفظ الكلمة للسحابة (الإضافة)
   window.saveWordToCloud = async function(wordText, wordCategory, meaning, example) {
-    const user = auth.currentUser;
-    if (user) {
-      try {
-        const docRef = await addDoc(collection(db, "users", user.uid, "words"), {
-          text: wordText, // لازم text عشان يطابق قاعدة البيانات
-          category: wordCategory,
-          meaning: meaning,
-          example: example,
-          createdAt: new Date()
+    try {
+        const wordRef = ref(db, 'words/' + word); // تأكد إنك بتستخدم الـ word كـ ID
+        await set(wordRef, {
+            word: wordText,
+            category: wordCategory,
+            meaning: meaning,
+            example: example,
+            timestamp: Date.now() // ضيف الوقت عشان تعرف متى انرفعت بالثانية
         });
-        return docRef.id; 
-      } catch (e) {
-        console.error("❌ خطأ أثناء إضافة الكلمة للسحابة: ", e);
-      }
+        console.log("✅ تم رفع الكلمة بنجاح: " + word);
+    } catch (error) {
+        console.error("❌ فشل الرفع للفايربيس: ", error);
+        alert("يا عمار في مشكلة بالرفع: " + error.message); // هون رح يحكيلك شو السبب
     }
-  };
+};
     
   // 4. دالة التحديث في السحابة
   window.updateWordInCloud = async function(docId, updatedData) {
