@@ -494,8 +494,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
   import { getAuth, signInWithPopup, signOut, GoogleAuthProvider, onAuthStateChanged, signInWithRedirect, getRedirectResult } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
-  import { getFirestore, collection, addDoc, getDocs, query, orderBy, where, deleteDoc, doc, updateDoc, } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
-
+  import { getFirestore, collection, addDoc, getDocs, query, orderBy, where, deleteDoc, doc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
   // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyDQB5N4wxJw69-tb8suI2T2SfEfCpwFA2c",
@@ -526,19 +525,17 @@ const firebaseConfig = {
       }
     });
 
-  // 1. مراقب حالة تسجيل الدخول
+      
   onAuthStateChanged(auth, (user) => {
   if (user) {
-    // 🟢 المستخدم مسجل دخول حالياً
     console.log("المستخدم موجود:", user.email);
-    
-    // إظهار زر الخروج وإخفاء زر الدخول
     document.getElementById('logoutBtn').style.display = 'block'; 
     document.getElementById('loginBtn').style.display = 'none';
     
-        // هون بتقدر تنادي دالة تجيب بياناته (مثل الكلمات)
-         // loadWordsFromFirebase();
-      } else {
+    // 🔥 هون التعديل: تشغيل دالة جلب الكلمات فوراً
+    window.loadWordsFromCloud();
+    
+  } else {
         // 🔴 ما في مستخدم (أو سجل خروجه)
         console.log("لا يوجد مستخدم مسجل");
     
@@ -659,37 +656,43 @@ const firebaseConfig = {
   };
     
   // 4. دالة جلب الكلمات من السحابة (تم تعديل doc لـ wordDoc لمنع التعارض)
-  window.loadWordsFromCloud = async function() {
+  window.loadWordsFromCloud = function() {
     const user = auth.currentUser;
     if (!user) return;
 
     try {
       const q = query(collection(db, "users", user.uid, "words"), orderBy("createdAt", "desc"));
-      const snapshot = await getDocs(q);
-      let cloudWords = [];
+      
+      // onSnapshot هو الجاسوس تبع Firestore
+      onSnapshot(q, (snapshot) => {
+        let cloudWords = [];
 
-      snapshot.forEach((wordDoc) => {
-        const data = wordDoc.data();
-        cloudWords.push({
-          id: wordDoc.id,
-          word: data.text,
-          meaning: data.meaning || "",
-          example: data.example || "",
-          category: data.category,
-          starred: data.starred || false,
-          forgetCount: data.forgetCount || 0
+        snapshot.forEach((wordDoc) => {
+          const data = wordDoc.data();
+          cloudWords.push({
+            id: wordDoc.id,
+            word: data.text,
+            meaning: data.meaning || "",
+            example: data.example || "",
+            category: data.category,
+            starred: data.starred || false,
+            forgetCount: data.forgetCount || 0
+          });
         });
-      });
 
-      if (cloudWords.length > 0) {
-        window.words = cloudWords;
-        localStorage.setItem('myContextDict', JSON.stringify(window.words));
-        
-        if (typeof window.saveAndRender === "function") {
-          window.saveAndRender();
+        // إذا في كلمات، حدث المصفوفة والشاشة
+        if (cloudWords.length > 0) {
+          window.words = cloudWords;
+          localStorage.setItem('myContextDict', JSON.stringify(window.words));
+          
+          if (typeof window.saveAndRender === "function") {
+            window.saveAndRender();
+          } else if (typeof window.render === "function") {
+            window.render();
+          }
+          console.log("✅ تمت المزامنة الحية وتحديث القائمة من السحابة");
         }
-        console.log("✅ تم تحديث القائمة من السحابة");
-      }
+      });
     } catch (e) {
       console.error("خطأ في جلب الكلمات: ", e);
     }
