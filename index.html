@@ -1352,7 +1352,7 @@ function runSpeechSynthesis(text) {
         selectedIndices = [];
         const btn = document.getElementById('reorderBtn');
         btn.classList.toggle('active-tool', isReorderMode);
-        btn.innerText = isReorderMode ? "حفظ الترتيب " : "<i class="fas fa-sort-amount-down action-icon icon-sort"></i>";
+        btn.innerText = isReorderMode ? "حفظ الترتيب " : "";
         if (!isReorderMode) {
             localStorage.setItem('myContextDict', JSON.stringify(window.words));
         }
