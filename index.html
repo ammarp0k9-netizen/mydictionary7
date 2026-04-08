@@ -663,7 +663,7 @@ const firebaseConfig = {
         });
         return docRef.id; 
        } catch (error) {
-        console.error("❌" فشل الرفع للفايربيس: ", error);
+        console.error("❌ فشل الرفع للفايربيس: ", error);
         alert("في مشكلة بالرفع: " + error.message); // هون رح يحكيلك شو السبب
         }
     };    
@@ -1282,7 +1282,7 @@ window.playSound = function(identifier, event) {
         return;
     }
 
-    console.log("<i class="fas fa-volume-up action-icon icon-voice"></i> محاولة تشغيل الصوت للكلمة:", wordToPlay);
+    console.log("محاولة تشغيل الصوت للكلمة:", wordToPlay);
 
     // تجهيز مسار الملف المحلي (مع تحويل الكلمة لأحرف صغيرة عشان GitHub Pages)
     const localPath = `sounds/${wordToPlay.toLowerCase()}.mp3`;
