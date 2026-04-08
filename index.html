@@ -663,7 +663,7 @@ const firebaseConfig = {
         });
         return docRef.id; 
        } catch (error) {
-        console.error("<i class="fas fa-trash-alt action-icon icon-delete"></i> فشل الرفع للفايربيس: ", error);
+        console.error("❌" فشل الرفع للفايربيس: ", error);
         alert("في مشكلة بالرفع: " + error.message); // هون رح يحكيلك شو السبب
         }
     };    
@@ -704,7 +704,7 @@ const firebaseConfig = {
           }
 
       } catch (e) {
-          console.error("<i class="fas fa-trash-alt action-icon icon-delete"></i> خطأ في التحديث:", e);
+          console.error("❌ خطأ في التحديث:", e);
       }
   };
     
@@ -735,7 +735,7 @@ const firebaseConfig = {
           }
 
       } catch (e) {
-          console.error("<i class="fas fa-trash-alt action-icon icon-delete"></i> خطأ بالحذف:", e);
+          console.error("❌ خطأ بالحذف:", e);
       }
   };
     
@@ -1278,7 +1278,7 @@ window.playSound = function(identifier, event) {
     } 
     // 3. إذا فشل كل شيء، اطبع المشكلة بالكونسول بوضوح!
     else {
-        console.error("<i class="fas fa-trash-alt action-icon icon-delete"></i> خطأ: لم يتم العثور على الكلمة، والقيمة الممررة غير صحيحة:", identifier);
+        console.error("خطأ: لم يتم العثور على الكلمة، والقيمة الممررة غير صحيحة:", identifier);
         return;
     }
 
