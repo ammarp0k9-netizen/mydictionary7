@@ -1456,7 +1456,7 @@ function runSpeechSynthesis(text) {
         <div class="top-row">
             
             <button class="star-btn ${w.starred ? 'active' : ''}" 
-                onclick="toggleStar('${w.id}', event)">★</button>
+                onclick="toggleStar('${w.id}', event)"><i class="fas fa-star action-icon icon-star"></i></button>
 
             <div class="word-box">
                 <div class="word-text">
@@ -1477,7 +1477,7 @@ function runSpeechSynthesis(text) {
                         onclick="playSound('${w.id}', event)"><i class="fas fa-volume-up action-icon icon-voice"></i></button>
 
                     <button class="icon-circle edit-btn" 
-                        onclick="editWord('${w.id}', event)"><i class="fas fa-edit action-icon icon-edit" onclick="editWord('${word.id}')"></i></button>
+                        onclick="editWord('${w.id}', event)"><i class="fas fa-edit action-icon icon-edit")"></i></button>
                     <button class="icon-circle del-btn" 
                         onclick="deleteWord('${w.id}', event)"><i class="fas fa-trash-alt action-icon icon-delete"></i></button>
                 </div>`
