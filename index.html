@@ -1476,6 +1476,7 @@ function runSpeechSynthesis(text) {
 
     </li>`;
 });
+      
     document.getElementById('list').innerHTML = html; 
 } // <--- تسكيرة دالة الـ render أو saveAndRender
 
@@ -1585,20 +1586,19 @@ function toggleDark(){
             enableDark();
         }
     }
-
-    <div id="logoutModal" class="custom-modal">
+    
+})();
+</script>
+     <div id="logoutModal" class="custom-modal">
     <div class="modal-content">
         <div class="modal-icon">👋</div>
         <h2>تسجيل الخروج</h2>
-        <p>هل أنت متأكد أنك تريد مغادرة القاموس؟</p>
+        <p>متأكد أنك تريد تسجيل الخروج؟</p>
         <div class="modal-buttons">
             <button onclick="confirmLogout()" class="btn-confirm">نعم، سجل خروج</button>
             <button onclick="closeLogoutModal()" class="btn-cancel">إلغاء</button>
         </div>
     </div>
 </div>
-    
-})();
-</script>
 </body>
 </html>
