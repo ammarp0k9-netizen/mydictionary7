@@ -516,8 +516,8 @@ body.dark .modal-content {
     <div class="toolbar">
         <button id="toolAll" class="btn-tool active-tool" onclick="setFilter('all')">الكل</button>
         <button id="toolStarred" class="btn-tool" onclick="setFilter('starred')" title="الكلمات الصعبة"><i class="fas fa-star action-icon icon-star"></i></button>
-        <button id="reorderBtn" class="btn-tool" onclick="toggleReorderMode()" title="ترتيب يدوي">🔄</button>
-        <button class="btn-tool" onclick="openQuizSetup()" title="اختبار البطاقات">🎓 اختبار</button>
+        <button id="reorderBtn" class="btn-tool" onclick="toggleReorderMode()" title="ترتيب يدوي"><i class="fas fa-sort-amount-down action-icon icon-sort"></i></button>
+        <button class="btn-tool" onclick="openQuizSetup()" title="اختبار البطاقات"><i class="fas fa-clipboard-check action-icon icon-quiz"></i></button>
     </div>
 
     <input type="text" id="searchInput" placeholder="🔎 ابحث..." oninput="render()">
@@ -1352,7 +1352,7 @@ function runSpeechSynthesis(text) {
         selectedIndices = [];
         const btn = document.getElementById('reorderBtn');
         btn.classList.toggle('active-tool', isReorderMode);
-        btn.innerText = isReorderMode ? "✅حفظ الترتيب " : "🔄";
+        btn.innerText = isReorderMode ? "حفظ الترتيب " : "<i class="fas fa-sort-amount-down action-icon icon-sort"></i>";
         if (!isReorderMode) {
             localStorage.setItem('myContextDict', JSON.stringify(window.words));
         }
