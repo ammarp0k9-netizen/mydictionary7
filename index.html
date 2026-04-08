@@ -7,6 +7,7 @@
 
     <link rel="icon" type="image/png" href="ammar.png">
     <link rel="apple-touch-icon" href="favicon.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <style> 
         /* إعدادات أساسية لضمان عدم تمدد أي عنصر خارج الشاشة */
@@ -1459,7 +1460,7 @@ function runSpeechSynthesis(text) {
                     <button class="icon-circle edit-btn" 
                         onclick="editWord('${w.id}', event)">📝</button>
                     <button class="icon-circle del-btn" 
-                        onclick="deleteWord('${w.id}', event)">×</button>
+                        onclick="deleteWord('${w.id}', event)"><i class="fas fa-trash" style="color: #e74c3c; cursor: pointer;"></i></button>
                 </div>`
             }
 
