@@ -439,6 +439,25 @@ body.dark .modal-content {
     background-color: #2c3e50;
     color: white;
 }
+        /* تنسيق عام لكل الأيقونات اللي بنقدر نكبس عليها */
+.action-icon {
+    transition: all 0.3s ease; /* بخلي الحركة ناعمة مش فجائية */
+    cursor: pointer;
+    display: inline-block;
+}
+
+/* التفاعل لما نحط الماوس (يغمق اللون ويكبر شوي) */
+.action-icon:hover {
+    transform: scale(1.2); /* بتكبر الأيقونة 20% */
+    filter: brightness(0.8); /* بيغمق اللون شوي */
+}
+
+/* ألوان مخصصة لكل نوع */
+.icon-delete:hover { color: #c0392b !important; } /* أحمر غامق للحذف */
+.icon-voice:hover { color: #2980b9 !important; }  /* أزرق غامق للصوت */
+.icon-star:hover { color: #f39c12 !important; }   /* ذهبي غامق للمفضلة */
+.icon-edit:hover { color: #16a085 !important; transform: scale(1.2) rotate(-10deg); /*حركة إضافية: القلم بميل شوي كأنه بده يكتب ,لون أزرق مخضر */
+}       
 </style>
 </head>
 <body>
@@ -496,7 +515,7 @@ body.dark .modal-content {
     
     <div class="toolbar">
         <button id="toolAll" class="btn-tool active-tool" onclick="setFilter('all')">الكل</button>
-        <button id="toolStarred" class="btn-tool" onclick="setFilter('starred')" title="الكلمات الصعبة">⭐</button>
+        <button id="toolStarred" class="btn-tool" onclick="setFilter('starred')" title="الكلمات الصعبة">`<i class="fas fa-star action-icon icon-star"></i>`</button>
         <button id="reorderBtn" class="btn-tool" onclick="toggleReorderMode()" title="ترتيب يدوي">🔄</button>
         <button class="btn-tool" onclick="openQuizSetup()" title="اختبار البطاقات">🎓 اختبار</button>
     </div>
@@ -1455,12 +1474,12 @@ function runSpeechSynthesis(text) {
                 :
                 `<div class="actions">
                    <button class="icon-circle sound-btn" 
-                        onclick="playSound('${w.id}', event)">🔊</button>
+                        onclick="playSound('${w.id}', event)">`<i class="fas fa-volume-up action-icon icon-voice"></i>`</button>
 
                     <button class="icon-circle edit-btn" 
-                        onclick="editWord('${w.id}', event)">📝</button>
+                        onclick="editWord('${w.id}', event)">`<i class="fas fa-edit action-icon icon-edit" onclick="editWord('${word.id}')"></i>`</button>
                     <button class="icon-circle del-btn" 
-                        onclick="deleteWord('${w.id}', event)"><i class="fas fa-trash" style="color: #e74c3c; cursor: pointer;"></i></button>
+                        onclick="deleteWord('${w.id}', event)">`<i class="fas fa-trash-alt action-icon icon-delete"></i>`</button>
                 </div>`
             }
 
