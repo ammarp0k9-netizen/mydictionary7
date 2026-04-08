@@ -515,7 +515,7 @@ body.dark .modal-content {
     
     <div class="toolbar">
         <button id="toolAll" class="btn-tool active-tool" onclick="setFilter('all')">الكل</button>
-        <button id="toolStarred" class="btn-tool" onclick="setFilter('starred')" title="الكلمات الصعبة">`<i class="fas fa-star action-icon icon-star"></i>`</button>
+        <button id="toolStarred" class="btn-tool" onclick="setFilter('starred')" title="الكلمات الصعبة"><i class="fas fa-star action-icon icon-star"></i></button>
         <button id="reorderBtn" class="btn-tool" onclick="toggleReorderMode()" title="ترتيب يدوي">🔄</button>
         <button class="btn-tool" onclick="openQuizSetup()" title="اختبار البطاقات">🎓 اختبار</button>
     </div>
@@ -1474,12 +1474,12 @@ function runSpeechSynthesis(text) {
                 :
                 `<div class="actions">
                    <button class="icon-circle sound-btn" 
-                        onclick="playSound('${w.id}', event)">`<i class="fas fa-volume-up action-icon icon-voice"></i>`</button>
+                        onclick="playSound('${w.id}', event)"><i class="fas fa-volume-up action-icon icon-voice"></i></button>
 
                     <button class="icon-circle edit-btn" 
-                        onclick="editWord('${w.id}', event)">`<i class="fas fa-edit action-icon icon-edit" onclick="editWord('${word.id}')"></i>`</button>
+                        onclick="editWord('${w.id}', event)"><i class="fas fa-edit action-icon icon-edit" onclick="editWord('${word.id}')"></i></button>
                     <button class="icon-circle del-btn" 
-                        onclick="deleteWord('${w.id}', event)">`<i class="fas fa-trash-alt action-icon icon-delete"></i>`</button>
+                        onclick="deleteWord('${w.id}', event)"><i class="fas fa-trash-alt action-icon icon-delete"></i></button>
                 </div>`
             }
 
