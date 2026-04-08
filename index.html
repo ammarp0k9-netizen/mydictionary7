@@ -546,7 +546,7 @@ body.dark .modal-content {
         <button class="setup-btn btn-new" onclick="startActualQuiz('recent')">🆕 كلمات جديدة (آخر 10)</button>
         <button class="setup-btn btn-forgot" onclick="startActualQuiz('forgotten')"><i class="fas fa-trash-alt action-icon icon-delete"></i> تحدي النسيان (الأكثر خطأ)</button>
         <button class="setup-btn btn-old" onclick="startActualQuiz('old')">🕰️ مراجعة الذكريات (أقدم 10)</button>
-        <button class="setup-btn btn-starred" onclick="startActualQuiz('starred')"><i class="fas fa-star action-icon icon-star"></i> الكلمات الصعبة (المفضلة)</button>
+        <button class="setup-btn btn-starred" onclick="startActualQuiz('starred')"><i class="fas fa-star action-icon icon-star"></i> الكلمات الصعبة (الصعبة)</button>
         <button class="setup-btn btn-all" onclick="startActualQuiz('all')">🌍 كل الكلمات (عشوائي)</button>
         
         <button class="btn-close" onclick="closeQuizSetup()" style="color: #e74c3c; display:block; width:100%;">إلغاء</button>
@@ -1504,7 +1504,7 @@ function runSpeechSynthesis(text) {
     window.updateStats = function() {
         if (!window.words) return;
         document.getElementById('totalCount').innerText = `إجمالي الكلمات: ${window.words.length}`;
-        document.getElementById('starredCount').innerText = `<i class="fas fa-star action-icon icon-star"></i> الصعبة: ${window.words.filter(w => w.starred).length}`;
+        document.getElementById('starredCount').innerText = `⭐ الصعبة: ${window.words.filter(w => w.starred).length}`;
     };
 
     window.exportData = function() {
