@@ -478,7 +478,7 @@ body.dark .modal-content {
     </button>
     <div class="stats-bar">
         <span id="totalCount">إجمالي الكلمات: 0</span>
-        <span id="starredCount">⭐ الصعبة: 0</span>
+        <span id="starredCount"><i class="fas fa-star action-icon icon-star"></i> الصعبة: 0</span>
     </div>
     
     <div class="ai-search-container" style="margin-bottom: 20px;">
@@ -544,9 +544,9 @@ body.dark .modal-content {
         <p style="font-size: 14px; color: #7f8c8d; margin-bottom: 20px;">حدد الكلمات اللي حاب تختبرها:</p>
         
         <button class="setup-btn btn-new" onclick="startActualQuiz('recent')">🆕 كلمات جديدة (آخر 10)</button>
-        <button class="setup-btn btn-forgot" onclick="startActualQuiz('forgotten')">❌ تحدي النسيان (الأكثر خطأ)</button>
+        <button class="setup-btn btn-forgot" onclick="startActualQuiz('forgotten')"><i class="fas fa-trash-alt action-icon icon-delete"></i> تحدي النسيان (الأكثر خطأ)</button>
         <button class="setup-btn btn-old" onclick="startActualQuiz('old')">🕰️ مراجعة الذكريات (أقدم 10)</button>
-        <button class="setup-btn btn-starred" onclick="startActualQuiz('starred')">⭐ الكلمات الصعبة (المفضلة)</button>
+        <button class="setup-btn btn-starred" onclick="startActualQuiz('starred')"><i class="fas fa-star action-icon icon-star"></i> الكلمات الصعبة (المفضلة)</button>
         <button class="setup-btn btn-all" onclick="startActualQuiz('all')">🌍 كل الكلمات (عشوائي)</button>
         
         <button class="btn-close" onclick="closeQuizSetup()" style="color: #e74c3c; display:block; width:100%;">إلغاء</button>
@@ -557,7 +557,7 @@ body.dark .modal-content {
     <div class="card-container">
         <div class="card" id="mainCard" onclick="flipCard()">
             <div class="card-face card-front">
-                <button class="quiz-sound-btn" onclick="playQuizSound(event)" title="استمع للكلمة">🔊</button>
+                <button class="quiz-sound-btn" onclick="playQuizSound(event)" title="استمع للكلمة"><i class="fas fa-volume-up action-icon icon-voice"></i></button>
                 <div class="quiz-word" id="cardFrontText">الكلمة</div>
                 <button class="hint-btn" onclick="showHint(event)">اعرض المثال 💡</button>
                 <div class="hint-text" id="quizHintText">المثال هنا</div>
@@ -569,7 +569,7 @@ body.dark .modal-content {
         </div>
     </div>
     <div class="quiz-controls">
-        <button class="quiz-btn btn-forget" onclick="markForgot()">نسيتها ❌</button>
+        <button class="quiz-btn btn-forget" onclick="markForgot()">نسيتها <i class="fas fa-trash-alt action-icon icon-delete"></i></button>
         <button class="quiz-btn btn-remember" onclick="markRemember()">تذكرتها ✅</button>
     </div>
     <button class="btn-close" onclick="closeQuiz()">إغلاق الاختبار</button>
@@ -605,7 +605,7 @@ const firebaseConfig = {
           console.log("ℹ️ لا يوجد نتيجة Redirect");
         }
       } catch (error) {
-        console.error("❌ خطأ بالـ redirect:", error.message);
+        console.error("<i class="fas fa-trash-alt action-icon icon-delete"></i> خطأ بالـ redirect:", error.message);
       }
     });
 
@@ -663,7 +663,7 @@ const firebaseConfig = {
         });
         return docRef.id; 
        } catch (error) {
-        console.error("❌ فشل الرفع للفايربيس: ", error);
+        console.error("<i class="fas fa-trash-alt action-icon icon-delete"></i> فشل الرفع للفايربيس: ", error);
         alert("في مشكلة بالرفع: " + error.message); // هون رح يحكيلك شو السبب
         }
     };    
@@ -704,7 +704,7 @@ const firebaseConfig = {
           }
 
       } catch (e) {
-          console.error("❌ خطأ في التحديث:", e);
+          console.error("<i class="fas fa-trash-alt action-icon icon-delete"></i> خطأ في التحديث:", e);
       }
   };
     
@@ -735,7 +735,7 @@ const firebaseConfig = {
           }
 
       } catch (e) {
-          console.error("❌ خطأ بالحذف:", e);
+          console.error("<i class="fas fa-trash-alt action-icon icon-delete"></i> خطأ بالحذف:", e);
       }
   };
     
@@ -851,7 +851,7 @@ const response = await fetch("https://dictionary7-ayes.onrender.com/api/dictiona
         let htmlContent = '';
         
         suggestions.forEach((s, index) => {
-            const starsHtml = '⭐'.repeat(s.stars || 1);
+            const starsHtml = '<i class="fas fa-star action-icon icon-star"></i>'.repeat(s.stars || 1);
             const cleanEx = s.ex.replace(/'/g, "\\'");
             const cleanAr = s.ar.replace(/'/g, "\\'");
             
@@ -885,13 +885,13 @@ const response = await fetch("https://dictionary7-ayes.onrender.com/api/dictiona
                         const isHidden = extras[0].style.display === 'none';
                         if (isHidden) {
                             extras.forEach(el => el.style.display = 'flex');
-                            this.innerHTML = '⬆️ عرض أقل';
+                            this.innerHTML = 'عرض أقل';
                         } else {
                             extras.forEach(el => el.style.display = 'none');
-                            this.innerHTML = '⬇️ عرض المزيد (${suggestions.length - 4})';
+                            this.innerHTML = 'عرض المزيد (${suggestions.length - 4})';
                         }
                      ">
-                    ⬇️ عرض المزيد (${suggestions.length - 4})
+                    عرض المزيد (${suggestions.length - 4})
                 </div>
             `;
         }
@@ -1015,7 +1015,7 @@ window.confirmLogout = function() {
         } else if (mode === 'starred') {
             wordsToTest = wordsToTest.filter(w => w.starred);
             if(wordsToTest.length === 0) {
-                alert("ما عندك كلمات صعبة/مفضلة (⭐). رح نختبرك بالكل.");
+                alert("ما عندك كلمات صعبة/مفضلة (<i class="fas fa-star action-icon icon-star"></i>). رح نختبرك بالكل.");
                 wordsToTest = [...window.words];
             }
         } else if (mode === 'all') {
@@ -1278,11 +1278,11 @@ window.playSound = function(identifier, event) {
     } 
     // 3. إذا فشل كل شيء، اطبع المشكلة بالكونسول بوضوح!
     else {
-        console.error("❌ خطأ: لم يتم العثور على الكلمة، والقيمة الممررة غير صحيحة:", identifier);
+        console.error("<i class="fas fa-trash-alt action-icon icon-delete"></i> خطأ: لم يتم العثور على الكلمة، والقيمة الممررة غير صحيحة:", identifier);
         return;
     }
 
-    console.log("🔊 محاولة تشغيل الصوت للكلمة:", wordToPlay);
+    console.log("<i class="fas fa-volume-up action-icon icon-voice"></i> محاولة تشغيل الصوت للكلمة:", wordToPlay);
 
     // تجهيز مسار الملف المحلي (مع تحويل الكلمة لأحرف صغيرة عشان GitHub Pages)
     const localPath = `sounds/${wordToPlay.toLowerCase()}.mp3`;
@@ -1504,7 +1504,7 @@ function runSpeechSynthesis(text) {
     window.updateStats = function() {
         if (!window.words) return;
         document.getElementById('totalCount').innerText = `إجمالي الكلمات: ${window.words.length}`;
-        document.getElementById('starredCount').innerText = `⭐ الصعبة: ${window.words.filter(w => w.starred).length}`;
+        document.getElementById('starredCount').innerText = `<i class="fas fa-star action-icon icon-star"></i> الصعبة: ${window.words.filter(w => w.starred).length}`;
     };
 
     window.exportData = function() {
