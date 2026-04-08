@@ -605,7 +605,7 @@ const firebaseConfig = {
           console.log("ℹ️ لا يوجد نتيجة Redirect");
         }
       } catch (error) {
-        console.error("<i class="fas fa-trash-alt action-icon icon-delete"></i> خطأ بالـ redirect:", error.message);
+        console.error("خطأ بالـ redirect:", error.message);
       }
     });
 
@@ -1015,7 +1015,7 @@ window.confirmLogout = function() {
         } else if (mode === 'starred') {
             wordsToTest = wordsToTest.filter(w => w.starred);
             if(wordsToTest.length === 0) {
-                alert("ما عندك كلمات صعبة/مفضلة (<i class="fas fa-star action-icon icon-star"></i>). رح نختبرك بالكل.");
+                alert("ما عندك كلمات صعبة/مفضلة (⭐). رح نختبرك بالكل.");
                 wordsToTest = [...window.words];
             }
         } else if (mode === 'all') {
