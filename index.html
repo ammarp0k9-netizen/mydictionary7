@@ -1,1624 +1,1106 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>القاموس</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>القاموس</title>
+  <link rel="icon" type="image/png" href="ammar.png">
+  <link rel="apple-touch-icon" href="favicon.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-    <link rel="icon" type="image/png" href="ammar.png">
-    <link rel="apple-touch-icon" href="favicon.png">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
-    <style> 
-        /* إعدادات أساسية لضمان عدم تمدد أي عنصر خارج الشاشة */
-        *, *::before, *::after {
-            box-sizing: border-box;
-        }
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
 
-        :root { 
-            --primary: #3498db; 
-            --star-color: #f1c40f; 
-            --bg: #f4f7f6; 
-            --card-bg: #ffffff;
-            --text-main: #2c3e50;
-        }
+    :root {
+      --primary: #3498db;
+      --star-color: #f1c40f;
+      --bg: #f4f7f6;
+      --card-bg: #ffffff;
+      --text-main: #2c3e50;
+    }
 
-        body { 
-            font-family: 'Segoe UI', Tahoma, sans-serif; 
-            background: var(--bg); 
-            padding: 15px; 
-            color: var(--text-main); 
-            margin: 0;
-        }
+    body {
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: var(--bg);
+      padding: 15px;
+      color: var(--text-main);
+      margin: 0;
+    }
 
-        /* تم دمج الكلاسين هنا ليكون المربع الرئيسي متناسق ويلم كل العناصر */
-        .container {
-            width: 95%; /* بضمن إنه ما يلزق بحواف الموبايل */
-            max-width: 480px; /* القفل اللي بدك إياه */
-            margin: 20px auto !important; /* التوسيط الإجباري */
-            padding: 20px;
-            background: var(--card-bg);
-            border-radius: 20px;
-            display: flex;
-            flex-direction: column;
-            /* أي عنصر جوا الـ container رح يلتزم بعرضه */
-        }
+    .container {
+      width: 95%;
+      max-width: 480px;
+      margin: 20px auto !important;
+      padding: 20px;
+      background: var(--card-bg);
+      border-radius: 20px;
+      display: flex;
+      flex-direction: column;
+    }
 
-        /* هاد السطر هو "الشرطي" اللي بمنع العناصر تطيش برا */
-        .container > * {
-            max-width: 100%; 
-            box-sizing: border-box;
-        }
+    .container > * { max-width: 100%; box-sizing: border-box; }
 
-        h2 { 
-            text-align: center; 
-            color: #2c3e50; 
-            font-size: 2.2rem; 
-            margin-top: 0; 
-            margin-bottom: 20px;
-        }
+    h2 {
+      text-align: center;
+      color: #2c3e50;
+      font-size: 2.2rem;
+      margin-top: 0;
+      margin-bottom: 20px;
+    }
 
-        .stats-bar {
-            display: flex;
-            justify-content: space-around;
-            background: #f9f9f9;
-            padding: 10px;
-            border-radius: 12px;
-            margin-bottom: 5px !important;
-            font-size: 13px;
-            font-weight: bold;
-            color: #7f8c8d;
-            border: 1px solid #eee;
-        }
+    .stats-bar {
+      display: flex;
+      justify-content: space-around;
+      background: #f9f9f9;
+      padding: 10px;
+      border-radius: 12px;
+      margin-bottom: 5px !important;
+      font-size: 13px;
+      font-weight: bold;
+      color: #7f8c8d;
+      border: 1px solid #eee;
+    }
 
-        .input-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
-        
-        input, select, textarea { 
-            width: 100%;
-            padding: 12px; border: 2px solid #eee; border-radius: 12px; outline: none; 
-            text-align: center; font-size: 15px; font-family: inherit;
-        }
-        input:focus, textarea:focus { border-color: var(--primary); }
-        
-        .btn-main { 
-            background: var(--primary); color: white; border: none; padding: 14px; 
-            border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.2s;
-            width: 100%;
-        }
+    .input-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
 
-        .toolbar { display: flex; gap: 5px; margin-bottom: 5px !important; }
-        .btn-tool { flex: 1; padding: 8px 5px; border-radius: 20px; border: 1px solid #ddd; background: #fff; cursor: pointer; font-weight: 600; font-size: 13px; white-space: nowrap; }
-        .active-tool { background: var(--primary); color: white; border-color: var(--primary); }
+    input, select, textarea {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #eee;
+      border-radius: 12px;
+      outline: none;
+      text-align: center;
+      font-size: 15px;
+      font-family: inherit;
+    }
+    input:focus, textarea:focus { border-color: var(--primary); }
 
-        #searchInput { background: #fff9db; border: 2px solid #f1c40f; margin-bottom: 5px !important; }
+    .btn-main {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+      width: 100%;
+    }
 
-        ul { list-style: none; padding: 0; margin-bottom: 5px !important; }
-        li { 
-            background: #fff; margin-bottom: 10px; padding: 16px; border-radius: 15px; 
-            border-right: 6px solid var(--primary); box-shadow: 0 3px 10px rgba(0,0,0,0.05); 
-            display: flex; flex-direction: column; gap: 8px; cursor: pointer; transition: 0.3s;
-            position: relative;
-        }
-        li:hover { transform: scale(1.02); background: #fdfdfd; }
+    .toolbar { display: flex; gap: 5px; margin-bottom: 5px !important; }
+    .btn-tool {
+      flex: 1;
+      padding: 8px 5px;
+      border-radius: 20px;
+      border: 1px solid #ddd;
+      background: #fff;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    .active-tool { background: var(--primary); color: white; border-color: var(--primary); }
 
-        .reorder-mode-li { 
-            border: 1px dashed #ccc !important; 
-            border-right: 6px solid var(--primary) !important;
-            cursor: move;
-        }
-        
-        .selected-for-move {
-            background-color: #e3f2fd !important;
-            border-color: var(--primary) !important;
-        }
+    #searchInput { background: #fff9db; border: 2px solid #f1c40f; margin-bottom: 5px !important; }
 
-        .top-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-        
-        .star-btn { 
-            font-size: 24px; cursor: pointer; color: #ddd; background: none; border: none; padding: 0; transition: 0.2s;
-        }
-        .star-btn.active { color: var(--star-color); }
+    ul { list-style: none; padding: 0; margin-bottom: 5px !important; }
 
-        .word-box { flex-grow: 1; text-align: right; }
-        .word-text { font-weight: bold; font-size: 1.2em; color: #2c3e50; }
-        .meaning-text { color: #7f8c8d; font-size: 1em; }
+    li {
+      background: #fff;
+      margin-bottom: 10px;
+      padding: 16px;
+      border-radius: 15px;
+      border-right: 6px solid var(--primary);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+      position: relative;
+    }
+    li:hover { transform: scale(1.02); background: #fdfdfd; }
 
-        .actions { display: flex; gap: 8px; }
-        .icon-circle {
-            width: 38px; height: 38px; border-radius: 50%; border: none;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: 0.2s; font-size: 18px;
-        }
-        .sound-btn { background: #ebf5fb; color: #3498db; }
-        .edit-btn { background: #eafaf1; color: #27ae60; }
-        .del-btn { background: #fdedec; color: #e74c3c; }
-        
-        .ai-search-container {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
+    .reorder-mode-li {
+      border: 1px dashed #ccc !important;
+      border-right: 6px solid var(--primary) !important;
+      cursor: move;
+    }
+    .selected-for-move { background-color: #e3f2fd !important; border-color: var(--primary) !important; }
 
-        #suggestionsBox {
-            margin-top: -10px;
-            margin-bottom: 5px !important;
-        }
+    .top-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 
-        #logoutBtn {
-            width: 100%; 
-            margin-bottom: 15px;
-            padding: 12px;
-            border-radius: 12px; 
-            font-size: 16px;
-            font-weight: bold;
-            background-color: #E8F5E9; 
-            color: #2c3e50;
-            border: 2px solid #81C784; 
-            cursor: pointer;
-            transition: 0.3s;
-            display: none; 
-            font-family: inherit;
-        }
+    .star-btn {
+      font-size: 24px;
+      cursor: pointer;
+      color: #ddd;
+      background: none;
+      border: none;
+      padding: 0;
+      transition: 0.2s;
+    }
+    .star-btn.active { color: var(--star-color); }
 
-        #logoutBtn:hover {
-            background-color: #fdedec; 
-            color: #e74c3c; 
-            border-color: #f5b7b1; 
-        }
+    .word-box { flex-grow: 1; text-align: right; }
+    .word-text { font-weight: bold; font-size: 1.2em; color: #2c3e50; }
+    .meaning-text { color: #7f8c8d; font-size: 1em; }
 
-        body.dark #logoutBtn {
-            background-color: #2a2a2a;
-            color: #e0e0e0;
-            border-color: #444;
-        }
+    .actions { display: flex; gap: 8px; }
+    .icon-circle {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: 0.2s;
+      font-size: 18px;
+    }
+    .sound-btn { background: #ebf5fb; color: #3498db; }
+    .edit-btn  { background: #eafaf1; color: #27ae60; }
+    .del-btn   { background: #fdedec; color: #e74c3c; }
 
-        body.dark #logoutBtn:hover {
-            background-color: #442726; 
-            color: #ff8a80;
-            border-color: #641e16;
-        }
-        
-       .cat-tag { 
-            font-size: 11px; padding: 3px 10px; border-radius: 8px; 
-            font-weight: bold; margin-right: 8px; color: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
-        }
-        .tag-فعل { background: #e67e22; opacity: 0.85; }
-        .tag-اسم { background: #8e44ad; opacity: 0.85; }
-        .tag-صفة { background: #27ae60; opacity: 0.85; }
-        .tag-أداة { background: #c0392b; opacity: 0.85; }
-        .tag-جمل { background: #16a085; opacity: 0.85; }
-        .tag-عام { background: #7f8c8d; opacity: 0.85; }
-        .tag-ظرف { background: #007bff; opacity: 0.85; }
+    .ai-search-container { display: flex; flex-direction: column; gap: 8px; }
 
-        .example-box { 
-            font-size: 0.95em; color: #95a5a6; font-style: italic; border-top: 1px solid #f0f0f0; 
-            margin-top: 8px; padding-top: 8px; display: none; text-align: left; direction: ltr; 
-        }
-        .show-example .example-box { display: block; }
+    #suggestionsBox { margin-top: -10px; margin-bottom: 5px !important; }
 
-        .backup-zone { margin-top: 25px; border-top: 2px dashed #eee; padding-top: 15px; display: flex; gap: 10px; }
-        .btn-backup { flex: 1; padding: 10px; font-size: 12px; background: #95a5a6; color: white; border-radius: 10px; border: none; cursor: pointer; }
-        
-        /* -------- ستايلات الكويز المعدلة -------- */
-        .quiz-overlay { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(30, 40, 50, 0.85);
-            backdrop-filter: blur(5px);
-            display: none; flex-direction: column; 
-            align-items: center; justify-content: center; z-index: 1000; 
-            opacity: 0; transition: opacity 0.3s ease-in-out;
-        }
-        .quiz-overlay.show { opacity: 1; }
+    /* أزرار تسجيل الدخول والخروج */
+    .auth-btn {
+      width: 100%;
+      margin-bottom: 15px;
+      padding: 12px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+      font-family: inherit;
+      border: 2px solid;
+    }
+    #loginBtn  { background: #E3F2FD; color: #2c3e50; border-color: #3498db; }
+    #logoutBtn { background: #E8F5E9; color: #2c3e50; border-color: #81C784; display: none; }
+    #logoutBtn:hover { background: #fdedec; color: #e74c3c; border-color: #f5b7b1; }
 
-        .card-container { 
-            width: 90%; max-width: 340px; 
-            height: 50vh; min-height: 350px; max-height: 420px; 
-            perspective: 1000px; margin-bottom: 20px; 
-        }
-        .card { 
-            width: 100%; height: 100%; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); 
-            transform-style: preserve-3d; cursor: pointer; position: relative; 
-        }
-        .card.is-flipped { transform: rotateY(180deg); }
-        .card-face { 
-            position: absolute; width: 100%; height: 100%; backface-visibility: hidden; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            border-radius: 20px; padding: 20px; box-sizing: border-box; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3); 
-            background: white; text-align: center; 
-        }
-        .card-back { transform: rotateY(180deg); background: #fdfdfd; }
+    .cat-tag {
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 8px;
+      font-weight: bold;
+      margin-right: 8px;
+      color: white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .tag-فعل { background: #e67e22; opacity: 0.85; }
+    .tag-اسم { background: #8e44ad; opacity: 0.85; }
+    .tag-صفة { background: #27ae60; opacity: 0.85; }
+    .tag-أداة { background: #c0392b; opacity: 0.85; }
+    .tag-جمل { background: #16a085; opacity: 0.85; }
+    .tag-عام { background: #7f8c8d; opacity: 0.85; }
+    .tag-ظرف { background: #007bff; opacity: 0.85; }
 
-        .quiz-sound-btn {
-            position: absolute; top: 15px; left: 15px;
-            background: #ebf5fb; color: #3498db; border: none;
-            width: 40px; height: 40px; border-radius: 50%;
-            font-size: 20px; cursor: pointer; display: flex;
-            align-items: center; justify-content: center; z-index: 20;
-        }
+    .example-box {
+      font-size: 0.95em;
+      color: #95a5a6;
+      font-style: italic;
+      border-top: 1px solid #f0f0f0;
+      margin-top: 8px;
+      padding-top: 8px;
+      display: none;
+      text-align: left;
+      direction: ltr;
+    }
+    .show-example .example-box { display: block; }
 
-        .quiz-word { font-size: 32px; font-weight: bold; color: #2c3e50; margin-bottom: 15px; }
-        .quiz-meaning { font-size: 28px; font-weight: bold; color: #27ae60; }
-        .quiz-example { font-size: 18px; color: #7f8c8d; font-style: italic; margin-top: 20px; direction: ltr; }
+    .backup-zone { margin-top: 25px; border-top: 2px dashed #eee; padding-top: 15px; display: flex; gap: 10px; }
+    .btn-backup {
+      flex: 1;
+      padding: 10px;
+      font-size: 12px;
+      background: #95a5a6;
+      color: white;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+    }
 
-        .hint-btn { 
-            background: #f1c40f; color: #2c3e50; border: none; padding: 8px 15px; 
-            border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 15px; z-index: 10;
-        }
-        .hint-text { 
-            opacity: 0; transition: opacity 0.3s; margin-top: 15px; font-size: 16px; 
-            color: #95a5a6; direction: ltr; font-style: italic; max-width: 100%; word-wrap: break-word;
-        }
-        .hint-text.show { opacity: 1; }
+    /* الكويز */
+    .quiz-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(30, 40, 50, 0.85);
+      backdrop-filter: blur(5px);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.3s ease-in-out;
+    }
+    .quiz-overlay.show { opacity: 1; }
 
-        .quiz-controls { 
-            display: flex; gap: 15px; width: 90%; max-width: 340px; justify-content: space-between; 
-        }
-        .quiz-btn { 
-            flex: 1; padding: 14px; border-radius: 12px; border: none; 
-            font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.2s; 
-        }
-        .btn-remember { background: #27ae60; color: white; }
-        .btn-forget { background: #e74c3c; color: white; }
-        .btn-remember:hover { background: #219150; }
-        .btn-forget:hover { background: #c0392b; }
+    .card-container {
+      width: 90%;
+      max-width: 340px;
+      height: 50vh;
+      min-height: 350px;
+      max-height: 420px;
+      perspective: 1000px;
+      margin-bottom: 20px;
+    }
+    .card {
+      width: 100%; height: 100%;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      transform-style: preserve-3d;
+      cursor: pointer;
+      position: relative;
+    }
+    .card.is-flipped { transform: rotateY(180deg); }
+    .card-face {
+      position: absolute;
+      width: 100%; height: 100%;
+      backface-visibility: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 20px;
+      padding: 20px;
+      box-sizing: border-box;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      background: white;
+      text-align: center;
+    }
+    .card-back { transform: rotateY(180deg); background: #fdfdfd; }
 
-        .btn-close { 
-            background: transparent; color: white; text-decoration: underline; 
-            margin-top: 25px; cursor: pointer; border: none; font-size: 15px; 
-        }
-        .highlight {
-            background: #fff3a3;
-            padding: 2px 4px;
-            border-radius: 4px;
-        }
+    .quiz-sound-btn {
+      position: absolute; top: 15px; left: 15px;
+      background: #ebf5fb; color: #3498db;
+      border: none; width: 40px; height: 40px;
+      border-radius: 50%; font-size: 20px;
+      cursor: pointer; display: flex;
+      align-items: center; justify-content: center; z-index: 20;
+    }
+    .quiz-word    { font-size: 32px; font-weight: bold; color: #2c3e50; margin-bottom: 15px; }
+    .quiz-meaning { font-size: 28px; font-weight: bold; color: #27ae60; }
+    .quiz-example { font-size: 18px; color: #7f8c8d; font-style: italic; margin-top: 20px; direction: ltr; }
 
-        /* --- إضافات الكويز الذكي والرسائل التحفيزية --- */
-        .toast-msg {
-            position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
-            background: #f1c40f; color: #2c3e50; padding: 12px 25px; border-radius: 20px;
-            font-weight: bold; font-size: 16px; transition: 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            z-index: 2000; box-shadow: 0 5px 15px rgba(0,0,0,0.2); pointer-events: none;
-        }
-        .toast-msg.show { top: 30px; }
+    .hint-btn {
+      background: #f1c40f; color: #2c3e50;
+      border: none; padding: 8px 15px;
+      border-radius: 10px; font-weight: bold;
+      cursor: pointer; margin-top: 15px; z-index: 10;
+    }
+    .hint-text {
+      opacity: 0; transition: opacity 0.3s; margin-top: 15px;
+      font-size: 16px; color: #95a5a6;
+      direction: ltr; font-style: italic;
+      max-width: 100%; word-wrap: break-word;
+    }
+    .hint-text.show { opacity: 1; }
 
-        .setup-btn {
-            width: 100%; margin-bottom: 10px; padding: 12px; border-radius: 12px;
-            border: none; font-weight: bold; cursor: pointer; transition: 0.2s; color: white; font-size: 15px;
-        }
-        .setup-btn:hover { opacity: 0.9; transform: scale(0.98); }
-        .btn-new { background: #3498db; }
-        .btn-forgot { background: #e74c3c; }
-        .btn-old { background: #8e44ad; }
-        .btn-starred { background: #f39c12; }
-        .btn-all { background: #2c3e50; }
+    .quiz-controls {
+      display: flex; gap: 15px;
+      width: 90%; max-width: 340px;
+      justify-content: space-between;
+    }
+    .quiz-btn {
+      flex: 1; padding: 14px; border-radius: 12px;
+      border: none; font-weight: bold; font-size: 16px;
+      cursor: pointer; transition: 0.2s;
+    }
+    .btn-remember { background: #27ae60; color: white; }
+    .btn-forget   { background: #e74c3c; color: white; }
+    .btn-remember:hover { background: #219150; }
+    .btn-forget:hover   { background: #c0392b; }
 
-        /* -------- ستايلات الوضع الليلي الشامل -------- */
-        body.dark { background: #121212; color: #e0e0e0; }
-        body.dark .container { background: #1e1e1e; box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
-        
-        /* الحقول والقوائم */
-        body.dark input, body.dark select, body.dark textarea { 
-            background: #2a2a2a; color: #eee; border-color: #444; 
-        }
-        body.dark input:focus, body.dark textarea:focus { border-color: var(--primary); }
-        body.dark #searchInput { background: #2c2a1c; border-color: #8f7a14; color: #eee; }
+    .btn-close {
+      background: transparent; color: white;
+      text-decoration: underline; margin-top: 25px;
+      cursor: pointer; border: none; font-size: 15px;
+    }
 
-        /* الإحصائيات والأزرار العلوية */
-        body.dark .stats-bar { background: #2a2a2a; color: #bbb; border-color: #444; }
-        body.dark .btn-tool { background: #2a2a2a; color: #bbb; border-color: #444; }
-        body.dark .btn-tool:hover { background: #333; }
-        body.dark .active-tool { background: var(--primary); color: white; border-color: var(--primary); }
-        body.dark h2, body.dark h3 { color: #fff; }
+    /* Toast */
+    .toast-msg {
+      position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
+      background: #f1c40f; color: #2c3e50;
+      padding: 12px 25px; border-radius: 20px;
+      font-weight: bold; font-size: 16px;
+      transition: 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      z-index: 2000; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      pointer-events: none;
+    }
+    .toast-msg.show { top: 30px; }
 
-        /* قائمة الكلمات */
-        body.dark li { background: #2a2a2a; border-right-color: var(--primary); box-shadow: 0 3px 10px rgba(0,0,0,0.2); }
-        body.dark li:hover { background: #333; }
-        body.dark .word-text { color: #fff; }
-        body.dark .meaning-text { color: #aaa; }
-        body.dark .example-box { border-top-color: #444; color: #999; }
-        
-        /* أزرار الأكشن داخل الكلمة */
-        body.dark .sound-btn { background: #1e3a5f; color: #6fbaff; }
-        body.dark .edit-btn { background: #1b4d32; color: #4ade80; }
-        body.dark .del-btn { background: #5c1a16; color: #f87171; }
-        
-        /* شاشة الاختبار (الكويز) */
-        body.dark .quiz-overlay { background: rgba(0, 0, 0, 0.85); }
-        body.dark .card-container, body.dark .card-face { background: #2a2a2a; box-shadow: 0 10px 30px rgba(0,0,0,0.6); }
-        body.dark .card-back { background: #222; }
-        body.dark .quiz-word, body.dark .quiz-meaning { color: #fff; }
-        body.dark .quiz-sound-btn { background: #1e3a5f; color: #6fbaff; }
-        body.dark .hint-text, body.dark .quiz-example { color: #aaa; }
-        /* حاوية الزر عشان الـ Tooltip يضل فوقه */
-.tooltip {
-  position: relative;
-  display: inline-block;
-  flex-shrink: 0; /* عشان ما يزغر الزر جوا الـ flex */
-}
+    /* أزرار إعداد الكويز */
+    .setup-btn {
+      width: 100%; margin-bottom: 10px; padding: 12px;
+      border-radius: 12px; border: none;
+      font-weight: bold; cursor: pointer;
+      transition: 0.2s; color: white; font-size: 15px;
+    }
+    .setup-btn:hover { opacity: 0.9; transform: scale(0.98); }
+    .btn-new     { background: #3498db; }
+    .btn-forgot  { background: #e74c3c; }
+    .btn-old     { background: #8e44ad; }
+    .btn-starred { background: #f39c12; }
+    .btn-all     { background: #2c3e50; }
 
-/* صندوق الـ Tooltip نفسه */
-.tooltip .tooltiptext {
-  visibility: hidden;
-  width: 50px;
-  background-color: #333;
-  color: #fff;
-  text-align: center;
-  border-radius: 6px;
-  padding: 5px 0;
-  position: absolute;
-  z-index: 10;
-  bottom: 110%; /* مكانه فوق الزر */
-  left: 50%;
-  margin-left: -25px; /* عشان ييجي بالمنتصف */
-  opacity: 0;
-  transition: opacity 0.3s;
-  font-size: 12px;
-  pointer-events: none; /* عشان ما يلقط كبسات غلط */
-}
+    /* Highlight بحث */
+    .highlight { background: #fff3a3; padding: 2px 4px; border-radius: 4px; }
 
-/* المثلث الصغير تحت الصندوق */
-.tooltip .tooltiptext::after {
-  content: "";
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  margin-left: -5px;
-  border-width: 5px;
-  border-style: solid;
-  border-color: #333 transparent transparent transparent;
-}
+    /* Tooltip */
+    .tooltip { position: relative; display: inline-block; flex-shrink: 0; }
+    .tooltip .tooltiptext {
+      visibility: hidden; width: 50px;
+      background-color: #333; color: #fff;
+      text-align: center; border-radius: 6px;
+      padding: 5px 0; position: absolute;
+      z-index: 10; bottom: 110%; left: 50%;
+      margin-left: -25px; opacity: 0;
+      transition: opacity 0.3s; font-size: 12px;
+      pointer-events: none;
+    }
+    .tooltip .tooltiptext::after {
+      content: ""; position: absolute; top: 100%; left: 50%;
+      margin-left: -5px; border-width: 5px; border-style: solid;
+      border-color: #333 transparent transparent transparent;
+    }
+    .tooltip:hover .tooltiptext { visibility: visible; opacity: 1; }
 
-/* إظهار الـ Tooltip لما تحط الماوس */
-.tooltip:hover .tooltiptext {
-  visibility: visible;
-  opacity: 1;
-}
-        /* تصميم المودال الاحترافي */
-.custom-modal {
-    display: none; /* مخفي في البداية */
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.6); /* خلفية ضبابية */
-    backdrop-filter: blur(5px); /* تأثير التغبيش */
-    align-items: center;
-    justify-content: center;
-}
+    /* مودال */
+    .custom-modal {
+      display: none; position: fixed; z-index: 1000;
+      left: 0; top: 0; width: 100%; height: 100%;
+      background-color: rgba(0,0,0,0.6);
+      backdrop-filter: blur(5px);
+      align-items: center; justify-content: center;
+    }
+    .modal-content {
+      background-color: var(--card-bg);
+      padding: 30px; border-radius: 20px;
+      width: 90%; max-width: 400px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      animation: slideUp 0.3s ease-out;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(50px); opacity: 0; }
+      to   { transform: translateY(0);    opacity: 1; }
+    }
+    .modal-icon { font-size: 50px; margin-bottom: 10px; }
+    .modal-buttons { display: flex; gap: 15px; margin-top: 12.5px; justify-content: center; }
+    .btn-confirm { background: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: bold; }
+    .btn-cancel  { background: #bdc3c7; color: #2c3e50; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; }
 
-.modal-content {
-    background-color: var(--card-bg);
-    padding: 30px;
-    border-radius: 20px;
-    width: 90%;
-    max-width: 400px;
-    text-align: center;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    animation: slideUp 0.3s ease-out;
-}
+    /* أيقونات تفاعلية */
+    .action-icon { transition: all 0.3s ease; cursor: pointer; display: inline-block; }
+    .action-icon:hover { transform: scale(1.2); filter: brightness(0.8); }
+    .icon-delete:hover { color: #c0392b !important; }
+    .icon-voice:hover  { color: #2980b9 !important; }
+    .icon-star:hover   { color: #f39c12 !important; }
+    .icon-edit:hover   { color: #16a085 !important; transform: scale(1.2) rotate(-10deg); }
 
-@keyframes slideUp {
-    from { transform: translateY(50px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-}
-
-.modal-icon { font-size: 50px; margin-bottom: 10px; }
-
-.modal-buttons {
-    display: flex;
-    gap: 15px;
-    margin-top: 12.5px;
-    justify-content: center;
-}
-
-.btn-confirm {
-    background: #e74c3c;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 10px;
-    cursor: pointer;
-    font-weight: bold;
-}
-
-.btn-cancel {
-    background: #bdc3c7;
-    color: #2c3e50;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 10px;
-    cursor: pointer;
-}
-
-/* تعديل بسيط للوضع الليلي */
-body.dark .modal-content {
-    background-color: #2c3e50;
-    color: white;
-}
-        /* تنسيق عام لكل الأيقونات اللي بنقدر نكبس عليها */
-.action-icon {
-    transition: all 0.3s ease; /* بخلي الحركة ناعمة مش فجائية */
-    cursor: pointer;
-    display: inline-block;
-}
-
-/* التفاعل لما نحط الماوس (يغمق اللون ويكبر شوي) */
-.action-icon:hover {
-    transform: scale(1.2); /* بتكبر الأيقونة 20% */
-    filter: brightness(0.8); /* بيغمق اللون شوي */
-}
-
-/* ألوان مخصصة لكل نوع */
-.icon-delete:hover { color: #c0392b !important; } /* أحمر غامق للحذف */
-.icon-voice:hover { color: #2980b9 !important; }  /* أزرق غامق للصوت */
-.icon-star:hover { color: #f39c12 !important; }   /* ذهبي غامق للمفضلة */
-.icon-edit:hover { color: #16a085 !important; transform: scale(1.2) rotate(-10deg); /*حركة إضافية: القلم بميل شوي كأنه بده يكتب ,لون أزرق مخضر */
-}       
-</style>
+    /* الوضع الليلي */
+    body.dark { background: #121212; color: #e0e0e0; }
+    body.dark .container { background: #1e1e1e; box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
+    body.dark input, body.dark select, body.dark textarea { background: #2a2a2a; color: #eee; border-color: #444; }
+    body.dark input:focus, body.dark textarea:focus { border-color: var(--primary); }
+    body.dark #searchInput { background: #2c2a1c; border-color: #8f7a14; color: #eee; }
+    body.dark .stats-bar { background: #2a2a2a; color: #bbb; border-color: #444; }
+    body.dark .btn-tool { background: #2a2a2a; color: #bbb; border-color: #444; }
+    body.dark .btn-tool:hover { background: #333; }
+    body.dark .active-tool { background: var(--primary); color: white; border-color: var(--primary); }
+    body.dark h2, body.dark h3 { color: #fff; }
+    body.dark li { background: #2a2a2a; border-right-color: var(--primary); box-shadow: 0 3px 10px rgba(0,0,0,0.2); }
+    body.dark li:hover { background: #333; }
+    body.dark .word-text { color: #fff; }
+    body.dark .meaning-text { color: #aaa; }
+    body.dark .example-box { border-top-color: #444; color: #999; }
+    body.dark .sound-btn { background: #1e3a5f; color: #6fbaff; }
+    body.dark .edit-btn  { background: #1b4d32; color: #4ade80; }
+    body.dark .del-btn   { background: #5c1a16; color: #f87171; }
+    body.dark .quiz-overlay { background: rgba(0,0,0,0.85); }
+    body.dark .card-container, body.dark .card-face { background: #2a2a2a; box-shadow: 0 10px 30px rgba(0,0,0,0.6); }
+    body.dark .card-back { background: #222; }
+    body.dark .quiz-word, body.dark .quiz-meaning { color: #fff; }
+    body.dark .quiz-sound-btn { background: #1e3a5f; color: #6fbaff; }
+    body.dark .hint-text, body.dark .quiz-example { color: #aaa; }
+    body.dark .modal-content { background-color: #2c3e50; color: white; }
+    body.dark #logoutBtn { background-color: #2a2a2a; color: #e0e0e0; border-color: #444; }
+    body.dark #logoutBtn:hover { background-color: #442726; color: #ff8a80; border-color: #641e16; }
+  </style>
 </head>
 <body>
-    
-<div id="toastMessage" class="toast-msg">رسالة تحفيزية</div>
+
+<div id="toastMessage" class="toast-msg"></div>
 
 <div class="container">
-    <h2 id="mainTitle">القاموس</h2>
+  <h2 id="mainTitle">القاموس</h2>
 
-    <button id="loginBtn" onclick="login()" style="width: 100%; margin-bottom: 15px; background-color: #E3F2FD; color: #2c3e50; border: 2px solid #3498db; padding: 12px; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.3s;">
-        تسجيل دخول بجوجل 🚀
-    </button>
-    <button id="logoutBtn" onclick="showLogoutModal()">تسجيل الخروج</button>
-    
-    <button onclick="toggleDark()" 
-    style="width:100%; margin-bottom:15px; padding:12px; border-radius:12px; border:2px solid #444; font-weight:bold;">
+  <button id="loginBtn"  class="auth-btn" onclick="login()">تسجيل دخول بجوجل 🚀</button>
+  <button id="logoutBtn" class="auth-btn" onclick="showModal('logoutModal')">تسجيل الخروج</button>
+
+  <button onclick="toggleDark()" style="width:100%; margin-bottom:15px; padding:12px; border-radius:12px; border:2px solid #444; font-weight:bold;">
     🌙 / ☀️ الوضع الليلي
-    </button>
-    <div class="stats-bar">
-        <span id="totalCount">إجمالي الكلمات: 0</span>
-        <span id="starredCount">⭐ الصعبة: 0</span>
-    </div>
-    
-    <div class="ai-search-container" style="margin-bottom: 20px;">
-    <label style="display: block; text-align: right; margin-bottom: 8px; font-weight: bold; font-size: 14px; color: var(--text-main);">الكلمة بالإنجليزية:</label>
-    <div style="display: flex; gap: 8px; align-items: center;">
-        <div class="tooltip">
-    <button onclick="fetchSuggestions()" id="searchBtn" type="button" 
-            style="width: 50px; height: 48px; background: var(--primary); color: white; border: none; border-radius: 12px; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 20px;">
-        🔍
-    </button>
-    <span class="tooltiptext">بحث عن معنى</span>
-</div>
-        <input type="text" id="wordInput" placeholder="مثلاً: Awesome" 
-               style="flex: 1; margin: 0; height: 48px; box-sizing: border-box; text-align: left; direction: ltr; padding-left: 15px;">
-    </div>
-</div>
+  </button>
 
-<div id="suggestionsBox" style="display: none; border: 2px solid #e3f2fd; padding: 15px; border-radius: 15px; background: #fff; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); width: 100%; box-sizing: border-box;">
-    <p style="font-size: 13px; color: var(--primary); font-weight: bold; margin-bottom: 10px; text-align: right;">اختر المعنى الأنسب:</p>
-    <div id="suggestionsList" style="display: flex; flex-direction: column; gap: 8px;"></div>
-</div>
-        <input type="text" id="meaningInput" placeholder="المعنى بالعربي">
-        <textarea id="exampleInput" placeholder="جملة مثال (اختياري)" rows="2"></textarea>
-        <select id="categoryInput">
-            <option value="عام">عام</option>
-            <option value="فعل">فعل</option>
-            <option value="اسم">اسم</option>
-            <option value="صفة">صفة</option>
-            <option value="أداة">أداة</option>
-            <option value="ظرف">ظرف</option>
-            <option value="جمل">جمل شائعة</option>
-        </select>
-        <button class="btn-main" id="addBtn" onclick="addWord()">إضافة للقاموس</button>
-    
-    <div class="toolbar">
-        <button id="toolAll" class="btn-tool active-tool" onclick="setFilter('all')">الكل</button>
-        <button id="toolStarred" class="btn-tool" onclick="setFilter('starred')" title="الكلمات الصعبة"><i class="fas fa-star action-icon icon-star"></i></button>
-        <button id="reorderBtn" class="btn-tool" onclick="toggleReorderMode()" title="ترتيب يدوي"><i class="fas fa-sort-amount-down action-icon icon-sort"></i></button>
-        <button class="btn-tool" onclick="openQuizSetup()" title="اختبار البطاقات"><i class="fas fa-clipboard-check action-icon icon-quiz"></i></button>
+  <div class="stats-bar">
+    <span id="totalCount">إجمالي الكلمات: 0</span>
+    <span id="starredCount">⭐ الصعبة: 0</span>
+  </div>
+
+  <div class="ai-search-container" style="margin-bottom:20px;">
+    <label style="display:block; text-align:right; margin-bottom:8px; font-weight:bold; font-size:14px;">الكلمة بالإنجليزية:</label>
+    <div style="display:flex; gap:8px; align-items:center;">
+      <div class="tooltip">
+        <button onclick="fetchSuggestions()" id="searchBtn" type="button" aria-label="بحث عن معنى الكلمة"
+                style="width:50px; height:48px; background:var(--primary); color:white; border:none; border-radius:12px; cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:20px;">
+          🔍
+        </button>
+        <span class="tooltiptext">ابحث عن معنى</span>
+      </div>
+      <input type="text" id="wordInput" placeholder="مثلاً: Awesome"
+             style="flex:1; margin:0; height:48px; box-sizing:border-box; text-align:left; direction:ltr; padding-left:15px;">
     </div>
+  </div>
 
-    <input type="text" id="searchInput" placeholder="🔎 ابحث..." oninput="render()">
+  <div id="suggestionsBox" style="display:none; border:2px solid #e3f2fd; padding:15px; border-radius:15px; background:#fff; margin-bottom:20px; box-shadow:0 4px 12px rgba(0,0,0,0.05); width:100%; box-sizing:border-box;">
+    <p style="font-size:13px; color:var(--primary); font-weight:bold; margin-bottom:10px; text-align:right;">اختر المعنى الأنسب:</p>
+    <div id="suggestionsList" style="display:flex; flex-direction:column; gap:8px;"></div>
+  </div>
 
-<select id="searchFilter" onchange="render()" style="margin-bottom:15px; width:100%;">
+  <input type="text" id="meaningInput" placeholder="المعنى بالعربي">
+  <textarea id="exampleInput" placeholder="جملة مثال (اختياري)" rows="2"></textarea>
+  <select id="categoryInput">
+    <option value="عام">عام</option>
+    <option value="فعل">فعل</option>
+    <option value="اسم">اسم</option>
+    <option value="صفة">صفة</option>
+    <option value="أداة">أداة</option>
+    <option value="ظرف">ظرف</option>
+    <option value="جمل">جمل شائعة</option>
+  </select>
+  <button class="btn-main" id="addBtn" onclick="addWord()">إضافة للقاموس</button>
+
+  <div class="toolbar" style="margin-top:15px;">
+    <button id="toolAll"     class="btn-tool active-tool" onclick="setFilter('all')">الكل</button>
+    <button id="toolStarred" class="btn-tool" onclick="setFilter('starred')" aria-label="الكلمات الصعبة"><i class="fas fa-star action-icon icon-star"></i></button>
+    <button id="reorderBtn"  class="btn-tool" onclick="toggleReorderMode()" aria-label="ترتيب يدوي"><i class="fas fa-sort-amount-down action-icon"></i></button>
+    <button class="btn-tool" onclick="openQuizSetup()" aria-label="اختبار البطاقات"><i class="fas fa-clipboard-check action-icon"></i></button>
+  </div>
+
+  <input type="text" id="searchInput" placeholder="🔎 ابحث..." oninput="render()">
+  <select id="searchFilter" onchange="render()" style="margin-bottom:15px; width:100%;">
     <option value="all">بحث في الكل</option>
     <option value="word">الكلمة فقط</option>
     <option value="meaning">المعنى فقط</option>
     <option value="example">الجملة فقط</option>
-</select>
-    
-    <ul id="list"></ul>
+  </select>
 
-    <div class="backup-zone">
-        <button class="btn-backup" onclick="exportData()">📥 تصدير</button>
-        <button class="btn-backup" onclick="document.getElementById('importFile').click()">📤 استيراد</button>
-        <input type="file" id="importFile" style="display:none" onchange="importData(event)">
-    </div>
-</div> 
+  <ul id="list"></ul>
 
+  <div class="backup-zone">
+    <button class="btn-backup" onclick="exportData()">📥 تصدير</button>
+    <button class="btn-backup" onclick="document.getElementById('importFile').click()">📤 استيراد</button>
+    <input type="file" id="importFile" style="display:none" onchange="importData(event)">
+  </div>
+</div>
+
+<!-- شاشة إعدادات الكويز -->
 <div id="quizSetupOverlay" class="quiz-overlay">
-    <div class="card-container" style="height: auto; min-height: auto; padding: 25px; background: white; border-radius: 20px; text-align: center;">
-        <h3 style="color: var(--text-main); margin-top:0; margin-bottom: 5px;">إعدادات الاختبار 🧠</h3>
-        <p style="font-size: 14px; color: #7f8c8d; margin-bottom: 20px;">حدد الكلمات اللي حاب تختبرها:</p>
-        
-        <button class="setup-btn btn-new" onclick="startActualQuiz('recent')">🆕 كلمات جديدة (آخر 10)</button>
-        <button class="setup-btn btn-forgot" onclick="startActualQuiz('forgotten')"><i class="fas fa-trash-alt action-icon icon-delete"></i> تحدي النسيان (الأكثر خطأ)</button>
-        <button class="setup-btn btn-old" onclick="startActualQuiz('old')">🕰️ مراجعة الذكريات (أقدم 10)</button>
-        <button class="setup-btn btn-starred" onclick="startActualQuiz('starred')"><i class="fas fa-star action-icon icon-star"></i> الكلمات الصعبة (الصعبة)</button>
-        <button class="setup-btn btn-all" onclick="startActualQuiz('all')">🌍 كل الكلمات (عشوائي)</button>
-        
-        <button class="btn-close" onclick="closeQuizSetup()" style="color: #e74c3c; display:block; width:100%;">إلغاء</button>
-    </div>
+  <div class="card-container" style="height:auto; min-height:auto; padding:25px; background:white; border-radius:20px; text-align:center;">
+    <h3 style="color:var(--text-main); margin-top:0; margin-bottom:5px;">إعدادات الاختبار 🧠</h3>
+    <p style="font-size:14px; color:#7f8c8d; margin-bottom:20px;">حدد الكلمات اللي حاب تختبرها:</p>
+    <button class="setup-btn btn-new"     onclick="startActualQuiz('recent')">🆕 كلمات جديدة (آخر 10)</button>
+    <button class="setup-btn btn-forgot"  onclick="startActualQuiz('forgotten')">🗑️ تحدي النسيان (الأكثر خطأ)</button>
+    <button class="setup-btn btn-old"     onclick="startActualQuiz('old')">🕰️ مراجعة الذكريات (أقدم 10)</button>
+    <button class="setup-btn btn-starred" onclick="startActualQuiz('starred')">⭐ الكلمات الصعبة</button>
+    <button class="setup-btn btn-all"     onclick="startActualQuiz('all')">🌍 كل الكلمات (عشوائي)</button>
+    <button class="btn-close" onclick="closeQuizSetup()" style="color:#e74c3c; display:block; width:100%;">إلغاء</button>
+  </div>
 </div>
 
+<!-- شاشة الكويز -->
 <div id="quizOverlay" class="quiz-overlay">
-    <div class="card-container">
-        <div class="card" id="mainCard" onclick="flipCard()">
-            <div class="card-face card-front">
-                <button class="quiz-sound-btn" onclick="playQuizSound(event)" title="استمع للكلمة"><i class="fas fa-volume-up action-icon icon-voice"></i></button>
-                <div class="quiz-word" id="cardFrontText">الكلمة</div>
-                <button class="hint-btn" onclick="showHint(event)">اعرض المثال 💡</button>
-                <div class="hint-text" id="quizHintText">المثال هنا</div>
-            </div>
-            <div class="card-face card-back">
-                <div class="quiz-meaning" id="cardBackText">المعنى</div>
-                <div class="quiz-example" id="cardBackExample"></div>
-            </div>
-        </div>
+  <div class="card-container">
+    <div class="card" id="mainCard" onclick="flipCard()">
+      <div class="card-face card-front">
+        <button class="quiz-sound-btn" onclick="playQuizSound(event)" aria-label="استمع للكلمة">
+          <i class="fas fa-volume-up action-icon icon-voice"></i>
+        </button>
+        <div class="quiz-word" id="cardFrontText">الكلمة</div>
+        <button class="hint-btn" onclick="showHint(event)">اعرض المثال 💡</button>
+        <div class="hint-text" id="quizHintText"></div>
+      </div>
+      <div class="card-face card-back">
+        <div class="quiz-meaning" id="cardBackText">المعنى</div>
+        <div class="quiz-example" id="cardBackExample"></div>
+      </div>
     </div>
-    <div class="quiz-controls">
-        <button class="quiz-btn btn-forget" onclick="markForgot()">نسيتها <i class="fas fa-trash-alt action-icon icon-delete"></i></button>
-        <button class="quiz-btn btn-remember" onclick="markRemember()">تذكرتها ✅</button>
-    </div>
-    <button class="btn-close" onclick="closeQuiz()">إغلاق الاختبار</button>
+  </div>
+  <div class="quiz-controls">
+    <button class="quiz-btn btn-forget"   onclick="markForgot()">نسيتها 🗑️</button>
+    <button class="quiz-btn btn-remember" onclick="markRemember()">تذكرتها ✅</button>
+  </div>
+  <button class="btn-close" onclick="closeQuiz()">إغلاق الاختبار</button>
 </div>
-    
+
+<!-- مودال تسجيل الخروج -->
+<div id="logoutModal" class="custom-modal">
+  <div class="modal-content">
+    <div class="modal-icon">❗</div>
+    <h2>متأكد أنك تريد تسجيل الخروج؟</h2>
+    <p>لن تذهب الكلمات، لكن لن تستطيع تخزين كلماتك سحابيًا</p>
+    <div class="modal-buttons">
+      <button onclick="confirmLogout()" class="btn-confirm">نعم، سجل خروج</button>
+      <button onclick="hideModal('logoutModal')" class="btn-cancel">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- مودال تأكيد الحذف -->
+<div id="deleteModal" class="custom-modal">
+  <div class="modal-content">
+    <div class="modal-icon">🗑️</div>
+    <h2>حذف الكلمة؟</h2>
+    <p>هذا الإجراء لا يمكن التراجع عنه</p>
+    <div class="modal-buttons">
+      <button id="deleteConfirmBtn" class="btn-confirm">نعم، احذف</button>
+      <button onclick="hideModal('deleteModal')" class="btn-cancel">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase -->
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
-  import { getAuth, signInWithPopup, signOut, GoogleAuthProvider, onAuthStateChanged, signInWithRedirect, getRedirectResult } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
-  import { getFirestore, collection, addDoc, getDocs, query, orderBy, where, deleteDoc, doc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyDQB5N4wxJw69-tb8suI2T2SfEfCpwFA2c",
-  authDomain: "quizapp-ede17.firebaseapp.com",
-  projectId: "quizapp-ede17",
-  storageBucket: "quizapp-ede17.firebasestorage.app",
-  messagingSenderId: "473471031803",
-  appId: "1:473471031803:web:1b803237aeb0444040535e",
-  measurementId: "G-C06S6C7JYT"
-};
+  import { initializeApp }        from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+  import { getAuth, signInWithPopup, signOut, GoogleAuthProvider, onAuthStateChanged, getRedirectResult }
+                                   from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
+  import { getFirestore, collection, addDoc, query, orderBy, deleteDoc, doc, updateDoc, onSnapshot }
+                                   from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
-  const app = initializeApp(firebaseConfig);
+  const firebaseConfig = {
+    apiKey:            "AIzaSyDQB5N4wxJw69-tb8suI2T2SfEfCpwFA2c",
+    authDomain:        "quizapp-ede17.firebaseapp.com",
+    projectId:         "quizapp-ede17",
+    storageBucket:     "quizapp-ede17.firebasestorage.app",
+    messagingSenderId: "473471031803",
+    appId:             "1:473471031803:web:1b803237aeb0444040535e",
+    measurementId:     "G-C06S6C7JYT"
+  };
+
+  const app  = initializeApp(firebaseConfig);
   const auth = getAuth(app);
-  const db = getFirestore(app);
+  const db   = getFirestore(app);
 
-    // كود استقبال نتيجة الدخول بعد التوجيه
-    window.addEventListener("load", async () => {
-      try {
-        const result = await getRedirectResult(auth);
+  window.addEventListener("load", async () => {
+    try { await getRedirectResult(auth); } catch (e) { console.error(e.message); }
+  });
 
-        if (result && result.user) {
-          console.log("✅ تسجيل دخول ناجح:", result.user.email);
-        } else {
-          console.log("ℹ️ لا يوجد نتيجة Redirect");
-        }
-      } catch (error) {
-        console.error("خطأ بالـ redirect:", error.message);
-      }
-    });
-
-      
   onAuthStateChanged(auth, (user) => {
-  if (user) {
-    console.log("المستخدم موجود:", user.email);
-    document.getElementById('logoutBtn').style.display = 'block'; 
-    document.getElementById('loginBtn').style.display = 'none';
-    
-    // 🔥 هون التعديل: تشغيل دالة جلب الكلمات فوراً
-    window.loadWordsFromCloud();
-    
-  } else {
-        // 🔴 ما في مستخدم (أو سجل خروجه)
-        console.log("لا يوجد مستخدم مسجل");
-    
-        // إخفاء زر الخروج وإظهار زر الدخول
-        document.getElementById('logoutBtn').style.display = 'none';
-        document.getElementById('loginBtn').style.display = 'block';
-    
-    // هون ممكن تصفر مصفوفة الكلمات عشان ما تضل معلقة بالصفحة
-    // window.words = [];
-    // renderWords();
-  }
-});
+    document.getElementById('logoutBtn').style.display = user ? 'block' : 'none';
+    document.getElementById('loginBtn').style.display  = user ? 'none'  : 'block';
+    if (user) window.loadWordsFromCloud();
+  });
 
-  // 2. دالة تسجيل الدخول
- window.login = async function() {
+  window.login = async function() {
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
+    try { await signInWithPopup(auth, provider); }
+    catch (e) { console.error(e.code, e.message); }
+  };
 
-    try {
-        const result = await signInWithPopup(auth, provider);
-        console.log("تم سحب بيانات جوجل بنجاح. الإيميل:", result.user.email);
-        
-        // تم مسح location.reload() هنا.
-        // دالة onAuthStateChanged التي كتبناها سابقاً ستتكفل بإخفاء زر الدخول وإظهار زر الخروج تلقائياً.
-        
-    } catch (error) {
-        console.error("فشل الدخول:", error.code, error.message);
-    }
-};
-    
- window.saveWordToCloud = async function(wordText, wordCategory, meaning, example) {
+  window.saveWordToCloud = async function(wordText, wordCategory, meaning, example) {
     const user = auth.currentUser;
-    if (user) {
-      try {
-        const docRef = await addDoc(collection(db, "users", user.uid, "words"), {
-          text: wordText, // لازم text عشان يطابق قاعدة البيانات
-          category: wordCategory,
-          meaning: meaning,
-          example: example,
-          createdAt: new Date()
-        });
-        return docRef.id; 
-       } catch (error) {
-        console.error("❌ فشل الرفع للفايربيس: ", error);
-        alert("في مشكلة بالرفع: " + error.message); // هون رح يحكيلك شو السبب
-        }
-    };    
- }    
-  // 4. دالة التحديث في السحابة
-  window.updateWordInCloud = async function(docId, updatedData) {
-      const user = auth.currentUser;
-      if (!user || !docId) return;
-
-      try {
-          // شلنا سطر الـ import الزايد لأنك مستورده فوق
-          const docRef = doc(db, "users", user.uid, "words", docId);
-          
-          await updateDoc(docRef, {
-              text: updatedData.word,      
-              meaning: updatedData.meaning,
-              example: updatedData.example,
-              category: updatedData.category
-          });
-          
-          console.log("✅ تم التعديل في السحابة بنجاح");
-
-          // تحديث المصفوفة المحلية
-          if (window.words) {
-              window.words = window.words.map(item => {
-                  if (item.id === docId) {
-                      return { ...item, ...updatedData }; 
-                  }
-                  return item;
-              });
-              
-              // 🔥 أمر إجباري لتحديث الشاشة فوراً
-              if (typeof window.saveAndRender === "function") {
-                  window.saveAndRender();
-              } else if (typeof window.render === "function") {
-                  window.render();
-              }
-          }
-
-      } catch (e) {
-          console.error("❌ خطأ في التحديث:", e);
-      }
+    if (!user) return null;
+    try {
+      const ref = await addDoc(collection(db, "users", user.uid, "words"), {
+        text: wordText, category: wordCategory,
+        meaning, example, createdAt: new Date()
+      });
+      return ref.id;
+    } catch (e) { console.error("فشل الرفع:", e); return null; }
   };
-    
-  // 5. دالة الحذف من السحابة
-  window.deleteWord = async function(id, event) {
-      if (event) event.stopPropagation();
 
-      id = String(id); 
-
-      if (!confirm("هل أنت متأكد من حذف هذه الكلمة نهائياً؟")) return;
-
-      const user = auth.currentUser;
-
-      try {
-          if (user && id) {
-              await deleteDoc(doc(db, "users", user.uid, "words", id));
-          }
-
-          // تصفية المصفوفة وحذف الكلمة محلياً
-          window.words = window.words.filter(w => String(w.id) !== id);
-          localStorage.setItem('myContextDict', JSON.stringify(window.words));
-
-          // 🔥 التصليح هون: استخدام window.render عشان الموديول يشوفها
-          if (typeof window.saveAndRender === "function") {
-              window.saveAndRender();
-          } else if (typeof window.render === "function") {
-              window.render();
-          }
-
-      } catch (e) {
-          console.error("❌ خطأ بالحذف:", e);
-      }
+  window.updateWordInCloud = async function(docId, data) {
+    const user = auth.currentUser;
+    if (!user || !docId) return;
+    try {
+      await updateDoc(doc(db, "users", user.uid, "words", docId), {
+        text: data.word, meaning: data.meaning,
+        example: data.example, category: data.category
+      });
+    } catch (e) { console.error("خطأ في التحديث:", e); }
   };
-    
-  // 4. دالة جلب الكلمات من السحابة (تم تعديل doc لـ wordDoc لمنع التعارض)
+
+  window.deleteWordFromCloud = async function(id) {
+    const user = auth.currentUser;
+    if (user && id) {
+      try { await deleteDoc(doc(db, "users", user.uid, "words", id)); }
+      catch (e) { console.error("خطأ بالحذف:", e); }
+    }
+  };
+
   window.loadWordsFromCloud = function() {
     const user = auth.currentUser;
     if (!user) return;
-
-    try {
-      const q = query(collection(db, "users", user.uid, "words"), orderBy("createdAt", "desc"));
-      
-      // onSnapshot هو الجاسوس تبع Firestore
-      onSnapshot(q, (snapshot) => {
-        let cloudWords = [];
-
-        snapshot.forEach((wordDoc) => {
-          const data = wordDoc.data();
-          cloudWords.push({
-            id: wordDoc.id,
-            word: data.text,
-            meaning: data.meaning || "",
-            example: data.example || "",
-            category: data.category,
-            starred: data.starred || false,
-            forgetCount: data.forgetCount || 0
-          });
-        });
-
-        // إذا في كلمات، حدث المصفوفة والشاشة
-        if (cloudWords.length > 0) {
-          window.words = cloudWords;
-          localStorage.setItem('myContextDict', JSON.stringify(window.words));
-          
-          if (typeof window.saveAndRender === "function") {
-            window.saveAndRender();
-          } else if (typeof window.render === "function") {
-            window.render();
-          }
-          console.log("✅ تمت المزامنة الحية وتحديث القائمة من السحابة");
-        }
-      });
-    } catch (e) {
-      console.error("خطأ في جلب الكلمات: ", e);
-    }
+    const q = query(collection(db, "users", user.uid, "words"), orderBy("createdAt", "desc"));
+    onSnapshot(q, (snapshot) => {
+      const cloudWords = snapshot.docs.map(d => ({
+        id:          d.id,
+        word:        d.data().text,
+        meaning:     d.data().meaning     || "",
+        example:     d.data().example     || "",
+        category:    d.data().category,
+        starred:     d.data().starred     || false,
+        forgetCount: d.data().forgetCount || 0
+      }));
+      if (cloudWords.length > 0) {
+        window.words = cloudWords;
+        saveAndRender();
+      }
+    });
   };
 
-  window.logout = function() {
-    signOut(auth).then(() => {
-        console.log("تم الخروج");
-        // بدل ما نعمل ريفريش فوري، خلينا نتأكد إن الأزرار تبدلت
-        document.getElementById('logoutBtn').style.display = 'none';
-        document.getElementById('loginBtn').style.display = 'block';
-        
-    });
-};
-        
-  // 6. دوال التعديل والحذف للواجهة عشان المتصفح يشوفهم
+  window.confirmLogout = function() {
+    signOut(auth).then(() => hideModal('logoutModal'));
+  };
+</script>
+
+<!-- منطق التطبيق الرئيسي -->
+<script>
+  window.words      = JSON.parse(localStorage.getItem('myContextDict')) || [];
+  let currentFilter = 'all';
+  let editId        = null;
+  let isReorderMode = false;
+  let selectedIndices   = [];
+  let currentQuizWords  = [];
+  let quizIndex    = 0;
+  let currentStreak = 0;
+  let pendingDeleteId = null;
+
+  // ===== مودال =====
+  function showModal(id) { document.getElementById(id).style.display = 'flex'; }
+  function hideModal(id) { document.getElementById(id).style.display = 'none';  }
+
+  // ===== الكلمات =====
+  function saveAndRender() {
+    localStorage.setItem('myContextDict', JSON.stringify(window.words));
+    render();
+    updateStats();
+  }
+
+  function clearInputs() {
+    document.getElementById('wordInput').value    = '';
+    document.getElementById('meaningInput').value = '';
+    document.getElementById('exampleInput').value = '';
+    document.getElementById('categoryInput').value = 'عام';
+  }
+
+  window.addWord = async function() {
+    const w  = document.getElementById('wordInput').value.trim();
+    const m  = document.getElementById('meaningInput').value.trim();
+    const ex = document.getElementById('exampleInput').value.trim();
+    const c  = document.getElementById('categoryInput').value;
+
+    if (!w || !m) { alert("عبّي الكلمة ومعناها يا بطل!"); return; }
+
+    if (editId) {
+      window.words = window.words.map(item =>
+        item.id === editId ? { ...item, word: w, meaning: m, example: ex, category: c } : item
+      );
+      await window.updateWordInCloud(editId, { word: w, meaning: m, example: ex, category: c });
+      editId = null;
+      const btn = document.getElementById('addBtn');
+      btn.innerText = "إضافة للقاموس";
+      btn.style.background = "";
+    } else {
+      const newWord = { id: Date.now().toString(), word: w, meaning: m, example: ex, category: c, starred: false, forgetCount: 0 };
+      window.words.unshift(newWord);
+      const realId = await window.saveWordToCloud(w, c, m, ex);
+      if (realId) newWord.id = realId;
+    }
+
+    clearInputs();
+    saveAndRender();
+  };
+
   window.editWord = function(id, event) {
     if (event) event.stopPropagation();
-    
-    let item = window.words.find(w => w.id === id);
+    const item = window.words.find(w => w.id === id);
     if (!item) return;
-
-    document.getElementById('wordInput').value = item.word || '';
-    document.getElementById('meaningInput').value = item.meaning || '';
-    document.getElementById('exampleInput').value = item.example || '';
-    document.getElementById('categoryInput').value = item.category || 'عام';
-    
-    window.editId = id; 
-    
-    const addBtn = document.getElementById('addBtn');
-    if(addBtn) {
-        addBtn.innerText = "تحديث الكلمة 💾";
-        addBtn.style.background = "#27ae60";
-    }
-    
+    document.getElementById('wordInput').value     = item.word;
+    document.getElementById('meaningInput').value  = item.meaning;
+    document.getElementById('exampleInput').value  = item.example || '';
+    document.getElementById('categoryInput').value = item.category;
+    editId = id;
+    const btn = document.getElementById('addBtn');
+    btn.innerText = "تحديث الكلمة 💾";
+    btn.style.background = "#28a745";
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // الحذف يفتح المودال أولاً
+  window.deleteWord = function(id, event) {
+    if (event) event.stopPropagation();
+    pendingDeleteId = id;
+    document.getElementById('deleteConfirmBtn').onclick = async function() {
+      hideModal('deleteModal');
+      window.words = window.words.filter(w => w.id !== pendingDeleteId);
+      await window.deleteWordFromCloud(pendingDeleteId);
+      pendingDeleteId = null;
+      saveAndRender();
+    };
+    showModal('deleteModal');
+  };
 
-window.fetchSuggestions = async function() {
+  function toggleStar(id, event) {
+    event.stopPropagation();
+    window.words = window.words.map(w => w.id === id ? { ...w, starred: !w.starred } : w);
+    saveAndRender();
+  }
+
+  function setFilter(f) {
+    currentFilter = f;
+    document.getElementById('toolAll').classList.toggle('active-tool', f === 'all');
+    document.getElementById('toolStarred').classList.toggle('active-tool', f === 'starred');
+    render();
+  }
+
+  // ===== الصوت =====
+  window.playSound = function(identifier, event) {
+    if (event) event.stopPropagation();
+    const obj = window.words.find(w => String(w.id) === String(identifier));
+    const wordToPlay = obj ? obj.word.trim() : (typeof identifier === 'string' ? identifier.trim() : '');
+    if (!wordToPlay) return;
+
+    const audio = new Audio(`sounds/${wordToPlay.toLowerCase()}.mp3`);
+    audio.play().catch(() => {
+      const gAudio = new Audio(`https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(wordToPlay)}&tl=en&client=tw-ob`);
+      gAudio.play().catch(() => {
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+          const utt = new SpeechSynthesisUtterance(wordToPlay);
+          utt.lang = 'en-US'; utt.rate = 0.9;
+          const voice = window.speechSynthesis.getVoices().find(v => v.lang.startsWith('en'));
+          if (voice) utt.voice = voice;
+          window.speechSynthesis.speak(utt);
+        }
+      });
+    });
+  };
+
+  // ===== AI معاني =====
+  window.fetchSuggestions = async function() {
     const word = document.getElementById('wordInput').value.trim();
-    const btn = document.getElementById('searchBtn');
-    const box = document.getElementById('suggestionsBox');
+    const btn  = document.getElementById('searchBtn');
+    const box  = document.getElementById('suggestionsBox');
     const list = document.getElementById('suggestionsList');
+    if (!word) { alert("اكتب الكلمة أولاً!"); return; }
 
-    if (!word) return alert("اكتب الكلمة أولاً!");
-
-    btn.innerHTML = "⏳";
-    btn.disabled = true;
+    btn.innerHTML = "⏳"; btn.disabled = true;
     box.style.display = "block";
-    list.innerHTML = "<p style='text-align:center; font-size:12px; color:#999;'>بجيبلك المعاني من المريخ...</p>";
+    list.innerHTML = "<p style='text-align:center; font-size:12px; color:#999;'>بجيبلك المعاني...</p>";
 
     try {
-        // استبدل السطر القديم بهذا
-const response = await fetch("https://dictionary7-ayes.onrender.com/api/dictionary", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ word: word }) 
-});
+      const res  = await fetch("https://dictionary7-ayes.onrender.com/api/dictionary", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ word })
+      });
+      if (!res.ok) throw new Error("خطأ في السيرفر");
+      const data = await res.json();
+      const text = data.choices[0].message.content;
+      const suggestions = JSON.parse(text.substring(text.indexOf('['), text.lastIndexOf(']') + 1));
 
-        const data = await response.json();
-        
-        if (!response.ok) throw new Error("السيرفر زعلان!");
-
-        // 2. بنفك شفرة المعاني
-        const text = data.choices[0].message.content;
-        const start = text.indexOf('[');
-        const end = text.lastIndexOf(']') + 1;
-        const suggestions = JSON.parse(text.substring(start, end));
-
-        // 3. كود عرض المعاني (بنينا الـ HTML هون مباشرة عشان ما يعطيك Error)
-        let htmlContent = '';
-        
-        suggestions.forEach((s, index) => {
-            const starsHtml = '<i class="fas fa-star action-icon icon-star"></i>'.repeat(s.stars || 1);
-            const cleanEx = s.ex.replace(/'/g, "\\'");
-            const cleanAr = s.ar.replace(/'/g, "\\'");
-            
-            const displayStyle = index >= 4 ? 'display:none;' : 'display:flex;';
-            const extraClass = index >= 4 ? 'extra-meaning' : '';
-
-            htmlContent += `
-                <div class="${extraClass}" style="${displayStyle} justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid #eee; cursor:pointer; background:#fff;"
-                     onclick="
-                        document.getElementById('meaningInput').value = '${cleanAr}';
-                        document.getElementById('categoryInput').value = '${s.pos}';
-                        document.getElementById('exampleInput').value = '${cleanEx}';
-                        document.getElementById('suggestionsBox').style.display = 'none';
-                     ">
-                    <div>
-                        <b style="color:#2c3e50; font-size:15px;">${s.ar}</b>
-                        <div style="font-size:10px; color:#star-color;">${starsHtml}</div>
-                        <div style="font-size:11px; color:#666; margin-top:4px; font-style:italic;">"${s.ex}"</div>
-                    </div>
-                    <span style="font-size:11px; color:#999; background:#f0f0f0; padding:2px 6px; border-radius:10px;">${s.pos}</span>
-                </div>
-            `;
-        });
-
-        // إضافة زر التبديل (عرض المزيد / أقل)
-        if (suggestions.length > 4) {
-            htmlContent += `
-                <div id="toggleMeaningsBtn" style="text-align:center; padding:10px; color:#3498db; cursor:pointer; font-size:12px; font-weight:bold; background:#f1f8ff; border-radius: 0 0 8px 8px;"
-                     onclick="
-                        const extras = document.querySelectorAll('.extra-meaning');
-                        const isHidden = extras[0].style.display === 'none';
-                        if (isHidden) {
-                            extras.forEach(el => el.style.display = 'flex');
-                            this.innerHTML = 'عرض أقل';
-                        } else {
-                            extras.forEach(el => el.style.display = 'none');
-                            this.innerHTML = 'عرض المزيد (${suggestions.length - 4})';
-                        }
-                     ">
-                    عرض المزيد (${suggestions.length - 4})
-                </div>
-            `;
-        }
-
-        list.innerHTML = htmlContent;
-
+      let html = '';
+      suggestions.forEach((s, i) => {
+        const cleanEx = s.ex.replace(/'/g, "\\'");
+        const cleanAr = s.ar.replace(/'/g, "\\'");
+        const hidden  = i >= 4 ? 'display:none;' : 'display:flex;';
+        html += `
+          <div class="${i >= 4 ? 'extra-meaning' : ''}" style="${hidden}justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid #eee; cursor:pointer;"
+               onclick="document.getElementById('meaningInput').value='${cleanAr}'; document.getElementById('categoryInput').value='${s.pos}'; document.getElementById('exampleInput').value='${cleanEx}'; document.getElementById('suggestionsBox').style.display='none';">
+            <div>
+              <b style="color:#2c3e50; font-size:15px;">${s.ar}</b>
+              <div style="font-size:11px; color:#666; margin-top:4px; font-style:italic;">"${s.ex}"</div>
+            </div>
+            <span style="font-size:11px; color:#999; background:#f0f0f0; padding:2px 6px; border-radius:10px;">${s.pos}</span>
+          </div>`;
+      });
+      if (suggestions.length > 4) {
+        html += `<div id="toggleMeaningsBtn" style="text-align:center; padding:10px; color:#3498db; cursor:pointer; font-size:12px; font-weight:bold; background:#f1f8ff; border-radius:0 0 8px 8px;"
+                      onclick="const e=document.querySelectorAll('.extra-meaning'),h=e[0].style.display==='none'; e.forEach(x=>x.style.display=h?'flex':'none'); this.innerHTML=h?'عرض أقل':'عرض المزيد (${suggestions.length - 4})';">
+                   عرض المزيد (${suggestions.length - 4})</div>`;
+      }
+      list.innerHTML = html;
     } catch (err) {
-        console.error("Fetch Error:", err);
-        list.innerHTML = "<p style='color:red; text-align:center; font-size:11px;'>تأكد إن الشاشة السوداء شغالة ومكتوب فيها 'السيرفر شغال'</p>";
+      list.innerHTML = "<p style='color:red; text-align:center; font-size:11px;'>تأكد إن السيرفر شغال</p>";
     } finally {
-        btn.innerHTML = "🔍";
-        btn.disabled = false;
+      btn.innerHTML = "🔍"; btn.disabled = false;
     }
-};
+  };
 
+  // ===== الكويز =====
+  function openQuizSetup() {
+    if (!window.words.length) { alert("القاموس فاضي!"); return; }
+    const el = document.getElementById('quizSetupOverlay');
+    el.style.display = 'flex';
+    setTimeout(() => el.classList.add('show'), 10);
+  }
 
-    // مراقب لكبسات الكيبورد على مستوى الصفحة كلها
-document.addEventListener('keydown', function(event) {
-    // إذا الكبسة اللي انضغطت هي Enter
-    if (event.key === 'Enter') {
-        
-        // جلب العنصر اللي المؤشر (الفوكس) عليه حالياً
-        const activeElement = document.activeElement;
+  function closeQuizSetup() {
+    const el = document.getElementById('quizSetupOverlay');
+    el.classList.remove('show');
+    setTimeout(() => el.style.display = 'none', 300);
+  }
 
-        // الحالة الأولى: إذا المؤشر جوا مربع "الكلمة بالإنجليزي"
-        if (activeElement.id === 'wordInput') {
-            event.preventDefault(); // عشان نمنع أي تحديث للصفحة بالغلط
-            fetchSuggestions(); // تشغيل دالة البحث بالذكاء الاصطناعي
-        }
-        
-        // الحالة الثانية: إذا المؤشر مش جوا أي مربع نص (يعني كابس بمكان فاضي)
-        else if (activeElement.tagName !== 'INPUT' && activeElement.tagName !== 'TEXTAREA' && activeElement.tagName !== 'BUTTON') {
-            event.preventDefault(); 
-            
-            // هون بنخلي الكود يكبس على زر "إضافة للقاموس" برمجياً
-            // ⚠️ ملاحظة: غير كلمة 'addBtn' للـ id تبع زر الإضافة عندك
-            const addButton = document.getElementById('addBtn'); 
-            
-            if (addButton) {
-                addButton.click(); // كأنه المستخدم كبس بالماوس
-            } else {
-                console.error("مش لاقي زر الإضافة.. تأكد من الـ ID تبعه!");
-                // إذا عندك دالة للإضافة بتقدر تكتب اسمها هون مباشرة بدل الكبسة، مثلاً:
-                // saveWordToDictionary(); 
-            }
-        }
-    }
-});
+  function startActualQuiz(mode) {
+    closeQuizSetup();
+    let words = [...window.words];
 
-    // فتح المودال
-window.showLogoutModal = function() {
-    document.getElementById('logoutModal').style.display = 'flex';
-}
-
-// إغلاق المودال
-window.closeLogoutModal = function() {
-    document.getElementById('logoutModal').style.display = 'none';
-}
-
-// تأكيد تسجيل الخروج الفعلي
-window.confirmLogout = function() {
-    auth.signOut().then(() => {
-        closeLogoutModal();
-        // أي كود إضافي بدك اياه بعد تسجيل الخروج
-    });
-}
-    
-</script>
-   
-<script>
-    window.words = JSON.parse(localStorage.getItem('myContextDict')) || [];
-    let currentFilter = 'all';
-    let editId = null;
-    let isReorderMode = false;
-    let selectedIndices = [];
-    
-    let currentQuizWords = [];
-    let quizIndex = 0;
-    let currentStreak = 0; // عداد الحماس
-
-    // 1. فتح شاشة الإعدادات
-    function openQuizSetup() {
-        if(window.words.length === 0) {
-            alert("القاموس فاضي! ضيف كلمات أول عشان نختبرك.");
-            return;
-        }
-        const overlay = document.getElementById('quizSetupOverlay');
-        overlay.style.display = 'flex';
-        setTimeout(() => overlay.classList.add('show'), 10);
+    if (mode === 'recent') {
+      words.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      words = words.slice(0, 10);
+    } else if (mode === 'old') {
+      words.sort((a, b) => a.id - b.id);
+      words = words.slice(0, 10);
+    } else if (mode === 'forgotten') {
+      words = words.filter(w => w.forgetCount > 0).sort((a, b) => b.forgetCount - a.forgetCount);
+      if (!words.length) {
+        alert("ما عندك كلمات بتغلط فيها. رح نختبرك عشوائياً.");
+        words = [...window.words].sort(() => Math.random() - 0.5).slice(0, 10);
+      } else words = words.slice(0, 10);
+    } else if (mode === 'starred') {
+      words = words.filter(w => w.starred);
+      if (!words.length) { alert("ما عندك كلمات صعبة. رح نختبرك بالكل."); words = [...window.words]; }
+    } else {
+      words.sort(() => Math.random() - 0.5);
     }
 
-    function closeQuizSetup() {
-        const overlay = document.getElementById('quizSetupOverlay');
-        overlay.classList.remove('show');
-        setTimeout(() => overlay.style.display = 'none', 300);
+    currentQuizWords = words;
+    quizIndex = 0; currentStreak = 0;
+    const el = document.getElementById('quizOverlay');
+    el.style.display = 'flex';
+    setTimeout(() => el.classList.add('show'), 10);
+    updateCard();
+  }
+
+  function updateCard() {
+    if (quizIndex >= currentQuizWords.length) { alert("أبدعت! أنهيت الكلمات 👏"); closeQuiz(); return; }
+    const card = document.getElementById('mainCard');
+    if (card.classList.contains('is-flipped')) {
+      card.style.transition = 'none';
+      card.classList.remove('is-flipped');
+      void card.offsetWidth;
+      card.style.transition = '';
     }
+    const w = currentQuizWords[quizIndex];
+    document.getElementById('cardFrontText').innerText  = w.word;
+    document.getElementById('cardBackText').innerText   = w.meaning;
+    document.getElementById('cardBackExample').innerText = w.example || '';
+    const hint = document.getElementById('quizHintText');
+    hint.innerText = w.example || 'لا يوجد مثال';
+    hint.classList.remove('show');
+  }
 
-    // 2. بدء الاختبار الفعلي بناءً على اختيارك
-    function startActualQuiz(mode) {
-        closeQuizSetup();
-        let wordsToTest = [...window.words];
+  function flipCard()      { document.getElementById('mainCard').classList.toggle('is-flipped'); }
+  function showHint(event) { event.stopPropagation(); document.getElementById('quizHintText').classList.add('show'); }
+  function closeQuiz()     { const el = document.getElementById('quizOverlay'); el.classList.remove('show'); setTimeout(() => el.style.display = 'none', 300); }
 
-        if (mode === 'recent') {
-            // ترتيب من الأحدث للأقدم
-            wordsToTest.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
-            wordsToTest = wordsToTest.slice(0, 10);
-        } else if (mode === 'old') {
-            // ترتيب من الأقدم للأحدث
-            wordsToTest.sort((a,b) => a.id - b.id);
-            wordsToTest = wordsToTest.slice(0, 10);
-        } else if (mode === 'forgotten') {
-            // الكلمات اللي غلطت فيها أكثر من صفر
-            wordsToTest = wordsToTest.filter(w => w.forgetCount > 0);
-            wordsToTest.sort((a,b) => b.forgetCount - a.forgetCount);
-            if(wordsToTest.length === 0) {
-                alert("ما شاء الله! ما عندك كلمات بتغلط فيها. رح نختبرك بعشر كلمات عشوائية.");
-                wordsToTest = [...window.words].sort(() => Math.random() - 0.5).slice(0, 10);
-            } else {
-                wordsToTest = wordsToTest.slice(0, 10);
-            }
-        } else if (mode === 'starred') {
-            wordsToTest = wordsToTest.filter(w => w.starred);
-            if(wordsToTest.length === 0) {
-                alert("ما عندك كلمات صعبة/مفضلة (⭐). رح نختبرك بالكل.");
-                wordsToTest = [...window.words];
-            }
-        } else if (mode === 'all') {
-            // خلط كل الكلمات عشوائياً
-            wordsToTest.sort(() => Math.random() - 0.5);
-        }
-
-        currentQuizWords = wordsToTest;
-        quizIndex = 0;
-        currentStreak = 0; 
-        
-        const overlay = document.getElementById('quizOverlay');
-        overlay.style.display = 'flex';
-        setTimeout(() => overlay.classList.add('show'), 10); 
-        
-        updateCard();
+  function showStreakMessage(streak) {
+    const msgs = { 3: "وحش! 3 إجابات صح ورا بعض 🔥", 5: "أسطورة! 5 صح.. ذاكرتك حديد 💪", 7: "مستحيل! 7 صح 🚀", 10: "يا عيني! 10 ورا بعض 👑" };
+    if (msgs[streak]) {
+      const t = document.getElementById('toastMessage');
+      t.innerText = msgs[streak]; t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2500);
     }
+  }
 
-    // عرض الرسائل التحفيزية
-    function showStreakMessage(streak) {
-        const msgs = {
-            3: "وحش! 3 إجابات صح ورا بعض 🔥",
-            5: "أسطورة! 5 صح.. ذاكرتك حديد 💪",
-            7: "مستحيل! 7 صح.. أنت قفلّت اللعبة 🚀",
-            10: "يا عيني عليك! 10 ورا بعض 👑"
-        };
-        
-        if(msgs[streak]) {
-            const toast = document.getElementById('toastMessage');
-            toast.innerText = msgs[streak];
-            toast.classList.add('show');
-            setTimeout(() => { toast.classList.remove('show'); }, 2500);
-        }
-    }
+  function markRemember() {
+    const w = currentQuizWords[quizIndex];
+    window.words = window.words.map(x => x.id === w.id ? { ...x, forgetCount: Math.max((x.forgetCount || 0) - 1, 0) } : x);
+    saveAndRender();
+    currentStreak++;
+    showStreakMessage(currentStreak);
+    if (quizIndex < currentQuizWords.length - 1) { quizIndex++; updateCard(); }
+    else setTimeout(() => { alert("أبدعت! 👏"); closeQuiz(); }, 300);
+  }
 
-    function markRemember() {
-        const currentWord = currentQuizWords[quizIndex];
+  function markForgot() {
+    currentStreak = 0;
+    const w = currentQuizWords[quizIndex];
+    window.words = window.words.map(x => x.id === w.id ? { ...x, forgetCount: (x.forgetCount || 0) + 1 } : x);
+    saveAndRender();
+    currentQuizWords.splice(Math.min(quizIndex + 3, currentQuizWords.length), 0, w);
+    quizIndex++; updateCard();
+  }
 
-        window.words = window.words.map(w =>
-            w.id === currentWord.id
-                ? { ...w, forgetCount: Math.max((w.forgetCount || 0) - 1, 0) }
-                : w
-        );
+  function playQuizSound(event) {
+    if (currentQuizWords[quizIndex]) playSound(currentQuizWords[quizIndex].word, event);
+  }
 
-        saveAndRender();
-
-        currentStreak++; // زيادة العداد
-        showStreakMessage(currentStreak);
-
-        if (quizIndex < currentQuizWords.length - 1) {
-            quizIndex++;
-            updateCard();
-        } else {
-            setTimeout(() => {
-                alert("أبدعت! 👏 خلصت الكلمات المختارة.");
-                closeQuiz();
-            }, 300);
-        }
-    }
-
-    function markForgot() {
-        currentStreak = 0; // تصفير العداد لأنك أخطأت
-
-        const currentWord = currentQuizWords[quizIndex];
-
-        window.words = window.words.map(w =>
-            w.id === currentWord.id
-                ? { ...w, forgetCount: (w.forgetCount || 0) + 1 }
-                : w
-        );
-
-        saveAndRender();
-
-        const insertIndex = Math.min(quizIndex + 3, currentQuizWords.length);
-        currentQuizWords.splice(insertIndex, 0, currentWord);
-
-        quizIndex++;
-        updateCard();
-    }
-
-    function updateCard() {
-        if (quizIndex >= currentQuizWords.length) {
-            alert("أبدعت! أنهيت الكلمات 👏");
-            closeQuiz();
-            return;
-        }
-
-        const card = document.getElementById('mainCard');
-        
-        if (card.classList.contains('is-flipped')) {
-            card.style.transition = 'none'; 
-            card.classList.remove('is-flipped'); 
-            void card.offsetWidth; 
-            card.style.transition = ''; 
-        }
-
-        const w = currentQuizWords[quizIndex];
-        
-        document.getElementById('cardFrontText').innerText = w.word;
-        document.getElementById('cardBackText').innerText = w.meaning;
-        document.getElementById('cardBackExample').innerText = w.example ? w.example : "";
-        
-        const hintEl = document.getElementById('quizHintText');
-        hintEl.innerText = w.example ? w.example : "لا يوجد مثال لهذه الكلمة";
-        hintEl.classList.remove('show');
-    }
-
-    function flipCard() {
-        document.getElementById('mainCard').classList.toggle('is-flipped');
-    }
-
-    function showHint(event) {
-        event.stopPropagation();
-        document.getElementById('quizHintText').classList.add('show');
-    }
-
-    function closeQuiz() {
-        const overlay = document.getElementById('quizOverlay');
-        overlay.classList.remove('show');
-        setTimeout(() => overlay.style.display = 'none', 300); 
-    }
-
-    function playQuizSound(event) {
-        if (currentQuizWords.length > 0 && currentQuizWords[quizIndex]) {
-            playSound(currentQuizWords[quizIndex].word, event);
-        }
-    }
-
-window.addWord = async function() {
-    const w = document.getElementById('wordInput').value.trim();
-    const m = document.getElementById('meaningInput').value.trim();
-    const ex = document.getElementById('exampleInput').value.trim();
-    const c = document.getElementById('categoryInput').value;
-
-    if (!w || !m) {
-        alert("عبّي الكلمة ومعناها يا بطل!");
-        return;
-    }
-
-    // --- الحالة الأولى: وضع التعديل (Update) ---
-    if (window.editId) {
-        // 1. تحديث المصفوفة المحلية
-        window.words = window.words.map(item => {
-            if (item.id === window.editId) {
-                return { ...item, word: w, meaning: m, example: ex, category: c };
-            }
-            return item;
-        });
-
-        // 2. تحديث السحابة
-        if (typeof window.updateWordInCloud === "function") {
-            await window.updateWordInCloud(window.editId, { 
-                word: w, 
-                meaning: m, 
-                example: ex, 
-                category: c 
-            });
-        }
-
-        // 3. تصفير الـ ID ورجوع الزر لطبيعته
-        window.editId = null; 
-        const addBtn = document.getElementById('addBtn');
-        addBtn.innerText = "إضافة للقاموس";
-        addBtn.style.background = "";
-    } 
-    // --- الحالة الثانية: إضافة كلمة جديدة (Add) ---
-    else {
-        const newWord = {
-            id: Date.now().toString(),
-            word: w,
-            meaning: m,
-            example: ex,
-            category: c,
-            starred: false,
-            forgetCount: 0
-        };
-        window.words.unshift(newWord);
-
-        if (typeof window.saveWordToCloud === "function") {
-            const realId = await window.saveWordToCloud(w, c, m, ex);
-            if (realId) newWord.id = realId;
-        }
-    }
-
-    // --- الخطوة الأخيرة: التحديث العام (خارج الـ if والـ else) ---
-    if (typeof clearInputs === "function") clearInputs();
-    
-    if (typeof window.saveAndRender === "function") {
-        window.saveAndRender();
-    } else if (typeof render === "function") {
-        render(); 
-    }
-};
-    function saveAndRender() {
-        localStorage.setItem('myContextDict', JSON.stringify(window.words));
-        render();
-        updateStats(); // إذا عندك دالة بتحدث الأرقام فوق
-    }
-
-    function clearInputs() {
-        document.getElementById('wordInput').value = '';
-        document.getElementById('meaningInput').value = '';
-        document.getElementById('exampleInput').value = '';
-        document.getElementById('categoryInput').value = 'عام';
-    }
-
-    function toggleStar(id, event) {
-        event.stopPropagation();
-        window.words = window.words.map(w => w.id === id ? {...w, starred: !w.starred} : w);
-        saveAndRender();
-    }
-
-    function setFilter(f) {
-        currentFilter = f;
-        document.getElementById('toolAll').classList.toggle('active-tool', f === 'all');
-        document.getElementById('toolStarred').classList.toggle('active-tool', f === 'starred');
-        render();
-    }
-
-    window.editWord = function(id, event) {
-    if (event) event.stopPropagation();
-
-    // 1. البحث عن الكلمة في المصفوفة
-    const wordObj = window.words.find(w => w.id === id);
-    if (!wordObj) return;
-
-    // 2. تعبئة الخانات بالبيانات القديمة
-    document.getElementById('wordInput').value = wordObj.word;
-    document.getElementById('meaningInput').value = wordObj.meaning;
-    document.getElementById('exampleInput').value = wordObj.example || "";
-    document.getElementById('categoryInput').value = wordObj.category;
-
-    // 3. أهم خطوة: تخزين الـ ID في متغير عالمي عشان نعرف إننا "بنعدل"
-    window.editId = id;
-
-    // 4. تغيير شكل زر الإضافة عشان تنتبه إنك بتعدل
-    const addBtn = document.getElementById('addBtn');
-    addBtn.innerText = "تحديث الكلمة 💾";
-    addBtn.style.background = "#28a745"; // لون أخضر للتعديل
-    
-    // ارفع الشاشة لفوق عشان تبدأ تعدل
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-};
-
-window.playSound = function(identifier, event) {
-    // إيقاف انتقال الحدث عشان ما يقلب البطاقة إذا كبست على زر الصوت
-    if (event) event.stopPropagation();
-
-    let wordToPlay = "";
-
-    // 1. محاولة البحث عن الكلمة إذا كان الممرر هو ID (رقم أو نص)
-    const wordObj = window.words.find(w => w.id === identifier || String(w.id) === String(identifier));
-    
-    if (wordObj && wordObj.word) {
-        wordToPlay = wordObj.word.trim();
-    } 
-    // 2. إذا ما لقاه كـ ID، ممكن الممرر يكون الكلمة نفسها (مثل 'admit')
-    else if (typeof identifier === 'string' && identifier.trim() !== '') {
-        wordToPlay = identifier.trim();
-    } 
-    // 3. إذا فشل كل شيء، اطبع المشكلة بالكونسول بوضوح!
-    else {
-        console.error("خطأ: لم يتم العثور على الكلمة، والقيمة الممررة غير صحيحة:", identifier);
-        return;
-    }
-
-    console.log("محاولة تشغيل الصوت للكلمة:", wordToPlay);
-
-    // تجهيز مسار الملف المحلي (مع تحويل الكلمة لأحرف صغيرة عشان GitHub Pages)
-    const localPath = `sounds/${wordToPlay.toLowerCase()}.mp3`;
-    // رابط جوجل
-    const googleSnd = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(wordToPlay)}&tl=en&client=tw-ob`;
-
-    const audio = new Audio();
-
-    // --- المحاولة الأولى: ملف sounds المحلي ---
-    audio.src = localPath;
-
-    audio.play().catch(() => {
-        console.log("⚠️ لم يتم العثور على ملف محلي، جاري تجربة جوجل...");
-        
-        // --- المحاولة الثانية: لفظ جوجل ---
-        audio.src = googleSnd;
-        audio.play().catch(() => {
-            console.log("⚠️ فشل لفظ جوجل، جاري التحويل للنطق الآلي...");
-            
-            // --- المحاولة الثالثة: النطق الآلي (Speech Synthesis) ---
-            runSpeechSynthesis(wordToPlay);
-        });
-    });
-};
-
-// الدالة المساعدة خليها زي ما هي عندك (ممتازة)
-function runSpeechSynthesis(text) {
-    if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'en-US';
-        utterance.rate = 0.9;
-        const voices = window.speechSynthesis.getVoices();
-        if (voices.length > 0) {
-            utterance.voice = voices.find(v => v.lang.startsWith('en')) || voices[0];
-        }
-        window.speechSynthesis.speak(utterance);
-    }
-}
-    
-    window.onload = function() {
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.getVoices();
-            if (speechSynthesis.onvoiceschanged !== undefined) {
-                speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
-            }
-        }
-        if (typeof render === "function") render();
-    };
-
-    function handleLiClick(index, el) {
-        if (isReorderMode) {
-            if (selectedIndices.includes(index)) {
-                selectedIndices = selectedIndices.filter(i => i !== index);
-                el.classList.remove('selected-for-move');
-            } else {
-                selectedIndices.push(index);
-                el.classList.add('selected-for-move');
-            }
-        } else {
-            el.classList.toggle('show-example');
-        }
-    }
-
-    function toggleReorderMode() {
-        isReorderMode = !isReorderMode;
-        selectedIndices = [];
-        const btn = document.getElementById('reorderBtn');
-        btn.classList.toggle('active-tool', isReorderMode);
-        btn.innerText = isReorderMode ? "حفظ الترتيب " : "";
-        if (!isReorderMode) {
-            localStorage.setItem('myContextDict', JSON.stringify(window.words));
-        }
-        render();
-    }
-
-    function allowDrop(ev) { ev.preventDefault(); }
-    
-    function drag(ev, index) { 
-        if (!selectedIndices.includes(index)) {
-            selectedIndices = [index];
-        }
-        ev.dataTransfer.setData("draggedIndices", JSON.stringify(selectedIndices));
-    }
-
-    function drop(ev, dropIndex) {
-        ev.preventDefault();
-        let draggedIndices = JSON.parse(ev.dataTransfer.getData("draggedIndices")).sort((a,b) => b-a);
-        
-        let itemsToMove = [];
-        draggedIndices.forEach(idx => {
-            itemsToMove.push(window.words.splice(idx, 1)[0]);
-        });
-        itemsToMove.reverse();
-
-        let actualDropIndex = dropIndex;
-        draggedIndices.forEach(idx => { if (idx < dropIndex) actualDropIndex--; });
-        if (actualDropIndex < 0) actualDropIndex = 0;
-
-        window.words.splice(actualDropIndex, 0, ...itemsToMove);
-        window.words.forEach((w, index) => {
-            w.order = index;
-          });
-        localStorage.setItem('myContextDict', JSON.stringify(window.words));
-        
-        selectedIndices = []; 
-        render();
-    }
-
-    function highlightText(text, query) {
+  // ===== الرندر =====
+  function highlightText(text, query) {
     if (!query) return text;
+    return text.replace(new RegExp(`(${query})`, "gi"), '<span class="highlight">$1</span>');
+  }
 
-    const regex = new RegExp(`(${query})`, "gi");
-    return text.replace(regex, '<span class="highlight">$1</span>');
-    }
-    
-    function render() {
-        updateStats();
+  function render() {
+    updateStats();
+    const query      = document.getElementById('searchInput').value.toLowerCase().trim();
+    const searchType = document.getElementById('searchFilter').value;
 
-        let query = document.getElementById('searchInput').value.toLowerCase().trim();
-        let searchType = document.getElementById('searchFilter').value;
-
-        let filtered = window.words.filter(w => {
-            if (!w.word) return false;
-
-        let wordMatch = w.word.toLowerCase().includes(query);
-        let meaningMatch = w.meaning.toLowerCase().includes(query);
-        let exampleMatch = (w.example || "").toLowerCase().includes(query);
-
-        let matchesSearch = false;
-
-        if (searchType === "word") {
-            matchesSearch = wordMatch;
-        } else if (searchType === "meaning") {
-            matchesSearch = meaningMatch;
-        } else if (searchType === "example") {
-            matchesSearch = exampleMatch;
-        } else {
-            matchesSearch = wordMatch || meaningMatch || exampleMatch;
-        }
-
-        return matchesSearch && (currentFilter === 'all' || w.starred);
+    let filtered = window.words.filter(w => {
+      if (!w.word) return false;
+      const wm = w.word.toLowerCase().includes(query);
+      const mm = w.meaning.toLowerCase().includes(query);
+      const em = (w.example || '').toLowerCase().includes(query);
+      const matches = searchType === 'word' ? wm : searchType === 'meaning' ? mm : searchType === 'example' ? em : wm || mm || em;
+      return matches && (currentFilter === 'all' || w.starred);
     });
 
     if (query) {
-        filtered.sort((a, b) => {
-            const aStarts = a.word.toLowerCase().startsWith(query);
-            const bStarts = b.word.toLowerCase().startsWith(query);
-
-            if (aStarts && !bStarts) return -1;
-            if (!aStarts && bStarts) return 1;
-
-            return a.word.localeCompare(b.word);
-        });
+      filtered.sort((a, b) => {
+        const as = a.word.toLowerCase().startsWith(query);
+        const bs = b.word.toLowerCase().startsWith(query);
+        return as === bs ? a.word.localeCompare(b.word) : as ? -1 : 1;
+      });
     }
 
-    let html = '';
-
-    filtered.forEach((w) => {
-    const realIndex = window.words.findIndex(item => item.id === w.id);
-
-    const dragAttrs = isReorderMode ? 
-        `draggable="true" ondragstart="drag(event, ${realIndex})" ondragover="allowDrop(event)" ondrop="drop(event, ${realIndex})"` 
-        : '';
-
-    const reorderClass = isReorderMode ? 'reorder-mode-li' : '';
-    const selectedClass = selectedIndices.includes(realIndex) ? 'selected-for-move' : '';
-
-    html += `
-    <li ${dragAttrs} class="${reorderClass} ${selectedClass}" onclick="handleLiClick(${realIndex}, this)">
-        <div class="top-row">
-            
-            <button class="star-btn ${w.starred ? 'active' : ''}" 
-                onclick="toggleStar('${w.id}', event)"><i class="fas fa-star action-icon icon-star"></i></button>
-
+    document.getElementById('list').innerHTML = filtered.map(w => {
+      const ri = window.words.findIndex(x => x.id === w.id);
+      const drag = isReorderMode ? `draggable="true" ondragstart="drag(event,${ri})" ondragover="allowDrop(event)" ondrop="drop(event,${ri})"` : '';
+      const cls  = [isReorderMode ? 'reorder-mode-li' : '', selectedIndices.includes(ri) ? 'selected-for-move' : ''].join(' ');
+      return `
+        <li ${drag} class="${cls}" onclick="handleLiClick(${ri}, this)">
+          <div class="top-row">
+            <button class="star-btn ${w.starred ? 'active' : ''}" aria-label="${w.starred ? 'إزالة من المفضلة' : 'إضافة للمفضلة'}"
+                    onclick="toggleStar('${w.id}', event)"><i class="fas fa-star action-icon icon-star"></i></button>
             <div class="word-box">
-                <div class="word-text">
-                    ${highlightText(w.word, query)} 
-                    <span class="cat-tag tag-${w.category}">${w.category}</span>
-                </div>
-
-                <div class="meaning-text">
-                    ${highlightText(w.meaning, query)}
-                </div>
+              <div class="word-text">${highlightText(w.word, query)} <span class="cat-tag tag-${w.category}">${w.category}</span></div>
+              <div class="meaning-text">${highlightText(w.meaning, query)}</div>
             </div>
-
-            ${isReorderMode ? 
-                '<span style="font-size:20px; color:#ccc;">☰</span>' 
-                :
-                `<div class="actions">
-                   <button class="icon-circle sound-btn" 
-                        onclick="playSound('${w.id}', event)"><i class="fas fa-volume-up action-icon icon-voice"></i></button>
-
-                    <button class="icon-circle edit-btn" 
-                        onclick="editWord('${w.id}', event)"><i class="fas fa-edit action-icon icon-edit")"></i></button>
-                    <button class="icon-circle del-btn" 
-                        onclick="deleteWord('${w.id}', event)"><i class="fas fa-trash-alt action-icon icon-delete"></i></button>
-                </div>`
+            ${isReorderMode ? '<span style="font-size:20px; color:#ccc;">☰</span>' :
+              `<div class="actions">
+                <button class="icon-circle sound-btn" aria-label="استمع للكلمة" onclick="playSound('${w.id}', event)"><i class="fas fa-volume-up action-icon icon-voice"></i></button>
+                <button class="icon-circle edit-btn"  aria-label="تعديل الكلمة"  onclick="editWord('${w.id}', event)"><i class="fas fa-edit action-icon icon-edit"></i></button>
+                <button class="icon-circle del-btn"   aria-label="حذف الكلمة"    onclick="deleteWord('${w.id}', event)"><i class="fas fa-trash-alt action-icon icon-delete"></i></button>
+              </div>`
             }
+          </div>
+          ${w.example ? `<div class="example-box"><b>Ex:</b> ${highlightText(w.example, query)}</div>` : ''}
+        </li>`;
+    }).join('');
+  }
 
-        </div>
-        
-        </div>
+  // ===== ترتيب يدوي =====
+  function handleLiClick(index, el) {
+    if (isReorderMode) {
+      if (selectedIndices.includes(index)) { selectedIndices = selectedIndices.filter(i => i !== index); el.classList.remove('selected-for-move'); }
+      else { selectedIndices.push(index); el.classList.add('selected-for-move'); }
+    } else { el.classList.toggle('show-example'); }
+  }
 
-        ${w.example ? 
-            `<div class="example-box">
-                <b>Ex:</b> ${highlightText(w.example, query)}
-            </div>` 
-            : ''
+  function toggleReorderMode() {
+    isReorderMode = !isReorderMode;
+    selectedIndices = [];
+    const btn = document.getElementById('reorderBtn');
+    btn.classList.toggle('active-tool', isReorderMode);
+    btn.innerHTML = isReorderMode ? "💾 حفظ" : '<i class="fas fa-sort-amount-down action-icon"></i>';
+    if (!isReorderMode) localStorage.setItem('myContextDict', JSON.stringify(window.words));
+    render();
+  }
+
+  function allowDrop(ev) { ev.preventDefault(); }
+
+  function drag(ev, index) {
+    if (!selectedIndices.includes(index)) selectedIndices = [index];
+    ev.dataTransfer.setData("draggedIndices", JSON.stringify(selectedIndices));
+  }
+
+  function drop(ev, dropIndex) {
+    ev.preventDefault();
+    const draggedIndices = JSON.parse(ev.dataTransfer.getData("draggedIndices")).sort((a, b) => b - a);
+    const items = draggedIndices.map(i => window.words.splice(i, 1)[0]).reverse();
+    let target = dropIndex;
+    draggedIndices.forEach(i => { if (i < dropIndex) target--; });
+    window.words.splice(Math.max(target, 0), 0, ...items);
+    window.words.forEach((w, i) => { w.order = i; });
+    localStorage.setItem('myContextDict', JSON.stringify(window.words));
+    selectedIndices = [];
+    render();
+  }
+
+  // ===== إحصائيات =====
+  window.updateStats = function() {
+    document.getElementById('totalCount').innerText  = `إجمالي الكلمات: ${window.words.length}`;
+    document.getElementById('starredCount').innerText = `⭐ الصعبة: ${window.words.filter(w => w.starred).length}`;
+  };
+
+  // ===== تصدير واستيراد =====
+  window.exportData = function() {
+    const a = document.createElement('a');
+    a.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(window.words));
+    a.download = 'my_dict.json';
+    a.click();
+  };
+
+  window.importData = async function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+      try {
+        const imported = JSON.parse(e.target.result);
+        if (!Array.isArray(imported)) throw new Error();
+        const merged = [...imported, ...window.words];
+        const seen = new Map();
+        window.words = merged.filter(item => {
+          const key = item.word.toLowerCase();
+          return seen.has(key) ? false : seen.set(key, true);
+        });
+        saveAndRender();
+        if (typeof window.saveWordToCloud === "function") {
+          for (const item of imported) await window.saveWordToCloud(item.word, item.category, item.meaning, item.example);
+          alert("تم الاستيراد والرفع للسحابة ✅");
         }
-
-    </li>`;
-});
-      
-    document.getElementById('list').innerHTML = html; 
-} // <--- تسكيرة دالة الـ render أو saveAndRender
-
-    // ربطنا الدوال بـ window عشان الـ HTML يشوفهم
-    window.updateStats = function() {
-        if (!window.words) return;
-        document.getElementById('totalCount').innerText = `إجمالي الكلمات: ${window.words.length}`;
-        document.getElementById('starredCount').innerText = `⭐ الصعبة: ${window.words.filter(w => w.starred).length}`;
+      } catch { alert("خطأ في قراءة الملف، تأكد إنه JSON صحيح."); }
     };
+    reader.readAsText(file);
+  };
 
-    window.exportData = function() {
-        if (!window.words) return;
-        const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(JSON.stringify(window.words));
-        const link = document.createElement('a');
-        link.setAttribute('href', dataUri);
-        link.setAttribute('download', 'my_dict.json');
-        link.click();
-    };
+  // ===== الوضع الليلي =====
+  function enableDark()  { document.body.classList.add("dark");    localStorage.setItem("darkMode", "on");  }
+  function disableDark() { document.body.classList.remove("dark"); localStorage.setItem("darkMode", "off"); }
+  function toggleDark()  { document.body.classList.contains("dark") ? disableDark() : enableDark(); }
 
-    window.importData = function(event) {
-        const file = event.target.files[0];
-        if (!file) return;
+  (function() {
+    const saved = localStorage.getItem("darkMode");
+    if (saved === "on") enableDark();
+    else if (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches) enableDark();
+  })();
 
-        const reader = new FileReader();
-        reader.onload = async function(e) {
-            try {
-                const importedWords = JSON.parse(e.target.result);
-                if (Array.isArray(importedWords)) {
-                    // 1. تحديث المصفوفة المحلية (باستخدام window.words)
-                    window.words = window.words || []; // عشان لو كانت فاضية
-                    window.words = [...importedWords, ...window.words];
-                    
-                    // تنظيف التكرارر
-                    const uniqueWords = [];
-                    const map = new Map();
-                    for (const item of window.words) {
-                        if(!map.has(item.word.toLowerCase())){
-                            map.set(item.word.toLowerCase(), true);
-                            uniqueWords.push(item);
-                        }
-                    }
-                    window.words = uniqueWords;
+  // ===== كيبورد =====
+  document.addEventListener('keydown', function(e) {
+    if (e.key !== 'Enter') return;
+    const active = document.activeElement;
+    if (active.id === 'wordInput') { e.preventDefault(); fetchSuggestions(); }
+    else if (!['INPUT','TEXTAREA','BUTTON','SELECT'].includes(active.tagName)) { e.preventDefault(); document.getElementById('addBtn')?.click(); }
+  });
 
-                    // تحديث الشاشة فوراً
-                    if (typeof window.saveAndRender === "function") {
-                        window.saveAndRender();
-                    } else if (typeof window.render === "function") {
-                        window.render();
-                    }
-
-                    // 2. المحرك السحابي: رفع كل الكلمات المستوردة للفايربيس
-                    if (typeof window.saveWordToCloud === "function") {
-                        console.log("جاري رفع الكلمات المستوردة للسحابة...");
-                        
-                        // بنرفعهم كلمة كلمة
-                        for (let item of importedWords) {
-                            await window.saveWordToCloud(item.word, item.category, item.meaning, item.example);
-                        }
-                        
-                        alert("تم استيراد الكلمات ورفعها للفايربيس بنجاح ✅");
-                    }
-                }
-            } catch (err) {
-                alert("خطأ في قراءة الملف، تأكد إنه بصيغة JSON صحيحة.");
-            }
-        };
-        reader.readAsText(file);
-    };
-    // ===== Dark Mode System =====
-
-// تشغيل الوضع الليلي
-function enableDark(){
-    document.body.classList.add("dark");
-    localStorage.setItem("darkMode","on");
-}
-
-// إيقاف الوضع الليلي
-function disableDark(){
-    document.body.classList.remove("dark");
-    localStorage.setItem("darkMode","off");
-}
-
-// زر التبديل
-function toggleDark(){
-    if(document.body.classList.contains("dark")){
-        disableDark();
-    }else{
-        enableDark();
+  // ===== تشغيل عند الفتح =====
+  window.onload = function() {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.getVoices();
+      if (speechSynthesis.onvoiceschanged !== undefined) speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
     }
-}
-
-// تحميل الوضع عند فتح الموقع
-(function(){
-
-    const savedMode = localStorage.getItem("darkMode");
-
-    // إذا المستخدم اختار وضع سابقًا
-    if(savedMode === "on"){
-        enableDark();
-    }
-    else if(savedMode === "off"){
-        disableDark();
-    }
-    else{
-        // إذا لم يختر شيء → نتبع وضع الجهاز
-        if(window.matchMedia('(prefers-color-scheme: dark)').matches){
-            enableDark();
-        }
-    }
-    
-})();
+    render();
+  };
 </script>
-     <div id="logoutModal" class="custom-modal">
-    <div class="modal-content">
-        <div class="modal-icon">❗</div>
-        <h2>متأكد أنك تريد تسجيل الخروج؟</h2>
-        <p>لن تذهب الكلمات، لكن لن تستطيع تخزين كلماتك سحابيًا</p>
-        <div class="modal-buttons">
-            <button onclick="confirmLogout()" class="btn-confirm">نعم، سجل خروج</button>
-            <button onclick="closeLogoutModal()" class="btn-cancel">إلغاء</button>
-        </div>
-    </div>
-</div>
 </body>
 </html>
