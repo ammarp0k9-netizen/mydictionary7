@@ -826,8 +826,9 @@
           <div class="${i >= 4 ? 'extra-meaning' : ''}" style="${hidden}justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid #eee; cursor:pointer;"
                onclick="document.getElementById('meaningInput').value='${cleanAr}'; document.getElementById('categoryInput').value='${s.pos}'; document.getElementById('exampleInput').value='${cleanEx}'; document.getElementById('suggestionsBox').style.display='none';">
             <div>
-              <b style="color:#2c3e50; font-size:15px;">${s.ar}</b>
-              <div style="font-size:11px; color:#666; margin-top:4px; font-style:italic;">"${s.ex}"</div>
+          <b style="color:#2c3e50; font-size:15px;">${s.ar}</b>
+          <div style="font-size:12px; color:#f1c40f; margin:2px 0; letter-spacing:2px;">${'★'.repeat(s.stars || 1)}${'☆'.repeat(5 - (s.stars || 1))}</div>
+          <div style="font-size:11px; color:#666; margin-top:2px; font-style:italic;">"${s.ex}"</div>
             </div>
             <span style="font-size:11px; color:#999; background:#f0f0f0; padding:2px 6px; border-radius:10px;">${s.pos}</span>
           </div>`;
