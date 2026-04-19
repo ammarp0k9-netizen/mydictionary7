@@ -577,25 +577,32 @@
 
 <!-- Firebase -->
 <script type="module">
-  import { initializeApp }        from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
-  import { getAuth, signInWithPopup, signOut, GoogleAuthProvider, onAuthStateChanged, getRedirectResult }
-                                   from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
-  import { getFirestore, collection, addDoc, query, orderBy, deleteDoc, doc, updateDoc, onSnapshot }
-                                   from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+  // 1. استيراد المكتبات من الـ CDN (متوافق مع إعداداتك الجديدة)
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, orderBy, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+  // 2. إعدادات مشروعك الجديد (التي أرفقتها)
   const firebaseConfig = {
-    apiKey:            "AIzaSyDQB5N4wxJw69-tb8suI2T2SfEfCpwFA2c",
-    authDomain:        "quizapp-ede17.firebaseapp.com",
-    projectId:         "quizapp-ede17",
-    storageBucket:     "quizapp-ede17.firebasestorage.app",
-    messagingSenderId: "473471031803",
-    appId:             "1:473471031803:web:1b803237aeb0444040535e",
-    measurementId:     "G-C06S6C7JYT"
+    apiKey: "AIzaSyA6ZvsdcFzvmH7E6RB2sanA7Yrbswr_5ZU",
+    authDomain: "al-qamoos.firebaseapp.com",
+    projectId: "al-qamoos",
+    storageBucket: "al-qamoos.firebasestorage.app",
+    messagingSenderId: "388750116073",
+    appId: "1:388750116073:web:2a137448668a420603dc78",
+    measurementId: "G-F78W6ZKMXY"
   };
 
-  const app  = initializeApp(firebaseConfig);
+  // 3. تشغيل الخدمات
+  const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
-  const db   = getFirestore(app);
+  const db = getFirestore(app);
+  const provider = new GoogleAuthProvider();
+
+  // جعلها متاحة عالمياً لبقية الكود
+  window.auth = auth;
+  window.db = db;
+  window.provider = provider;
 
   window.addEventListener("load", async () => {
     try { await getRedirectResult(auth); } catch (e) { console.error(e.message); }
