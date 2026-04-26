@@ -794,6 +794,19 @@
     });
   };
 
+  // دالة لتحويل الرموز الخاصة إلى نصوص آمنة لمنع تداخل الكود (XSS)
+function escapeHtml(text) {
+    if (!text) return "";
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.toString().replace(/[&<>"']/g, function(m) { return map[m]; });
+}
+
   // ===== AI معاني =====
   window.fetchSuggestions = async function() {
   const word = document.getElementById('wordInput').value.trim();
