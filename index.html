@@ -804,47 +804,61 @@
 
     btn.innerHTML = "⏳"; btn.disabled = true;
     box.style.display = "block";
-    list.innerHTML = "<p style='text-align:center; font-size:12px; color:#999;'>بجيبلك المعاني...</p>";
+    list.innerHTML = "<p style='text-align:center;font-size:12px;color:var(--text-gray);padding:10px;'>بجيبلك المعاني...</p>";
 
-    try {
-      const res  = await fetch("https://dictionary7-ayes.onrender.com/api/dictionary", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ word })
-      });
-      if (!res.ok) throw new Error("خطأ في السيرفر");
-      const data = await res.json();
-      const text = data.choices[0].message.content;
-      const suggestions = JSON.parse(text.substring(text.indexOf('['), text.lastIndexOf(']') + 1));
+  try {
+    const res = await fetch("https://dictionary7-ayes.onrender.com/api/dictionary", {
+      method: "POST", 
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ word })
+    });
 
-      let html = '';
-      suggestions.forEach((s, i) => {
-        const cleanEx = s.ex.replace(/'/g, "\\'");
-        const cleanAr = s.ar.replace(/'/g, "\\'");
-        const hidden  = i >= 4 ? 'display:none;' : 'display:flex;';
-        html += `
-          <div class="${i >= 4 ? 'extra-meaning' : ''}" style="${hidden}justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid #eee; cursor:pointer;"
-               onclick="document.getElementById('meaningInput').value='${cleanAr}'; document.getElementById('categoryInput').value='${s.pos}'; document.getElementById('exampleInput').value='${cleanEx}'; document.getElementById('suggestionsBox').style.display='none';">
-            <div>
-          <b style="color:#2c3e50; font-size:15px;">${s.ar}</b>
-          <div style="font-size:12px; color:#f1c40f; margin:2px 0; letter-spacing:2px;">${'★'.repeat(s.stars || 1)}${'☆'.repeat(5 - (s.stars || 1))}</div>
-          <div style="font-size:11px; color:#666; margin-top:2px; font-style:italic;">"${s.ex}"</div>
-            </div>
-            <span style="font-size:11px; color:#999; background:#f0f0f0; padding:2px 6px; border-radius:10px;">${s.pos}</span>
-          </div>`;
-      });
-      if (suggestions.length > 4) {
-        html += `<div id="toggleMeaningsBtn" style="text-align:center; padding:10px; color:#3498db; cursor:pointer; font-size:12px; font-weight:bold; background:#f1f8ff; border-radius:0 0 8px 8px;"
-                      onclick="const e=document.querySelectorAll('.extra-meaning'),h=e[0].style.display==='none'; e.forEach(x=>x.style.display=h?'flex':'none'); this.innerHTML=h?'عرض أقل':'عرض المزيد (${suggestions.length - 4})';">
-                   عرض المزيد (${suggestions.length - 4})</div>`;
-      }
-      list.innerHTML = html;
-    } catch (err) {
-      list.innerHTML = "<p style='color:red; text-align:center; font-size:11px;'>تأكد إن السيرفر شغال</p>";
-    } finally {
-      btn.innerHTML = "🔍"; btn.disabled = false;
+    if (!res.ok) throw new Error("server error");
+
+    // السيرفر الجديد بيبعث المصفوفة فوراً، ما في داعي لـ data.choices[0]
+    const suggestions = await res.json(); 
+
+    let html = '';
+    suggestions.forEach((s, i) => {
+      // حماية النصوص من المشاكل
+      const safeAr  = (s.ar  || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      const safeEx  = (s.ex  || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      const safePos = (s.pos || 'عام').replace(/'/g,"\\'");
+      
+      const arEsc   = escapeHtml(s.ar || '');
+      const posEsc  = escapeHtml(s.pos || 'عام');
+      const exEsc   = escapeHtml(s.ex || '');
+
+      // النجوم (بناءً على طلبك 3 نجوم للشيوع)
+      const starsNum = Math.max(1, Math.min(3, Number(s.stars) || 1));
+      const starsHtml = '★'.repeat(starsNum) + '☆'.repeat(3 - starsNum);
+
+      html += `
+        <div class="sug-item ${i >= 4 ? 'extra-meaning' : ''}" ${i >= 4 ? 'style="display:none"' : ''}
+             onclick="selectSuggestion('${safeAr}','${safePos}','${safeEx}')">
+          <div class="sug-main">
+            <span class="sug-ar">${arEsc}</span>
+            <span class="sug-pos">${posEsc}</span>
+          </div>
+          <div class="sug-stars" style="color: #f1c40f;">${starsHtml}</div>
+          ${s.ex ? `<div class="sug-ex">"${exEsc}"</div>` : ''}
+        </div>`;
+    });
+
+    if (suggestions.length > 4) {
+      html += `<div class="sug-toggle" id="toggleMeaningsBtn"
+                    onclick="const e=document.querySelectorAll('.extra-meaning'),h=e[0].style.display==='none';e.forEach(x=>x.style.display=h?'block':'none');this.innerHTML=h?'عرض أقل ▲':'عرض المزيد (${suggestions.length-4}) ▼'">
+                 عرض المزيد (${suggestions.length - 4}) ▼</div>`;
     }
-  };
+    list.innerHTML = html;
+
+  } catch (error) {
+    console.error("Frontend Error:", error); // عشان تشوف الخطأ الحقيقي بالكونسول
+    list.innerHTML = "<p style='color:var(--danger);text-align:center;font-size:12px;padding:10px;'>⚠️ فشل في جلب البيانات من السيرفر</p>";
+  } finally {
+    btn.innerHTML = "<i class='fas fa-search'></i>";
+    btn.disabled  = false;
+  }
 
   // ===== الكويز =====
   function openQuizSetup() {
