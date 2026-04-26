@@ -798,9 +798,6 @@
   window.fetchSuggestions = async function() {
   const word = document.getElementById('wordInput').value.trim();
   if (!word) { showToast("اكتب الكلمة أولاً!"); return; }
-  // Spam protection: max 5 requests per 30 seconds
-  if (!rateLimit('fetchSuggestions', 5, 30000)) return;
-
   const btn  = document.getElementById('searchBtn');
   const box  = document.getElementById('suggestionsBox');
   const list = document.getElementById('suggestionsList');
